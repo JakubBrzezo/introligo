@@ -1,0 +1,21 @@
+# Introligo Documentation Build Requirements
+#
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+# Core dependencies for Introligo
+PyYAML>=6.0
+Jinja2>=3.0
+
+# Sphinx and theme
+sphinx>=4.0
+furo>=2023.3.27
+
+# Optional: for C/C++ documentation
+breathe>=4.35.0
+
+# Code highlighting
+Pygments>=2.14.0
+
+# Additional Sphinx extensions
+sphinx-copybutton>=0.5.2
+sphinx-design>=0.5.0

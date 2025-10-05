@@ -1,0 +1,1134 @@
+# Introligo Documentation Configuration
+# Configuration for generating Introligo's own documentation
+#
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+# This is an open-source component of the Celin Project
+
+index:
+  title: "📚 Introligo Documentation"
+  description: "YAML to reStructuredText documentation generator for Sphinx"
+  overview: |
+    **Introligo** streamlines the documentation process by converting structured YAML
+    configurations into properly formatted reStructuredText files for Sphinx.
+
+    It supports hierarchical page organization, automatic toctree generation, and rich
+    content features including code examples, API documentation, and custom sections.
+
+    .. note::
+
+       Introligo is one of the open-source components of the Celin Project, available
+       for free use in any project.
+
+generate_index: true
+
+modules:
+  # ============================================================================
+  # GETTING STARTED
+  # ============================================================================
+
+  getting_started:
+    title: "🚀 Getting Started"
+    description: "Quick start guide for Introligo"
+    overview: |
+      Get up and running with Introligo in minutes. This guide covers installation,
+      basic usage, and your first documentation project.
+
+      Introligo streamlines the documentation process by converting structured YAML
+      configurations into properly formatted reStructuredText files for Sphinx. It supports
+      hierarchical page organization, automatic toctree generation, and rich content features
+      including code examples, API documentation, and custom sections.
+
+      The tool is designed to work seamlessly with Sphinx's autodoc extension, making it
+      perfect for documenting Python projects with complex module structures. It automatically
+      handles the creation of directory hierarchies, cross-references, and navigation structures.
+
+    features:
+      - "📝 **YAML to RST conversion** - Write documentation in simple YAML, generate complex RST"
+      - "🌳 **Hierarchical organization** - Parent-child relationships for logical structure"
+      - "🔄 **Automatic toctree generation** - Navigation built automatically from structure"
+      - "📦 **Sphinx autodoc integration** - Seamless API documentation from Python modules"
+      - "🔬 **Breathe/Doxygen support** - Document C/C++ code with single or multiple files"
+      - "🎨 **Rich content support** - Features, examples, installation guides, and more"
+      - "🏷️ **ASCII-safe naming** - Automatic slug generation for filesystem compatibility"
+      - "📁 **File includes** - Modular configuration with !include directive"
+      - "🎯 **Template customization** - Use Jinja2 templates for custom output formats"
+      - "🚀 **Dry-run mode** - Preview changes before generating files"
+      - "⚡ **Batch processing** - Generate entire documentation trees in one command"
+      - "🔧 **Extensible design** - Add custom sections and fields as needed"
+
+  installation:
+    parent: "getting_started"
+    title: "📦 Installation"
+    description: "How to install Introligo and its dependencies"
+    overview: |
+      Introligo requires Python 3.8 or higher and a few dependencies for generating
+      documentation.
+
+    requirements:
+      - "Python 3.8 or higher"
+      - "PyYAML >= 6.0 - YAML parsing"
+      - "Jinja2 >= 3.0 - Template rendering"
+      - "Sphinx >= 4.0 - Documentation building (for output)"
+      - "Breathe >= 4.0 - For C/C++ Doxygen integration (optional)"
+      - "Doxygen - For generating C/C++ XML documentation (optional)"
+
+    installation: |
+      Install Introligo and its dependencies:
+
+      .. code-block:: bash
+
+         # Install required packages
+         pip install PyYAML jinja2
+
+         # For building the generated docs
+         pip install sphinx furo
+
+         # For C/C++ documentation support (optional)
+         pip install breathe
+         sudo apt-get install doxygen  # or brew install doxygen on macOS
+
+      Or add to your requirements.txt:
+
+      .. code-block:: text
+
+         PyYAML>=6.0
+         jinja2>=3.0
+         sphinx>=4.0
+         furo>=2023.3.27
+         breathe>=4.0  # For C/C++ documentation
+
+  quickstart:
+    parent: "getting_started"
+    title: "⚡ Quick Start"
+    description: "Get started with Introligo in 5 minutes"
+    overview: |
+      This quick start guide will have you generating documentation in minutes.
+
+    usage_examples:
+      - title: "🚀 Basic Usage"
+        description: "Generate documentation from a YAML configuration"
+        language: "bash"
+        code: |
+          # Generate RST files in docs directory
+          python introligo.py config.yaml -o docs
+
+          # Preview what would be generated (dry run)
+          python introligo.py config.yaml -o docs --dry-run
+
+          # Use verbose output for debugging
+          python introligo.py config.yaml -o docs -v
+
+      - title: "📝 Simple Configuration File"
+        description: "Create your first YAML configuration"
+        language: "yaml"
+        code: |
+          # config.yaml
+          index:
+            title: "My Project Documentation"
+            description: "Comprehensive documentation"
+
+          generate_index: true
+
+          modules:
+            my_module:
+              title: "My Module"
+              module: "myproject.my_module"
+              description: "A useful module"
+              features:
+                - "Feature 1"
+                - "Feature 2"
+
+  # ============================================================================
+  # USER GUIDE
+  # ============================================================================
+
+  user_guide:
+    title: "📖 User Guide"
+    description: "Comprehensive guide to using Introligo"
+    overview: |
+      Learn everything about Introligo's features, configuration options, and
+      best practices for documentation generation.
+
+  basic_usage:
+    parent: "user_guide"
+    title: "🚀 Basic Usage Examples"
+    description: "Common usage patterns and examples"
+
+    usage_examples:
+      - title: "📝 YAML Configuration Example"
+        description: "Create a simple hierarchical configuration"
+        language: "yaml"
+        code: |
+          # introligo_config.yaml
+          index:
+            title: "My Project Documentation"
+            description: "Comprehensive documentation for my project"
+
+          generate_index: true
+
+          modules:
+            # Root level category
+            utilities:
+              title: "Utility Scripts"
+              description: "Collection of utility scripts"
+
+            # Child module with autodoc
+            my_tool:
+              parent: "utilities"
+              module: "myproject.tools.my_tool"
+              title: "My Tool"
+              description: "A useful tool for processing data"
+              features:
+                - "Fast processing"
+                - "Easy to use"
+                - "Well documented"
+
+      - title: "🔗 Integration with Build Pipeline"
+        description: "Complete documentation build workflow"
+        language: "bash"
+        code: |
+          #!/bin/bash
+          # build_docs.sh
+
+          # Step 1: Generate RST files with Introligo
+          python introligo.py docs_config.yaml -o docs
+
+          # Step 2: Build HTML with Sphinx
+          cd docs
+          sphinx-build -b html . _build/html
+
+          # Step 3: Serve locally (optional)
+          python -m http.server 8000 --directory _build/html
+
+  sphinx_integration:
+    parent: "user_guide"
+    title: "🔧 Sphinx Integration"
+    description: "How to integrate Introligo with your Sphinx project"
+    overview: |
+      Learn how to integrate Introligo into your existing Sphinx documentation project.
+      This guide covers configuration setup, automated builds, and best practices.
+
+    usage_examples:
+      - title: "Basic Sphinx conf.py Setup"
+        description: "Add Introligo-generated content to your Sphinx configuration"
+        language: "python"
+        code: |
+          # docs/conf.py
+          from pathlib import Path
+          import sys
+
+          # Project paths
+          DOCS_DIR = Path(__file__).resolve().parent
+          PROJECT_ROOT = DOCS_DIR.parent
+
+          # Add project root to path for autodoc
+          sys.path.insert(0, str(PROJECT_ROOT))
+
+          # Project information
+          project = "My Project"
+          author = "Your Name"
+          release = "1.0.0"
+
+          # Extensions
+          extensions = [
+              "sphinx.ext.autodoc",
+              "sphinx.ext.viewcode",
+              "sphinx.ext.napoleon",
+          ]
+
+          # Theme
+          html_theme = "furo"
+          html_static_path = ["_static"]
+
+      - title: "Integrating Breathe for C/C++ Documentation"
+        description: "Import Introligo-generated Breathe configuration"
+        language: "python"
+        code: |
+          # docs/conf.py
+
+          # ... other config ...
+
+          # -- Breathe (Doxygen) integration ---
+          # Import Introligo-generated breathe configuration
+          try:
+              from generated.breathe_config import (
+                  breathe_projects,
+                  breathe_default_project
+              )
+              print("✅ Loaded Breathe configuration from Introligo")
+          except ImportError:
+              # Fallback if breathe_config.py doesn't exist
+              breathe_projects = {
+                  "myproject": str(DOCS_DIR / "output" / "xml"),
+              }
+              breathe_default_project = "myproject"
+              print("⚠️  Using fallback Breathe configuration")
+
+      - title: "Automated Build Script"
+        description: "Build documentation with Introligo + Sphinx"
+        language: "bash"
+        code: |
+          #!/bin/bash
+          # build_docs.sh - Complete documentation build pipeline
+
+          set -e  # Exit on error
+
+          # Step 1: Run Doxygen (for C/C++ projects)
+          if [ -f "docs/Doxyfile" ]; then
+              echo "▶ Generating Doxygen XML..."
+              doxygen docs/Doxyfile
+          fi
+
+          # Step 2: Generate RST files with Introligo
+          echo "▶ Generating documentation structure with Introligo..."
+          python -m introligo docs/composition/config.yaml -o docs
+
+          # Step 3: Build HTML with Sphinx
+          echo "▶ Building Sphinx HTML..."
+          sphinx-build -b html docs docs/_build/html
+
+          # Step 4: Open in browser (optional)
+          echo "✅ Documentation built successfully!"
+          echo "📁 Output: docs/_build/html/index.html"
+
+      - title: "Using Introligo with Make"
+        description: "Integrate Introligo into Sphinx Makefile"
+        language: "makefile"
+        code: |
+          # Makefile
+          SPHINXOPTS    ?=
+          SPHINXBUILD   ?= sphinx-build
+          SOURCEDIR     = .
+          BUILDDIR      = _build
+          INTROLIGO     = python -m introligo
+
+          # Generate RST with Introligo before building
+          .PHONY: help Makefile introligo
+
+          introligo:
+          	@echo "Generating RST files with Introligo..."
+          	@$(INTROLIGO) composition/config.yaml -o .
+
+          html: introligo
+          	@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS)
+
+          clean:
+          	@rm -rf $(BUILDDIR)/*
+          	@rm -rf generated/*
+
+    notes: |
+      .. tip::
+
+         **Automatic Builds**: Add Introligo to your build pipeline by running it
+         before Sphinx. This ensures your generated documentation is always up-to-date.
+
+      .. important::
+
+         **Generated Files**: By default, Introligo creates a ``generated/`` directory.
+         Make sure to add this to your Sphinx ``toctree`` in your main ``index.rst``.
+
+      .. note::
+
+         **Breathe Integration**: If you're documenting C/C++ code, Introligo automatically
+         generates a ``generated/breathe_config.py`` file. Import this in your ``conf.py``
+         to automatically configure Breathe with the correct paths.
+
+  configuration:
+    parent: "user_guide"
+    title: "⚙️ Configuration Reference"
+    description: "Complete YAML configuration reference"
+    overview: |
+      Introligo uses YAML configuration files to define your documentation structure.
+      This reference covers all available configuration options.
+
+    configuration: |
+      Complete Introligo configuration syntax:
+
+      .. code-block:: yaml
+
+         # Main index page configuration
+         index:
+           title: "Project Documentation"
+           description: "Brief description"
+           overview: |
+             Detailed overview with reStructuredText formatting
+
+         generate_index: true  # Generate main index.rst
+
+         # Global Doxygen configuration (for C/C++ documentation)
+         doxygen:
+           xml_path: "../output/xml"  # Path to Doxygen XML output
+           project_name: "myproject"   # Breathe project name
+
+         modules:
+           # Each module definition
+           module_id:
+             # Required fields
+             title: "Module Title"
+
+             # Optional fields
+             parent: "parent_id"           # For hierarchy
+             language: "python"            # python, c, cpp
+             module: "python.module.path"  # For Python autodoc
+             description: "Brief description"
+             overview: "Detailed overview"
+
+             # Doxygen directives (C/C++)
+             doxygen_file: "file.h"        # Single file
+             doxygen_files:                # Multiple files
+               - "header.h"
+               - "implementation.c"
+             doxygen_class: "ClassName"
+             doxygen_function: "functionName"
+             doxygen_namespace: "namespaceName"
+
+             # Rich content fields
+             features:
+               - "Feature 1"
+               - "Feature 2"
+
+             requirements:
+               - "Requirement 1"
+
+             installation: |
+               Installation instructions
+
+             usage_examples:
+               - title: "Example Title"
+                 description: "Example description"
+                 language: "python"
+                 code: |
+                   # Code here
+
+             configuration: |
+               Configuration details
+
+             api_reference: |
+               API documentation
+
+             notes: |
+               Additional notes
+
+             see_also:
+               - "Related link"
+
+             references:
+               - "External reference"
+
+             changelog: |
+               Version history
+
+             custom_sections:
+               - title: "Custom Section"
+                 content: "Custom content"
+
+  python_docs:
+    parent: "user_guide"
+    title: "🐍 Python Documentation"
+    description: "Documenting Python code with autodoc"
+    overview: |
+      Introligo integrates seamlessly with Sphinx's autodoc extension to generate
+      API documentation from Python docstrings.
+
+    usage_examples:
+      - title: "Python Module Documentation"
+        description: "Document a Python module with autodoc"
+        language: "yaml"
+        code: |
+          modules:
+            my_module:
+              title: "My Module"
+              module: "myproject.my_module"
+              description: "Module description"
+              features:
+                - "Feature 1"
+                - "Feature 2"
+
+              usage_examples:
+                - title: "Basic Usage"
+                  language: "python"
+                  code: |
+                    from myproject.my_module import MyClass
+
+                    obj = MyClass()
+                    obj.do_something()
+
+      - title: "🐍 Python API Usage"
+        description: "Use Introligo programmatically in Python scripts"
+        language: "python"
+        code: |
+          from pathlib import Path
+          from introligo import IntroligoGenerator
+
+          # Create generator instance
+          generator = IntroligoGenerator(
+              config_file=Path("config.yaml"),
+              output_dir=Path("docs"),
+              dry_run=False,
+              strict=False
+          )
+
+          # Generate all documentation
+          generated_files = generator.generate_all()
+
+          # Write files to disk
+          generator.write_files(generated_files)
+
+          print(f"Generated {len(generated_files)} files")
+
+  cpp_docs:
+    parent: "user_guide"
+    title: "🔬 C/C++ Documentation"
+    description: "Documenting C/C++ code with Doxygen and Breathe"
+    overview: |
+      Introligo supports C/C++ documentation through Doxygen and Breathe integration.
+      First, generate XML with Doxygen, then configure Introligo to include it.
+
+    usage_examples:
+      - title: "🔬 C/C++ Documentation with Doxygen (Single File)"
+        description: "Document C/C++ code using Breathe and Doxygen"
+        language: "yaml"
+        code: |
+          # Global Doxygen configuration
+          doxygen:
+            xml_path: "../output/xml"  # Path to Doxygen XML output
+            project_name: "myproject"
+
+          modules:
+            my_component:
+              title: "My Component"
+              language: c
+              description: "Component description"
+              doxygen_file: mycomponent.h  # Single header file
+
+      - title: "📁 C/C++ Documentation with Multiple Files"
+        description: "Document both header and implementation files"
+        language: "yaml"
+        code: |
+          # Global Doxygen configuration
+          doxygen:
+            xml_path: "../output/xml"
+            project_name: "myproject"
+
+          modules:
+            my_component:
+              title: "My Component"
+              parent: "components"
+              language: c
+              description: "Component with full implementation docs"
+              doxygen_files:
+                - mycomponent.h    # Header file
+                - mycomponent.c    # Implementation file
+              features:
+                - "Feature 1"
+                - "Feature 2"
+
+            common_utils:
+              title: "Common Utilities"
+              parent: "components"
+              language: c
+              doxygen_files:
+                - utils.h
+                - error.h
+                - logs.h
+                - port.h
+
+  includes:
+    parent: "user_guide"
+    title: "📁 File Includes"
+    description: "Modular configuration with !include directive"
+    overview: |
+      Split your configuration across multiple files using the ``!include`` directive.
+      This allows you to place documentation configs alongside the code they document.
+
+    usage_examples:
+      - title: "📂 Using File Includes"
+        description: "Split configuration across multiple files using !include"
+        language: "yaml"
+        code: |
+          # Main config file (docs/composition/introligo_config.yaml)
+          index:
+            title: "Project Documentation"
+            description: "Auto-generated documentation"
+
+          generate_index: true
+
+          modules:
+            # Include module config from script directory
+            my_tool: !include ../../scripts/utils/my_tool_doc.yaml
+
+            build_tools:
+              title: "Build Tools"
+              description: "Build automation tools"
+
+          # Module config file (scripts/utils/my_tool_doc.yaml)
+          # This file is placed alongside the script it documents
+          parent: "utilities"
+          module: "scripts.utils.my_tool"
+          title: "My Tool"
+          description: "A useful tool"
+          features:
+            - "Feature 1"
+            - "Feature 2"
+
+    notes: |
+      .. tip::
+
+         **Modular Configuration with !include**: You can split your documentation
+         configuration into multiple files using the ``!include`` directive. This allows
+         you to place documentation configs alongside the scripts they document, making
+         the project more maintainable. Paths are resolved relative to the file containing
+         the include directive.
+
+  templates:
+    parent: "user_guide"
+    title: "🎨 Custom Templates"
+    description: "Customizing output with Jinja2 templates"
+    overview: |
+      Introligo uses Jinja2 templates for generating RST files. You can provide
+      custom templates to control the output format.
+
+    usage_examples:
+      - title: "🎨 Custom Template Usage"
+        description: "Use a custom Jinja2 template for output formatting"
+        language: "bash"
+        code: |
+          # Create custom template
+          cat > my_template.jinja2 << 'EOF'
+          {{ title }}
+          {{ '=' * (title|length) }}
+
+          {{ description }}
+
+          {% if features %}
+          Features:
+          {% for feature in features %}
+          * {{ feature }}
+          {% endfor %}
+          {% endif %}
+          EOF
+
+          # Use custom template
+          python introligo.py config.yaml \
+            -o docs \
+            -t my_template.jinja2
+
+    custom_sections:
+      - title: "Template Variables Available"
+        content: |
+          **Template Variables Available:**
+
+          All fields from your YAML configuration are available in templates, plus:
+
+          * ``children`` - List of child pages with titles and paths
+          * ``title`` - Processed page title
+          * ``module`` - Python module path for autodoc (Python)
+          * ``language`` - Language specification (python, c, cpp)
+          * ``doxygen_file`` - Single Doxygen file
+          * ``doxygen_files`` - List of Doxygen files
+          * ``doxygen_class``, ``doxygen_function``, ``doxygen_namespace`` - Specific Doxygen directives
+          * ``global_doxygen_project`` - Breathe project name
+          * Custom fields - Any additional fields in your YAML
+
+  advanced:
+    parent: "user_guide"
+    title: "🔧 Advanced Features"
+    description: "Advanced usage and tips"
+
+    notes: |
+      .. note::
+
+         Introligo generates files in a ``generated/`` subdirectory by default to keep
+         them separate from hand-written documentation. This can be customized in the
+         output directory structure.
+
+      .. important::
+
+         When using autodoc features, ensure your Python modules are importable by
+         adding the appropriate paths to ``sys.path`` in your Sphinx ``conf.py``.
+
+      .. tip::
+
+         Use the ``--dry-run`` flag to preview what files would be generated without
+         actually creating them. This is useful for testing configuration changes.
+
+      .. tip::
+
+         **C/C++ Documentation**: For C/C++ projects, first run Doxygen to generate
+         XML output, then configure the ``doxygen`` section in your YAML with the path
+         to the XML directory. Introligo will automatically generate a ``breathe_config.py``
+         file that you can import in your Sphinx ``conf.py``.
+
+      .. tip::
+
+         **Multiple Files**: Use ``doxygen_files`` (list) to document both header and
+         implementation files together. This is especially useful for components where
+         the implementation file contains additional Doxygen comments that complement
+         the header file documentation.
+
+    custom_sections:
+      - title: "Directory Structure"
+        content: |
+          Introligo generates the following directory structure:
+
+          .. code-block:: text
+
+             docs/
+             ├── index.rst                 # Main index
+             ├── conf.py                   # Sphinx config
+             └── generated/                # Generated docs
+                 ├── category.rst          # Category page
+                 └── category/             # Category subpages
+                     ├── module1.rst
+                     └── module2.rst
+
+      - title: "Best Practices"
+        content: |
+          1. **Organize hierarchically**: Use parent-child relationships for logical grouping
+          2. **Use descriptive IDs**: Module IDs should be meaningful and unique
+          3. **Keep it DRY**: Use templates for consistent formatting
+          4. **Version control**: Keep your YAML configurations in git
+          5. **Validate early**: Use dry-run mode to catch issues before generation
+          6. **Document everything**: Include examples, notes, and references
+
+      - title: "Breathe/Doxygen Integration"
+        content: |
+          **Breathe/Doxygen Integration:**
+
+          When using C/C++ documentation:
+
+          1. Run Doxygen to generate XML: ``doxygen Doxyfile``
+          2. Configure ``doxygen.xml_path`` in your YAML config
+          3. Run Introligo to generate RST files
+          4. Introligo creates ``generated/breathe_config.py`` automatically
+          5. Import in ``conf.py``: ``from generated.breathe_config import *``
+
+      - title: "Extending Introligo"
+        content: |
+          **Extending Introligo:**
+
+          You can extend Introligo by:
+
+          1. Creating custom templates with additional sections
+          2. Adding preprocessors for YAML data
+          3. Implementing post-processors for generated RST
+          4. Creating plugins for additional output formats
+          5. Adding custom Jinja2 filters for template rendering
+
+  claude_ai_integration:
+    parent: "user_guide"
+    title: "🤖 Claude AI Integration"
+    description: "Automatically generate Introligo documentation with Claude AI"
+    overview: |
+      Learn how to configure Claude AI to automatically generate Introligo YAML
+      documentation files when you create new Python scripts or modules.
+
+      By adding a custom prompt to your ``.claude/claude.md`` file, Claude can
+      automatically create properly formatted Introligo documentation alongside
+      your code.
+
+    usage_examples:
+      - title: "Claude.md Configuration"
+        description: "Add this to your .claude/claude.md file to enable automatic Introligo doc generation"
+        language: "markdown"
+        code: |
+          # Claude AI Configuration for Introligo Documentation
+
+          ## Automatic Documentation Generation
+
+          When creating new Python scripts, modules, or components, automatically
+          generate an Introligo YAML documentation file alongside the code.
+
+          ### Documentation Template
+
+          For each new Python file created, generate a corresponding `_doc.yaml`
+          file in the same directory with the following structure:
+
+          ```yaml
+          # Documentation for <module_name>
+          # Generated with Introligo format
+          #
+          # Copyright (c) <year> <Your Name/Company>
+
+          parent: "<parent_category>"
+          module: "<python.module.path>"
+          title: "📝 <Module Title>"
+          description: |
+            Brief one-line description of the module
+
+          overview: |
+            Detailed overview of the module's purpose, functionality, and use cases.
+            Explain what problems it solves and how it fits into the larger project.
+
+          features:
+            - "🎯 Feature 1 - Brief description"
+            - "📦 Feature 2 - Brief description"
+            - "⚡ Feature 3 - Brief description"
+
+          requirements:
+            - "Python 3.8 or higher"
+            - "Required dependency 1"
+            - "Required dependency 2"
+
+          installation: |
+            Installation instructions for the module:
+
+            .. code-block:: bash
+
+               pip install <package-name>
+
+          usage_examples:
+            - title: "Basic Usage"
+              description: "Simple example showing basic usage"
+              language: "python"
+              code: |
+                from <module> import <ClassName>
+
+                # Create instance
+                obj = <ClassName>()
+
+                # Use the module
+                result = obj.method()
+                print(result)
+
+            - title: "Advanced Usage"
+              description: "More complex example with configuration"
+              language: "python"
+              code: |
+                # Advanced example code here
+
+          configuration: |
+            Configuration options and settings:
+
+            .. code-block:: python
+
+               # Configuration example
+
+          api_reference: |
+            API reference details (if not using autodoc)
+
+          notes: |
+            .. note::
+
+               Important notes about the module
+
+            .. tip::
+
+               Helpful tips for users
+
+            .. warning::
+
+               Important warnings or limitations
+
+          see_also:
+            - ":doc:`related_module` - Related documentation"
+            - "https://example.com - External reference"
+
+          changelog: |
+            **Version 1.0.0** (<date>)
+              - 🎉 Initial release
+              - ✨ Feature 1
+              - 🔧 Feature 2
+          ```
+
+          ### Rules for Documentation Generation
+
+          1. **Always generate** a `_doc.yaml` file when creating new Python files
+          2. **Use the exact YAML structure** shown above
+          3. **Fill in all relevant sections** based on the code content
+          4. **Extract information** from docstrings and code comments
+          5. **Use emojis** in features and changelog for visual appeal
+          6. **Include practical examples** in usage_examples
+          7. **Add appropriate parent** category for hierarchical organization
+          8. **Set correct module path** for Python autodoc integration
+
+          ### Example Workflow
+
+          When user says: "Create a new utility script for data validation"
+
+          You should:
+          1. Create the Python script (e.g., `validate_data.py`)
+          2. Automatically create `validate_data_doc.yaml` with complete documentation
+          3. Ensure both files are properly formatted and documented
+
+      - title: "Example Generated Documentation"
+        description: "Example of what Claude AI should generate"
+        language: "yaml"
+        code: |
+          # Documentation for data_validator
+          # Generated with Introligo format
+          #
+          # Copyright (c) 2025 WT Tech
+
+          parent: "utilities"
+          module: "myproject.utils.data_validator"
+          title: "📊 Data Validator"
+          description: |
+            Comprehensive data validation utility with type checking and schema support
+
+          overview: |
+            The Data Validator module provides robust validation capabilities for
+            various data types, including JSON schema validation, type checking,
+            and custom validation rules.
+
+            It's designed to work seamlessly with data pipelines and APIs,
+            ensuring data integrity throughout your application.
+
+          features:
+            - "🔍 **Schema Validation** - JSON Schema and custom schema support"
+            - "📝 **Type Checking** - Built-in validators for common types"
+            - "🔧 **Custom Rules** - Define your own validation logic"
+            - "⚡ **Performance** - Optimized for large datasets"
+            - "📊 **Detailed Errors** - Clear error messages with field paths"
+
+          requirements:
+            - "Python 3.8 or higher"
+            - "jsonschema >= 4.0"
+            - "pydantic >= 2.0 (optional)"
+
+          installation: |
+            Install the data validator module:
+
+            .. code-block:: bash
+
+               pip install myproject[validation]
+
+          usage_examples:
+            - title: "Basic Validation"
+              description: "Validate data against a simple schema"
+              language: "python"
+              code: |
+                from myproject.utils.data_validator import DataValidator
+
+                # Create validator with schema
+                validator = DataValidator({
+                    "name": {"type": "string", "required": True},
+                    "age": {"type": "integer", "min": 0}
+                })
+
+                # Validate data
+                data = {"name": "John", "age": 30}
+                is_valid, errors = validator.validate(data)
+
+                if is_valid:
+                    print("Data is valid!")
+                else:
+                    print(f"Validation errors: {errors}")
+
+            - title: "Custom Validation Rules"
+              description: "Add custom validation logic"
+              language: "python"
+              code: |
+                from myproject.utils.data_validator import DataValidator
+
+                # Custom validator function
+                def validate_email(value):
+                    return "@" in value and "." in value
+
+                # Create validator with custom rule
+                validator = DataValidator({
+                    "email": {
+                        "type": "string",
+                        "custom": validate_email
+                    }
+                })
+
+          notes: |
+            .. tip::
+
+               Use JSON Schema for complex validation requirements. The validator
+               supports the full JSON Schema specification.
+
+            .. note::
+
+               For best performance with large datasets, consider using batch
+               validation mode.
+
+          see_also:
+            - "https://json-schema.org - JSON Schema specification"
+            - ":doc:`data_processor` - Related data processing utilities"
+
+          changelog: |
+            **Version 1.0.0** (2025-10-05)
+              - 🎉 Initial release
+              - ✨ JSON Schema validation support
+              - 🔧 Custom validation rules
+              - 📊 Detailed error reporting
+
+    notes: |
+      .. tip::
+
+         **Automatic Documentation**: By adding this configuration to your
+         ``.claude/claude.md`` file, Claude AI will automatically generate
+         Introligo-formatted documentation whenever you create new code files.
+
+      .. important::
+
+         **Customize the Template**: Adjust the template to match your project's
+         specific needs, naming conventions, and documentation style.
+
+      .. note::
+
+         **File Naming**: The convention is to name documentation files with
+         ``_doc.yaml`` suffix (e.g., ``my_module_doc.yaml``) and place them
+         alongside the code they document.
+
+  # ============================================================================
+  # API REFERENCE
+  # ============================================================================
+
+  api:
+    title: "🔧 API Reference"
+    description: "Introligo Python API documentation"
+    overview: |
+      Use Introligo programmatically in your Python scripts.
+
+  api_main:
+    parent: "api"
+    module: "introligo"
+    title: "Main Module"
+    description: "Core Introligo functionality"
+
+  # ============================================================================
+  # EXAMPLES
+  # ============================================================================
+
+  examples:
+    title: "💡 Examples"
+    description: "Real-world examples and use cases"
+    overview: |
+      Learn from practical examples of Introligo usage in different scenarios.
+
+  example_basic:
+    parent: "examples"
+    title: "Basic Documentation"
+    description: "Simple flat documentation structure"
+    usage_examples:
+      - title: "Basic Configuration"
+        language: "yaml"
+        code: |
+          index:
+            title: "My Project"
+            description: "Simple documentation"
+
+          generate_index: true
+
+          modules:
+            module1:
+              title: "Module 1"
+              module: "myproject.module1"
+              description: "First module"
+
+  example_hierarchical:
+    parent: "examples"
+    title: "Hierarchical Documentation"
+    description: "Organized multi-level documentation"
+    usage_examples:
+      - title: "Hierarchical Structure"
+        language: "yaml"
+        code: |
+          modules:
+            utilities:
+              title: "Utilities"
+              description: "Utility tools"
+
+            tool1:
+              parent: "utilities"
+              title: "Tool 1"
+              module: "myproject.tools.tool1"
+
+            tool2:
+              parent: "utilities"
+              title: "Tool 2"
+              module: "myproject.tools.tool2"
+
+  # ============================================================================
+  # ABOUT
+  # ============================================================================
+
+  about:
+    title: "ℹ️ About"
+    description: "About Introligo"
+
+  license:
+    parent: "about"
+    title: "📄 License"
+    description: "License information"
+    overview: |
+      Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+      Introligo is one of the open-source components of the Celin Project. It is freely
+      available for use in any project, commercial or non-commercial, without restrictions.
+      While the full Celin framework is proprietary, Introligo is released as an independent,
+      open-source tool that can be used standalone.
+
+      **License:** Apache License 2.0
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at:
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+    see_also:
+      - "https://www.apache.org/licenses/LICENSE-2.0 - Apache License 2.0"
+      - "https://github.com/JakubBrzezo/introligo - Introligo GitHub Repository"
+
+  changelog:
+    parent: "about"
+    title: "📋 Changelog"
+    description: "Version history and changes"
+    changelog: |
+      **Version 1.0.0** (2025-10-05)
+        - 🎉 Initial release
+        - Added !include directive for modular configuration files
+        - Support for splitting documentation across multiple files
+        - Relative path resolution for included files
+        - Nested include support
+        - Added rich content support (features, examples, etc.)
+        - Added custom sections support
+        - Enhanced error handling and logging
+        - Added hierarchical page organization
+        - Implemented ASCII-safe slug generation
+        - Added dry-run mode
+        - 🔬 **Added Breathe/Doxygen support** for C/C++ documentation
+        - 📁 **Multiple file support** with ``doxygen_files`` (list) directive
+        - 🔧 Support for ``doxygen_class``, ``doxygen_function``, ``doxygen_namespace``
+        - 📝 Automatic breathe configuration generation (``breathe_config.py``)
+
+  contributing:
+    parent: "about"
+    title: "🤝 Contributing"
+    description: "How to contribute to Introligo"
+    overview: |
+      Introligo is an open-source project and welcomes contributions!
+
+      **Ways to Contribute:**
+
+      - Report bugs and issues
+      - Suggest new features
+
+      **Links:**
+
+      - GitHub: https://github.com/JakubBrzezo/introligo
+      - Issue Tracker: https://github.com/JakubBrzezo/introligo/issues
+
+  resources:
+    parent: "about"
+    title: "📚 Resources"
+    description: "External resources and references"
+
+    see_also:
+      - "https://www.sphinx-doc.org - Sphinx documentation"
+      - "https://breathe.readthedocs.io - Breathe documentation (C/C++ integration)"
+      - "https://www.doxygen.nl - Doxygen documentation generator"
+      - "https://yaml.org - YAML specification"
+      - "https://jinja.palletsprojects.com - Jinja2 templates"
+      - "https://github.com/JakubBrzezo/introligo - Introligo GitHub"
+      - "https://www.apache.org/licenses/LICENSE-2.0 - Apache License 2.0"
