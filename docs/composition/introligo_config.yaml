@@ -415,12 +415,17 @@ modules:
              references:
                - "External reference"
 
-             changelog: |
-               Version history
-
              custom_sections:
                - title: "Custom Section"
                  content: "Custom content"
+
+             # Markdown file inclusion (list or single file)
+             # Use this for including CHANGELOG.md, README.md, or other markdown files
+             markdown_includes:
+               - "path/to/doc.md"
+               - "path/to/another.md"
+             # Or single file (recommended for Changelog)
+             # markdown_includes: "path/to/CHANGELOG.md"
 
   python_docs:
     parent: "user_guide"
@@ -579,6 +584,38 @@ modules:
          you to place documentation configs alongside the scripts they document, making
          the project more maintainable. Paths are resolved relative to the file containing
          the include directive.
+
+  markdown_includes:
+    parent: "user_guide"
+    title: "📝 Markdown Includes"
+    description: "Include markdown files in your documentation"
+    overview: |
+      Include external markdown files as part of your module documentation.
+      This is useful for incorporating existing documentation, READMEs, or
+      maintaining documentation in markdown format while generating RST.
+
+      This feature demonstrates itself! Each subpage below is created from
+      markdown files that are automatically converted to RST.
+
+  md_basic_usage:
+    parent: "markdown_includes"
+    title: "📚 Basic Usage"
+    markdown_includes: "markdown/basic_usage.md"
+
+  md_best_practices:
+    parent: "markdown_includes"
+    title: "🎯 Best Practices"
+    markdown_includes: "markdown/best_practices.md"
+
+  md_use_cases:
+    parent: "markdown_includes"
+    title: "💼 Use Cases"
+    markdown_includes: "markdown/use_cases.md"
+
+  md_troubleshooting:
+    parent: "markdown_includes"
+    title: "🔧 Troubleshooting"
+    markdown_includes: "markdown/troubleshooting.md"
 
   templates:
     parent: "user_guide"
@@ -1084,23 +1121,7 @@ modules:
     parent: "about"
     title: "📋 Changelog"
     description: "Version history and changes"
-    changelog: |
-      **Version 1.0.0** (2025-10-05)
-        - 🎉 Initial release
-        - Added !include directive for modular configuration files
-        - Support for splitting documentation across multiple files
-        - Relative path resolution for included files
-        - Nested include support
-        - Added rich content support (features, examples, etc.)
-        - Added custom sections support
-        - Enhanced error handling and logging
-        - Added hierarchical page organization
-        - Implemented ASCII-safe slug generation
-        - Added dry-run mode
-        - 🔬 **Added Breathe/Doxygen support** for C/C++ documentation
-        - 📁 **Multiple file support** with ``doxygen_files`` (list) directive
-        - 🔧 Support for ``doxygen_class``, ``doxygen_function``, ``doxygen_namespace``
-        - 📝 Automatic breathe configuration generation (``breathe_config.py``)
+    markdown_includes: "../../CHANGELOG.md"
 
   contributing:
     parent: "about"

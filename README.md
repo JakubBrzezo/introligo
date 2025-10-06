@@ -18,6 +18,7 @@ Introligo streamlines the documentation process by converting structured YAML co
 - 🎨 **Rich content support** - Features, examples, installation guides, and more
 - 🏷️ **ASCII-safe naming** - Automatic slug generation for filesystem compatibility
 - 📁 **File includes** - Modular configuration with `!include` directive
+- 📝 **Markdown includes** - Include markdown files in your documentation
 - 🎯 **Template customization** - Use Jinja2 templates for custom output formats
 - 🚀 **Dry-run mode** - Preview changes before generating files
 
@@ -91,6 +92,23 @@ modules:
       - mycomponent.h
       - mycomponent.c
 ```
+
+## Including Markdown Files
+
+```yaml
+modules:
+  my_module:
+    title: "My Module"
+    description: "Module with markdown documentation"
+    module: "myproject.my_module"
+
+    # Include markdown files (list or single file)
+    markdown_includes:
+      - "docs/user_guide.md"
+      - "README.md"
+```
+
+Paths are resolved relative to the configuration file.
 
 ## Requirements
 

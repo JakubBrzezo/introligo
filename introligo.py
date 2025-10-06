@@ -22,6 +22,7 @@ Features:
 - Support for multiple documentation sections
 - ASCII-safe folder naming
 - File inclusion support with !include directive for modular configurations
+- Markdown file inclusion for documentation modules
 - Support for Python (autodoc), C, and C++ (Doxygen/Breathe) documentation
 
 Include Directive Usage:
@@ -84,6 +85,27 @@ Language Support:
     - doxygen_namespace: Document specific namespace
 
     The doxygen.xml_path will be used to generate breathe_projects configuration.
+
+Markdown Inclusion:
+    Include external markdown files as part of your documentation::
+
+        modules:
+          my_module:
+            title: "My Module"
+            description: "Module with markdown docs"
+            markdown_includes:
+              - "docs/user_guide.md"
+              - "docs/api_reference.md"
+
+    Or single file::
+
+        modules:
+          my_module:
+            title: "My Module"
+            markdown_includes: "README.md"
+
+    Paths are resolved relative to the configuration file. Markdown content
+    is included at the end of the generated documentation page.
 
 Requirements:
     pip install PyYAML jinja2
@@ -240,15 +262,35 @@ def count_display_width(text: str) -> int:
     emoji_count = 0
     for char in text:
         code = ord(char)
-        # Common emoji ranges
-        if (0x1F300 <= code <= 0x1F9FF or  # Misc Symbols and Pictographs
+        # Common emoji ranges - comprehensive coverage
+        if (0x1F300 <= code <= 0x1F9FF or  # Misc Symbols and Pictographs + Supplemental
             0x2600 <= code <= 0x26FF or    # Misc symbols
             0x2700 <= code <= 0x27BF or    # Dingbats
             0xFE00 <= code <= 0xFE0F or    # Variation selectors
-            0x1F000 <= code <= 0x1F02F):   # Additional symbols
+            0x1F000 <= code <= 0x1F02F or  # Additional symbols
+            0x1F600 <= code <= 0x1F64F or  # Emoticons
+            0x1F680 <= code <= 0x1F6FF or  # Transport and Map
+            0x1F900 <= code <= 0x1F9FF or  # Supplemental Symbols and Pictographs
+            0x2B50 == code or              # Star
+            0x2705 == code or              # Check mark
+            0x274C == code or              # Cross mark
+            0x2716 == code or              # Heavy multiplication X
+            0x2714 == code or              # Heavy check mark
+            0x2728 == code or              # Sparkles
+            0x203C == code or              # Double exclamation
+            0x2049 == code or              # Exclamation question
+            0x25B6 == code or              # Play button
+            0x25C0 == code or              # Reverse button
+            0x2139 == code or              # Information
+            0x2194 <= code <= 0x2199 or    # Arrows
+            0x21A9 <= code <= 0x21AA or    # Return arrows
+            0x231A <= code <= 0x231B or    # Watch + Hourglass
+            0x23E9 <= code <= 0x23F3 or    # Media buttons
+            0x23F8 <= code <= 0x23FA):     # Media buttons continued
             emoji_count += 1
 
-    # Add extra characters for each emoji (emojis display ~2x wider)
+    # Add extra character for each emoji (emojis display wider)
+    # Use +1 per emoji for better results
     return len(text) + emoji_count
 
 
@@ -311,7 +353,7 @@ class PageNode:
         """Get relative path for toctree entries.
 
         Args:
-            other_dir: Reference directory (unused, for compatibility).
+            other_dir: Reference directory to calculate path from (parent's directory).
             base_generated_dir: Base directory for generated files.
 
         Returns:
@@ -319,9 +361,14 @@ class PageNode:
         """
         self_path = self.get_output_file(base_generated_dir)
         try:
-            relative = self_path.relative_to(base_generated_dir).with_suffix('')
+            # Calculate path relative to the parent's directory
+            relative = self_path.relative_to(other_dir).with_suffix('')
         except ValueError:
-            relative = self_path.with_suffix('')
+            # Fallback: try relative to base_generated_dir
+            try:
+                relative = self_path.relative_to(base_generated_dir).with_suffix('')
+            except ValueError:
+                relative = self_path.with_suffix('')
         return str(relative).replace('\\', '/')
 
     def is_leaf(self) -> bool:
@@ -619,6 +666,13 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
 {{ section.content }}
 {% endfor %}
 {% endif %}
+
+{% if markdown_includes %}
+{% for markdown_content in markdown_includes %}
+
+{{ markdown_content }}
+{% endfor %}
+{% endif %}
 """
 
     def load_template(self) -> Template:
@@ -690,6 +744,119 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
 
         return processed
 
+    def include_markdown_file(self, markdown_path: str) -> str:
+        """Include a markdown file and convert it to reStructuredText-compatible format.
+
+        Args:
+            markdown_path: Path to the markdown file (relative to config file).
+
+        Returns:
+            The content of the markdown file converted to RST-compatible format.
+
+        Raises:
+            IntroligoError: If the markdown file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        md_path_obj = Path(markdown_path)
+        if not md_path_obj.is_absolute():
+            md_path_obj = self.config_file.parent / markdown_path
+
+        if not md_path_obj.exists():
+            raise IntroligoError(f"Markdown file not found: {md_path_obj}")
+
+        try:
+            content = md_path_obj.read_text(encoding='utf-8')
+            # Convert basic markdown to RST
+            content = self._convert_markdown_to_rst(content)
+            logger.info(f"  📄 Included markdown: {md_path_obj}")
+            return content
+        except Exception as e:
+            raise IntroligoError(f"Error reading markdown file {md_path_obj}: {e}")
+
+    def _convert_markdown_to_rst(self, markdown: str) -> str:
+        """Convert basic markdown syntax to reStructuredText.
+
+        Args:
+            markdown: Markdown content to convert.
+
+        Returns:
+            RST-compatible content.
+        """
+        lines = markdown.split('\n')
+        result = []
+        in_code_block = False
+        code_language = ''
+        first_h1_found = False
+
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
+            # Handle code blocks
+            if line.strip().startswith('```'):
+                if not in_code_block:
+                    # Start of code block
+                    in_code_block = True
+                    code_language = line.strip()[3:].strip() or 'text'
+                    result.append('')
+                    result.append(f'.. code-block:: {code_language}')
+                    result.append('')
+                else:
+                    # End of code block
+                    in_code_block = False
+                    result.append('')
+                i += 1
+                continue
+
+            if in_code_block:
+                # Inside code block - indent by 3 spaces
+                result.append('   ' + line)
+                i += 1
+                continue
+
+            # Handle headers
+            if line.startswith('# '):
+                # H1
+                title = line[2:].strip()
+                # Skip first H1 if it's "Changelog"
+                if not first_h1_found and title.lower() == 'changelog':
+                    first_h1_found = True
+                    i += 1
+                    continue
+                first_h1_found = True
+                result.append('')
+                result.append(title)
+                result.append('=' * len(title))
+                result.append('')
+            elif line.startswith('## '):
+                # H2
+                title = line[3:].strip()
+                result.append('')
+                result.append(title)
+                result.append('-' * len(title))
+                result.append('')
+            elif line.startswith('### '):
+                # H3
+                title = line[4:].strip()
+                result.append('')
+                result.append(title)
+                result.append('~' * len(title))
+                result.append('')
+            elif line.startswith('#### '):
+                # H4
+                title = line[5:].strip()
+                result.append('')
+                result.append(title)
+                result.append('^' * len(title))
+                result.append('')
+            else:
+                # Regular line
+                result.append(line)
+
+            i += 1
+
+        return '\n'.join(result)
+
     def generate_rst_content(self, node: PageNode, template: Template) -> str:
         """Generate RST content with enhanced features support.
 
@@ -722,6 +889,19 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         if doxygen_file and not doxygen_files:
             doxygen_files = [doxygen_file]
 
+        # Process markdown includes
+        markdown_includes = config.get('markdown_includes', [])
+        if isinstance(markdown_includes, str):
+            markdown_includes = [markdown_includes]
+
+        markdown_content = []
+        for md_path in markdown_includes:
+            try:
+                content = self.include_markdown_file(md_path)
+                markdown_content.append(content)
+            except IntroligoError as e:
+                logger.warning(f"⚠️  {e}")
+
         context = {
             'title': node.title,
             'module': config.get('module', ''),
@@ -746,7 +926,8 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
             'references': config.get('references', []),
             'changelog': config.get('changelog', ''),
             'examples_dir': config.get('examples_dir', ''),
-            'custom_sections': config.get('custom_sections', [])
+            'custom_sections': config.get('custom_sections', []),
+            'markdown_includes': markdown_content
         }
 
         # Clean up empty values, but keep language field
