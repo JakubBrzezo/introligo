@@ -266,4 +266,4 @@ Jakub Brzezowski (WT Tech Jakub Brzezowski)
 ## Links
 
 - Full documentation: See `introligo_doc.yaml` for comprehensive examples
-- GitHub: https://github.com/JakubBrzezo/introligo
+- GitHub: https://jakubbrzezo.github.io/introligo

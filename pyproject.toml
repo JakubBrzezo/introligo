@@ -50,6 +50,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/JakubBrzezo/introligo"
+Documentation = "https://jakubbrzezo.github.io/introligo"
 Repository = "https://github.com/JakubBrzezo/introligo"
 "Bug Tracker" = "https://github.com/JakubBrzezo/introligo/issues"
 Changelog = "https://github.com/JakubBrzezo/introligo/blob/master/CHANGELOG.md"
