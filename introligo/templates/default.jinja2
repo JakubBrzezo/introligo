@@ -1,0 +1,183 @@
+{{ title }}
+{{ '=' * (title|display_width) }}
+
+{{ description if description else 'Documentation for ' + (module if module else title) + '.' }}
+
+{% if overview %}
+Overview
+--------
+
+{{ overview }}
+{% endif %}
+
+{% if features %}
+Features
+--------
+
+{% for feature in features %}
+* {{ feature }}
+{% endfor %}
+{% endif %}
+
+{% if installation %}
+Installation
+------------
+
+{{ installation }}
+{% endif %}
+
+{% if requirements %}
+Requirements
+------------
+
+{% if requirements is string %}
+{{ requirements }}
+{% elif requirements is iterable %}
+{% for req in requirements %}
+* {{ req }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if usage_examples %}
+Usage Examples
+--------------
+
+{% for example in usage_examples %}
+{{ example.title }}
+{{ '~' * (example.title|display_width) }}
+
+{{ example.description if example.description else '' }}
+
+.. code-block:: {{ example.language if example.language else 'python' }}
+
+{{ example.code|indent(4, true) }}
+
+{% endfor %}
+{% endif %}
+
+{% if configuration %}
+Configuration
+-------------
+
+{{ configuration }}
+{% endif %}
+
+{% if api_reference %}
+API Reference
+-------------
+
+{{ api_reference }}
+{% endif %}
+
+{% if children %}
+Subpages
+--------
+
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
+
+{% for child in children %}
+   {{ child.relative_path }}
+{% endfor %}
+{% endif %}
+
+{% if module or doxygen_file or doxygen_files or doxygen_class or doxygen_function or doxygen_namespace %}
+{% if not api_reference %}
+API Documentation
+-----------------
+{% endif %}
+
+{% if language == 'python' or not language %}
+.. automodule:: {{ module }}
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :private-members:
+   :special-members: __init__
+{% elif language == 'c' or language == 'cpp' %}
+{% if doxygen_files %}
+{% for file in doxygen_files %}
+.. doxygenfile:: {{ file }}
+   :project: {{ global_doxygen_project }}
+
+{% endfor %}
+{% elif doxygen_file %}
+.. doxygenfile:: {{ doxygen_file }}
+   :project: {{ global_doxygen_project }}
+{% elif doxygen_class %}
+.. doxygenclass:: {{ doxygen_class }}
+   :project: {{ global_doxygen_project }}
+   :members:
+   :undoc-members:
+{% elif doxygen_function %}
+.. doxygenfunction:: {{ doxygen_function }}
+   :project: {{ global_doxygen_project }}
+{% elif doxygen_namespace %}
+.. doxygennamespace:: {{ doxygen_namespace }}
+   :project: {{ global_doxygen_project }}
+   :members:
+   :undoc-members:
+{% elif module %}
+.. doxygenfile:: {{ module }}
+   :project: {{ global_doxygen_project }}
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if notes %}
+Notes
+-----
+
+{{ notes }}
+{% endif %}
+
+{% if see_also %}
+See Also
+--------
+
+{% for item in see_also %}
+* {{ item }}
+{% endfor %}
+{% endif %}
+
+{% if references %}
+References
+----------
+
+{% for ref in references %}
+* {{ ref }}
+{% endfor %}
+{% endif %}
+
+{% if changelog %}
+Changelog
+---------
+
+{{ changelog }}
+{% endif %}
+
+{% if examples_dir %}
+Additional Examples
+-------------------
+
+Examples can be found in the ``{{ examples_dir }}`` directory.
+{% endif %}
+
+{% if custom_sections %}
+{% for section in custom_sections %}
+
+{{ section.title }}
+{{ '-' * (section.title|display_width) }}
+
+{{ section.content }}
+{% endfor %}
+{% endif %}
+
+{% if markdown_includes %}
+{% for markdown_content in markdown_includes %}
+
+{{ markdown_content }}
+{% endfor %}
+{% endif %}

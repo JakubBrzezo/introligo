@@ -56,7 +56,6 @@ HTML_DIR = BUILD_DIR / "html"
 
 # Default Introligo configuration file
 INTROLIGO_CONFIG = DOCS_DIR / "composition" / "introligo_config.yaml"
-INTROLIGO_SCRIPT = PROJECT_ROOT / "introligo.py"
 
 # Global flag for clean shutdown
 _shutdown_requested: bool = False
@@ -163,6 +162,7 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
     Note:
         Creates the generated directory structure for Sphinx documentation.
         Uses the configuration file to generate hierarchical RST files.
+        Now uses the introligo package module instead of a script.
     """
     if skip:
         print("⏭️  Skipping Introligo generation (--skip-introligo flag)")
@@ -172,11 +172,6 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
         return False
 
     config_path = config_file or INTROLIGO_CONFIG
-
-    # Check if Introligo script exists
-    if not INTROLIGO_SCRIPT.exists():
-        print(f"⛔ Introligo script not found at {INTROLIGO_SCRIPT}")
-        return False
 
     # Check if configuration file exists
     if not config_path.exists():
@@ -188,10 +183,11 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
     print(f"  📄 Config: {config_path}")
     print(f"  📁 Output: {DOCS_DIR}")
 
-    # Run Introligo with Python
+    # Run Introligo as a Python module
+    # This works whether introligo is installed via pip or running from source
     cmd = [
         sys.executable,
-        str(INTROLIGO_SCRIPT),
+        "-m", "introligo",
         str(config_path),
         "-o", str(DOCS_DIR)
     ]

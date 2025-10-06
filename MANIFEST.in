@@ -1,0 +1,21 @@
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+
+# Include package data
+recursive-include introligo/templates *.jinja2
+
+# Include assets
+recursive-include _assets *.png *.ico
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude *.dylib
+
+# Exclude documentation build files
+prune docs/_build
+prune docs/generated

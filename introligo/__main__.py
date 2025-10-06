@@ -490,6 +490,12 @@ class IntroligoGenerator:
         Returns:
             Default template string with support for rich content sections.
         """
+        # Load template from package resources
+        template_path = Path(__file__).parent / 'templates' / 'default.jinja2'
+        if template_path.exists():
+            return template_path.read_text(encoding='utf-8')
+
+        # Fallback to inline template if file not found
         return """{{ title }}
 {{ '=' * (title|display_width) }}
 

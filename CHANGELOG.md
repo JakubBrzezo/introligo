@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2025-10-06
 
 ### Added
+- **PyPI Package Structure** - Restructured as a proper Python package
+  - Created `introligo/` package directory with proper module structure
+  - Added `pyproject.toml` for modern Python packaging (PEP 621)
+  - Added `setup.py` for backwards compatibility
+  - Added `MANIFEST.in` for including non-Python files
+  - Extracted Jinja2 template to `introligo/templates/default.jinja2`
+  - Created `__init__.py` with public API exports
+  - Added command-line entry point: `introligo` command
+  - Added optional dependencies groups: docs, cpp, dev
+  - Created `PUBLISHING.md` with PyPI publishing guide
+  - Created `PACKAGE_STRUCTURE.md` documenting package structure
 - **Markdown file inclusion support** - Include external markdown files in documentation
   - Automatic markdown to RST conversion
   - Support for headers (H1-H4), code blocks, and text formatting
@@ -23,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Troubleshooting guide
 
 ### Changed
+- **Package Structure** - Reorganized for PyPI distribution
+  - Moved main code from `introligo.py` to `introligo/__main__.py`
+  - Template now loads from `introligo/templates/default.jinja2`
+  - Kept original `introligo.py` for backwards compatibility
+  - Updated `docs/preview.py` to use `python -m introligo` instead of script path
 - Improved `get_relative_path_from()` method for correct toctree path generation
 - Enhanced `count_display_width()` function with comprehensive emoji range coverage
 - Updated YAML configuration reference to clarify `markdown_includes` usage for Changelog
