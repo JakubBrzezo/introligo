@@ -23,25 +23,30 @@ def read_version():
     """
     try:
         # prefer exact tag if HEAD is on a tag
-        exact = subprocess.check_output(
-            ["git", "describe", "--tags", "--exact-match"],
-            stderr=subprocess.DEVNULL,
-            text=True
-        ).lstrip("v").strip()
+        exact = (
+            subprocess.check_output(
+                ["git", "describe", "--tags", "--exact-match"], stderr=subprocess.DEVNULL, text=True
+            )
+            .lstrip("v")
+            .strip()
+        )
         if exact:
             return exact
     except Exception:
         pass
     try:
         # otherwise – last tag (e.g. v1.1.0)
-        last = subprocess.check_output(
-            ["git", "describe", "--tags", "--abbrev=0"],
-            stderr=subprocess.DEVNULL,
-            text=True
-        ).lstrip("v").strip()
+        last = (
+            subprocess.check_output(
+                ["git", "describe", "--tags", "--abbrev=0"], stderr=subprocess.DEVNULL, text=True
+            )
+            .lstrip("v")
+            .strip()
+        )
         return last
     except Exception:
         return "1.1.0"
+
 
 # -- Paths --------------------------------------------------------------------
 DOCS_DIR = Path(__file__).resolve().parent
@@ -82,7 +87,6 @@ html_favicon = str(PROJECT_ROOT / "_assets" / "favicon.ico")
 
 html_theme_options = {
     "sidebar_hide_name": False,
-
     # LIGHT MODE - Celin color palette
     "light_css_variables": {
         # Celin palette variables
@@ -131,44 +135,37 @@ html_theme_options = {
         "--echo-of-mars-3": "#FF4D6D",
         "--echo-of-mars-4": "#FF6088",
         "--echo-of-mars-5": "#FF73A3",
-
         # Furo theme variables mapped to Celin colors
-        "color-brand-primary": "#3A7DFF",         # cosmic-dawn-3
-        "color-brand-content": "#2DE2E6",         # clouds-of-uranus-3
-        "color-background-primary": "#F4F7FA",    # pulsar-light-3
+        "color-brand-primary": "#3A7DFF",  # cosmic-dawn-3
+        "color-brand-content": "#2DE2E6",  # clouds-of-uranus-3
+        "color-background-primary": "#F4F7FA",  # pulsar-light-3
         "color-background-secondary": "#FFFFFF",
-        "color-foreground-primary": "#0B1D3A",    # intergalactic-space-3
-        "color-foreground-secondary": "#08162C",   # intergalactic-space-2
-
+        "color-foreground-primary": "#0B1D3A",  # intergalactic-space-3
+        "color-foreground-secondary": "#08162C",  # intergalactic-space-2
         # Sidebar colors
-        "color-sidebar-background": "#F4F7FA",     # pulsar-light-3
+        "color-sidebar-background": "#F4F7FA",  # pulsar-light-3
         "color-sidebar-background-border": "#E5E5E5",
         "color-sidebar-item-background--current": "#3A7DFF",  # cosmic-dawn-3
-        "color-sidebar-item-background--hover": "#1D3E80",    # cosmic-dawn-1
-        "color-sidebar-link-text": "#0B1D3A",     # intergalactic-space-3
+        "color-sidebar-item-background--hover": "#1D3E80",  # cosmic-dawn-1
+        "color-sidebar-link-text": "#0B1D3A",  # intergalactic-space-3
         "color-sidebar-link-text--top-level": "#0B1D3A",
-
         # Links and interactive elements
-        "color-link": "#3A7DFF",                  # cosmic-dawn-3
-        "color-link--hover": "#2DE2E6",           # clouds-of-uranus-3
+        "color-link": "#3A7DFF",  # cosmic-dawn-3
+        "color-link--hover": "#2DE2E6",  # clouds-of-uranus-3
         "color-link-underline": "#3A7DFF",
         "color-link-underline--hover": "#2DE2E6",
-
         # Code blocks
         "color-inline-code-background": "#EEF2F7",
         "color-inline-code-foreground": "#0B1D3A",
-
         # Headers and navigation
         "color-header-background": "#F4F7FA",
         "color-header-border": "#E5E5E5",
         "color-header-text": "#0B1D3A",
-
         # Additional elements
         "color-admonition-background": "#EEF7FF",
         "color-admonition-title-background": "#3A7DFF",
         "color-admonition-title": "#FFFFFF",
     },
-
     # DARK MODE - Celin color palette
     "dark_css_variables": {
         # Same Celin palette variables (inherited)
@@ -217,41 +214,35 @@ html_theme_options = {
         "--echo-of-mars-3": "#FF4D6D",
         "--echo-of-mars-4": "#FF6088",
         "--echo-of-mars-5": "#FF73A3",
-
         # Dark mode Furo variables - deep space theme
-        "color-brand-primary": "#3A7DFF",         # cosmic-dawn-3 (same for visibility)
-        "color-brand-content": "#2DE2E6",         # clouds-of-uranus-3
-        "color-background-primary": "#0B1D3A",    # intergalactic-space-3 (dark)
-        "color-background-secondary": "#08162C",   # intergalactic-space-2 (darker)
-        "color-foreground-primary": "#F4F7FA",    # pulsar-light-3 (light text)
+        "color-brand-primary": "#3A7DFF",  # cosmic-dawn-3 (same for visibility)
+        "color-brand-content": "#2DE2E6",  # clouds-of-uranus-3
+        "color-background-primary": "#0B1D3A",  # intergalactic-space-3 (dark)
+        "color-background-secondary": "#08162C",  # intergalactic-space-2 (darker)
+        "color-foreground-primary": "#F4F7FA",  # pulsar-light-3 (light text)
         "color-foreground-secondary": "#DEE5EA",
-
         # Dark sidebar
-        "color-sidebar-background": "#08162C",     # intergalactic-space-2
+        "color-sidebar-background": "#08162C",  # intergalactic-space-2
         "color-sidebar-background-border": "#1A2B47",
         "color-sidebar-item-background--current": "#3A7DFF",  # cosmic-dawn-3
-        "color-sidebar-item-background--hover": "#102C57",    # intergalactic-space-5
-        "color-sidebar-link-text": "#F4F7FA",     # pulsar-light-3
+        "color-sidebar-item-background--hover": "#102C57",  # intergalactic-space-5
+        "color-sidebar-link-text": "#F4F7FA",  # pulsar-light-3
         "color-sidebar-link-text--top-level": "#F4F7FA",
-
         # Dark links
-        "color-link": "#3A7DFF",                  # cosmic-dawn-3
-        "color-link--hover": "#2DE2E6",           # clouds-of-uranus-3
+        "color-link": "#3A7DFF",  # cosmic-dawn-3
+        "color-link--hover": "#2DE2E6",  # clouds-of-uranus-3
         "color-link-underline": "#3A7DFF",
         "color-link-underline--hover": "#2DE2E6",
-
         # Dark code blocks
         "color-inline-code-background": "#102953",
         "color-inline-code-foreground": "#F4F7FA",
-
         # Dark headers
         "color-header-background": "#08162C",
         "color-header-border": "#1A2B47",
         "color-header-text": "#F4F7FA",
-
         # Dark additional elements
         "color-admonition-background": "#102953",
         "color-admonition-title-background": "#3A7DFF",
         "color-admonition-title": "#FFFFFF",
-    }
+    },
 }

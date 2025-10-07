@@ -123,7 +123,7 @@ import yaml
 from jinja2 import Environment, Template
 
 # Configure logging
-logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -145,7 +145,7 @@ class IncludeLoader(yaml.SafeLoader):
         self._root_dir = Path.cwd()
 
         # Track the directory of the current file for relative includes
-        if hasattr(stream, 'name'):
+        if hasattr(stream, "name"):
             self._current_file = Path(stream.name).resolve()
             self._root_dir = self._current_file.parent
 
@@ -169,7 +169,7 @@ def include_constructor(loader: IncludeLoader, node: yaml.Node) -> Any:
     include_path = loader.construct_scalar(node)
 
     # Resolve path relative to the current file's directory
-    if hasattr(loader, '_root_dir'):
+    if hasattr(loader, "_root_dir"):
         full_path = (loader._root_dir / include_path).resolve()
     else:
         full_path = Path(include_path).resolve()
@@ -181,16 +181,16 @@ def include_constructor(loader: IncludeLoader, node: yaml.Node) -> Any:
 
     # Load the included file with the same loader to support nested includes
     try:
-        with open(full_path, encoding='utf-8') as f:
+        with open(full_path, encoding="utf-8") as f:
             return yaml.load(f, Loader=IncludeLoader)
     except yaml.YAMLError as e:
-        raise IntroligoError(f"Invalid YAML in included file {full_path}: {e}")
+        raise IntroligoError(f"Invalid YAML in included file {full_path}: {e}") from e
     except Exception as e:
-        raise IntroligoError(f"Error loading included file {full_path}: {e}")
+        raise IntroligoError(f"Error loading included file {full_path}: {e}") from e
 
 
 # Register the include constructor
-yaml.add_constructor('!include', include_constructor, IncludeLoader)
+yaml.add_constructor("!include", include_constructor, IncludeLoader)
 
 
 class IntroligoError(Exception):
@@ -236,13 +236,13 @@ def slugify(text: str) -> str:
     Returns:
         ASCII-safe slug suitable for filenames and URLs.
     """
-    ascii_text = unicodedata.normalize('NFKD', text)
-    ascii_text = ascii_text.encode('ascii', 'ignore').decode('ascii')
-    slug = re.sub(r'[^a-zA-Z0-9\s\-_]', '', ascii_text.lower())
-    slug = re.sub(r'[\s\-]+', '_', slug)
-    slug = re.sub(r'^_+|_+$', '', slug)
-    slug = re.sub(r'_+', '_', slug)
-    return slug or 'unnamed'
+    ascii_text = unicodedata.normalize("NFKD", text)
+    ascii_text = ascii_text.encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-zA-Z0-9\s\-_]", "", ascii_text.lower())
+    slug = re.sub(r"[\s\-]+", "_", slug)
+    slug = re.sub(r"^_+|_+$", "", slug)
+    slug = re.sub(r"_+", "_", slug)
+    return slug or "unnamed"
 
 
 def count_display_width(text: str) -> int:
@@ -263,30 +263,32 @@ def count_display_width(text: str) -> int:
     for char in text:
         code = ord(char)
         # Common emoji ranges - comprehensive coverage
-        if (0x1F300 <= code <= 0x1F9FF or  # Misc Symbols and Pictographs + Supplemental
-            0x2600 <= code <= 0x26FF or    # Misc symbols
-            0x2700 <= code <= 0x27BF or    # Dingbats
-            0xFE00 <= code <= 0xFE0F or    # Variation selectors
-            0x1F000 <= code <= 0x1F02F or  # Additional symbols
-            0x1F600 <= code <= 0x1F64F or  # Emoticons
-            0x1F680 <= code <= 0x1F6FF or  # Transport and Map
-            0x1F900 <= code <= 0x1F9FF or  # Supplemental Symbols and Pictographs
-            code == 0x2B50 or              # Star
-            code == 0x2705 or              # Check mark
-            code == 0x274C or              # Cross mark
-            code == 0x2716 or              # Heavy multiplication X
-            code == 0x2714 or              # Heavy check mark
-            code == 0x2728 or              # Sparkles
-            code == 0x203C or              # Double exclamation
-            code == 0x2049 or              # Exclamation question
-            code == 0x25B6 or              # Play button
-            code == 0x25C0 or              # Reverse button
-            code == 0x2139 or              # Information
-            0x2194 <= code <= 0x2199 or    # Arrows
-            0x21A9 <= code <= 0x21AA or    # Return arrows
-            0x231A <= code <= 0x231B or    # Watch + Hourglass
-            0x23E9 <= code <= 0x23F3 or    # Media buttons
-            0x23F8 <= code <= 0x23FA):     # Media buttons continued
+        if (
+            0x1F300 <= code <= 0x1F9FF  # Misc Symbols and Pictographs + Supplemental
+            or 0x2600 <= code <= 0x26FF  # Misc symbols
+            or 0x2700 <= code <= 0x27BF  # Dingbats
+            or 0xFE00 <= code <= 0xFE0F  # Variation selectors
+            or 0x1F000 <= code <= 0x1F02F  # Additional symbols
+            or 0x1F600 <= code <= 0x1F64F  # Emoticons
+            or 0x1F680 <= code <= 0x1F6FF  # Transport and Map
+            or 0x1F900 <= code <= 0x1F9FF  # Supplemental Symbols and Pictographs
+            or code == 0x2B50  # Star
+            or code == 0x2705  # Check mark
+            or code == 0x274C  # Cross mark
+            or code == 0x2716  # Heavy multiplication X
+            or code == 0x2714  # Heavy check mark
+            or code == 0x2728  # Sparkles
+            or code == 0x203C  # Double exclamation
+            or code == 0x2049  # Exclamation question
+            or code == 0x25B6  # Play button
+            or code == 0x25C0  # Reverse button
+            or code == 0x2139  # Information
+            or 0x2194 <= code <= 0x2199  # Arrows
+            or 0x21A9 <= code <= 0x21AA  # Return arrows
+            or 0x231A <= code <= 0x231B  # Watch + Hourglass
+            or 0x23E9 <= code <= 0x23F3  # Media buttons
+            or 0x23F8 <= code <= 0x23FA
+        ):  # Media buttons continued
             emoji_count += 1
 
     # Add extra character for each emoji (emojis display wider)
@@ -297,7 +299,7 @@ def count_display_width(text: str) -> int:
 class PageNode:
     """Represents a documentation page in the hierarchy."""
 
-    def __init__(self, page_id: str, config: Dict[str, Any], parent: Optional['PageNode'] = None):
+    def __init__(self, page_id: str, config: Dict[str, Any], parent: Optional["PageNode"] = None):
         """Initialize a page node in the documentation tree.
 
         Args:
@@ -310,7 +312,7 @@ class PageNode:
         self.parent = parent
         self.children: List[PageNode] = []
 
-        self.title = config.get('title', page_id)
+        self.title = config.get("title", page_id)
         self.slug = slugify(self.title)
         self.path = Path(self.slug)
 
@@ -362,14 +364,14 @@ class PageNode:
         self_path = self.get_output_file(base_generated_dir)
         try:
             # Calculate path relative to the parent's directory
-            relative = self_path.relative_to(other_dir).with_suffix('')
+            relative = self_path.relative_to(other_dir).with_suffix("")
         except ValueError:
             # Fallback: try relative to base_generated_dir
             try:
-                relative = self_path.relative_to(base_generated_dir).with_suffix('')
+                relative = self_path.relative_to(base_generated_dir).with_suffix("")
             except ValueError:
-                relative = self_path.with_suffix('')
-        return str(relative).replace('\\', '/')
+                relative = self_path.with_suffix("")
+        return str(relative).replace("\\", "/")
 
     def is_leaf(self) -> bool:
         """Check if this node is a leaf (has no children).
@@ -385,7 +387,7 @@ class PageNode:
         Returns:
             True if the config specifies a module, False otherwise.
         """
-        return 'module' in self.config
+        return "module" in self.config
 
 
 class IntroligoGenerator:
@@ -397,7 +399,7 @@ class IntroligoGenerator:
         output_dir: Path,
         template_file: Optional[Path] = None,
         dry_run: bool = False,
-        strict: bool = False
+        strict: bool = False,
     ):
         """Initialize the Introligo generator.
 
@@ -431,22 +433,23 @@ class IntroligoGenerator:
         logger.info(f"📖 Loading configuration from {self.config_file}")
 
         try:
-            with open(self.config_file, encoding='utf-8') as f:
+            with open(self.config_file, encoding="utf-8") as f:
                 self.config = yaml.load(f, Loader=IncludeLoader)
         except yaml.YAMLError as e:
-            raise IntroligoError(f"Invalid YAML in {self.config_file}: {e}")
+            raise IntroligoError(f"Invalid YAML in {self.config_file}: {e}") from e
 
         if not isinstance(self.config, dict):
             raise IntroligoError("Configuration must be a YAML dictionary")
 
-        modules = self.config.get('modules')
+        modules = self.config.get("modules")
         if not isinstance(modules, dict):
             raise IntroligoError("Configuration must contain a 'modules' dictionary")
 
         # Load Doxygen configuration if present
-        if 'doxygen' in self.config:
-            self.doxygen_config = self.config['doxygen']
-            logger.info(f"✅ Loaded Doxygen configuration: {self.doxygen_config.get('project_name', 'default')}")
+        if "doxygen" in self.config:
+            self.doxygen_config = self.config["doxygen"]
+            project_name = self.doxygen_config.get("project_name", "default")
+            logger.info(f"✅ Loaded Doxygen configuration: {project_name}")
 
         logger.info(f"✅ Loaded configuration with {len(modules)} module(s)")
 
@@ -456,7 +459,7 @@ class IntroligoGenerator:
         Creates PageNode objects and establishes parent-child relationships
         based on the 'parent' field in each page's configuration.
         """
-        modules = self.config['modules']
+        modules = self.config["modules"]
         node_map: Dict[str, PageNode] = {}
         seen_slugs = set()
 
@@ -472,8 +475,8 @@ class IntroligoGenerator:
             node_map[page_id] = node
 
         root_nodes = []
-        for page_id, node in node_map.items():
-            parent_id = node.config.get('parent')
+        for _page_id, node in node_map.items():
+            parent_id = node.config.get("parent")
             if parent_id and parent_id in node_map:
                 parent_node = node_map[parent_id]
                 node.parent = parent_node
@@ -491,9 +494,9 @@ class IntroligoGenerator:
             Default template string with support for rich content sections.
         """
         # Load template from package resources
-        template_path = Path(__file__).parent / 'templates' / 'default.jinja2'
+        template_path = Path(__file__).parent / "templates" / "default.jinja2"
         if template_path.exists():
-            return template_path.read_text(encoding='utf-8')
+            return template_path.read_text(encoding="utf-8")
 
         # Fallback to inline template if file not found
         return """{{ title }}
@@ -581,7 +584,11 @@ Subpages
 {% endfor %}
 {% endif %}
 
-{% if module or doxygen_file or doxygen_files or doxygen_class or doxygen_function or doxygen_namespace %}
+{% set has_dox = (
+    doxygen_file or doxygen_files or doxygen_class or
+    doxygen_function or doxygen_namespace
+) -%}
+{% if module or has_dox -%}
 {% if not api_reference %}
 API Documentation
 -----------------
@@ -688,7 +695,7 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
             Configured Jinja2 Template object with custom filters.
         """
         if self.template_file and self.template_file.exists():
-            template_content = self.template_file.read_text(encoding='utf-8')
+            template_content = self.template_file.read_text(encoding="utf-8")
             logger.info(f"📄 Using custom template: {self.template_file}")
         else:
             template_content = self.get_default_template()
@@ -696,7 +703,7 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
 
         # Create environment with custom filter
         env = Environment()
-        env.filters['display_width'] = count_display_width
+        env.filters["display_width"] = count_display_width
 
         return env.from_string(template_content)
 
@@ -717,36 +724,39 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         if isinstance(examples, list):
             for example in examples:
                 if isinstance(example, dict):
-                    processed.append({
-                        'title': example.get('title', 'Example'),
-                        'description': example.get('description', ''),
-                        'language': example.get('language', 'python'),
-                        'code': example.get('code', '')
-                    })
+                    processed.append(
+                        {
+                            "title": example.get("title", "Example"),
+                            "description": example.get("description", ""),
+                            "language": example.get("language", "python"),
+                            "code": example.get("code", ""),
+                        }
+                    )
                 elif isinstance(example, str):
                     # Simple string example
-                    processed.append({
-                        'title': 'Example',
-                        'description': '',
-                        'language': 'python',
-                        'code': example
-                    })
+                    processed.append(
+                        {
+                            "title": "Example",
+                            "description": "",
+                            "language": "python",
+                            "code": example,
+                        }
+                    )
         elif isinstance(examples, dict):
             # Single example as dict
-            processed.append({
-                'title': examples.get('title', 'Example'),
-                'description': examples.get('description', ''),
-                'language': examples.get('language', 'python'),
-                'code': examples.get('code', '')
-            })
+            processed.append(
+                {
+                    "title": examples.get("title", "Example"),
+                    "description": examples.get("description", ""),
+                    "language": examples.get("language", "python"),
+                    "code": examples.get("code", ""),
+                }
+            )
         elif isinstance(examples, str):
             # Single example as string
-            processed.append({
-                'title': 'Example',
-                'description': '',
-                'language': 'python',
-                'code': examples
-            })
+            processed.append(
+                {"title": "Example", "description": "", "language": "python", "code": examples}
+            )
 
         return processed
 
@@ -771,13 +781,13 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
             raise IntroligoError(f"Markdown file not found: {md_path_obj}")
 
         try:
-            content = md_path_obj.read_text(encoding='utf-8')
+            content = md_path_obj.read_text(encoding="utf-8")
             # Convert basic markdown to RST
             content = self._convert_markdown_to_rst(content)
             logger.info(f"  📄 Included markdown: {md_path_obj}")
             return content
         except Exception as e:
-            raise IntroligoError(f"Error reading markdown file {md_path_obj}: {e}")
+            raise IntroligoError(f"Error reading markdown file {md_path_obj}: {e}") from e
 
     def _convert_markdown_to_rst(self, markdown: str) -> str:
         """Convert basic markdown syntax to reStructuredText.
@@ -788,10 +798,10 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         Returns:
             RST-compatible content.
         """
-        lines = markdown.split('\n')
+        lines = markdown.split("\n")
         result = []
         in_code_block = False
-        code_language = ''
+        code_language = ""
         first_h1_found = False
 
         i = 0
@@ -799,69 +809,69 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
             line = lines[i]
 
             # Handle code blocks
-            if line.strip().startswith('```'):
+            if line.strip().startswith("```"):
                 if not in_code_block:
                     # Start of code block
                     in_code_block = True
-                    code_language = line.strip()[3:].strip() or 'text'
-                    result.append('')
-                    result.append(f'.. code-block:: {code_language}')
-                    result.append('')
+                    code_language = line.strip()[3:].strip() or "text"
+                    result.append("")
+                    result.append(f".. code-block:: {code_language}")
+                    result.append("")
                 else:
                     # End of code block
                     in_code_block = False
-                    result.append('')
+                    result.append("")
                 i += 1
                 continue
 
             if in_code_block:
                 # Inside code block - indent by 3 spaces
-                result.append('   ' + line)
+                result.append("   " + line)
                 i += 1
                 continue
 
             # Handle headers
-            if line.startswith('# '):
+            if line.startswith("# "):
                 # H1
                 title = line[2:].strip()
                 # Skip first H1 if it's "Changelog"
-                if not first_h1_found and title.lower() == 'changelog':
+                if not first_h1_found and title.lower() == "changelog":
                     first_h1_found = True
                     i += 1
                     continue
                 first_h1_found = True
-                result.append('')
+                result.append("")
                 result.append(title)
-                result.append('=' * len(title))
-                result.append('')
-            elif line.startswith('## '):
+                result.append("=" * len(title))
+                result.append("")
+            elif line.startswith("## "):
                 # H2
                 title = line[3:].strip()
-                result.append('')
+                result.append("")
                 result.append(title)
-                result.append('-' * len(title))
-                result.append('')
-            elif line.startswith('### '):
+                result.append("-" * len(title))
+                result.append("")
+            elif line.startswith("### "):
                 # H3
                 title = line[4:].strip()
-                result.append('')
+                result.append("")
                 result.append(title)
-                result.append('~' * len(title))
-                result.append('')
-            elif line.startswith('#### '):
+                result.append("~" * len(title))
+                result.append("")
+            elif line.startswith("#### "):
                 # H4
                 title = line[5:].strip()
-                result.append('')
+                result.append("")
                 result.append(title)
-                result.append('^' * len(title))
-                result.append('')
+                result.append("^" * len(title))
+                result.append("")
             else:
                 # Regular line
                 result.append(line)
 
             i += 1
 
-        return '\n'.join(result)
+        return "\n".join(result)
 
     def generate_rst_content(self, node: PageNode, template: Template) -> str:
         """Generate RST content with enhanced features support.
@@ -881,22 +891,19 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
             for child in node.children:
                 current_output_dir = node.get_output_dir(self.generated_dir)
                 relative_path = child.get_relative_path_from(current_output_dir, self.generated_dir)
-                children_info.append({
-                    'title': child.title,
-                    'relative_path': relative_path
-                })
+                children_info.append({"title": child.title, "relative_path": relative_path})
 
         # Build context with all possible fields
         # Handle doxygen_files (list) or doxygen_file (single string)
-        doxygen_file = config.get('doxygen_file', '')
-        doxygen_files = config.get('doxygen_files', [])
+        doxygen_file = config.get("doxygen_file", "")
+        doxygen_files = config.get("doxygen_files", [])
 
         # If doxygen_file is set but doxygen_files is not, convert to list
         if doxygen_file and not doxygen_files:
             doxygen_files = [doxygen_file]
 
         # Process markdown includes
-        markdown_includes = config.get('markdown_includes', [])
+        markdown_includes = config.get("markdown_includes", [])
         if isinstance(markdown_includes, str):
             markdown_includes = [markdown_includes]
 
@@ -909,35 +916,35 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
                 logger.warning(f"⚠️  {e}")
 
         context = {
-            'title': node.title,
-            'module': config.get('module', ''),
-            'language': config.get('language', 'python'),
-            'doxygen_file': doxygen_file,
-            'doxygen_files': doxygen_files,
-            'doxygen_class': config.get('doxygen_class', ''),
-            'doxygen_function': config.get('doxygen_function', ''),
-            'doxygen_namespace': config.get('doxygen_namespace', ''),
-            'global_doxygen_project': self.doxygen_config.get('project_name', 'default'),
-            'description': config.get('description', ''),
-            'overview': config.get('overview', ''),
-            'features': config.get('features', []),
-            'installation': config.get('installation', ''),
-            'requirements': config.get('requirements', ''),
-            'usage_examples': self.process_usage_examples(config.get('usage_examples')),
-            'configuration': config.get('configuration', ''),
-            'api_reference': config.get('api_reference', ''),
-            'children': children_info,
-            'notes': config.get('notes', ''),
-            'see_also': config.get('see_also', []),
-            'references': config.get('references', []),
-            'changelog': config.get('changelog', ''),
-            'examples_dir': config.get('examples_dir', ''),
-            'custom_sections': config.get('custom_sections', []),
-            'markdown_includes': markdown_content
+            "title": node.title,
+            "module": config.get("module", ""),
+            "language": config.get("language", "python"),
+            "doxygen_file": doxygen_file,
+            "doxygen_files": doxygen_files,
+            "doxygen_class": config.get("doxygen_class", ""),
+            "doxygen_function": config.get("doxygen_function", ""),
+            "doxygen_namespace": config.get("doxygen_namespace", ""),
+            "global_doxygen_project": self.doxygen_config.get("project_name", "default"),
+            "description": config.get("description", ""),
+            "overview": config.get("overview", ""),
+            "features": config.get("features", []),
+            "installation": config.get("installation", ""),
+            "requirements": config.get("requirements", ""),
+            "usage_examples": self.process_usage_examples(config.get("usage_examples")),
+            "configuration": config.get("configuration", ""),
+            "api_reference": config.get("api_reference", ""),
+            "children": children_info,
+            "notes": config.get("notes", ""),
+            "see_also": config.get("see_also", []),
+            "references": config.get("references", []),
+            "changelog": config.get("changelog", ""),
+            "examples_dir": config.get("examples_dir", ""),
+            "custom_sections": config.get("custom_sections", []),
+            "markdown_includes": markdown_content,
         }
 
         # Clean up empty values, but keep language field
-        context = {k: v for k, v in context.items() if v or k == 'language'}
+        context = {k: v for k, v in context.items() if v or k == "language"}
 
         return template.render(context)
 
@@ -950,13 +957,13 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         Returns:
             Generated index.rst content as a string.
         """
-        index_config = self.config.get('index', {})
-        title = index_config.get('title', 'API Documentation')
-        description = index_config.get('description', 'Generated API documentation.')
-        overview = index_config.get('overview', '')
+        index_config = self.config.get("index", {})
+        title = index_config.get("title", "API Documentation")
+        description = index_config.get("description", "Generated API documentation.")
+        overview = index_config.get("overview", "")
 
         content = f"""{title}
-{'=' * count_display_width(title)}
+{"=" * count_display_width(title)}
 
 {description}
 
@@ -978,24 +985,30 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         # Add footer note
         content += """
 .. note::
-   This documentation was generated from yaml composition using the **Introligo** tool created by **WT Tech Jakub Brzezowski**.
+   This documentation was generated from yaml composition using the
+   **Introligo** tool created by **WT Tech Jakub Brzezowski**.
 
 """
 
         # Add any additional index sections
-        if 'custom_sections' in index_config:
-            for section in index_config['custom_sections']:
-                section_title = section.get('title', 'Section')
+        if "custom_sections" in index_config:
+            for section in index_config["custom_sections"]:
+                section_title = section.get("title", "Section")
                 content += f"""
 {section_title}
-{'-' * count_display_width(section_title)}
+{"-" * count_display_width(section_title)}
 
-{section.get('content', '')}
+{section.get("content", "")}
 """
 
         return content
 
-    def generate_all_nodes(self, nodes: List[PageNode], template: Template, strict: bool = False) -> Dict[str, Tuple[str, Path]]:
+    def generate_all_nodes(
+        self,
+        nodes: List[PageNode],
+        template: Template,
+        strict: bool = False,
+    ) -> Dict[str, Tuple[str, Path]]:
         """Generate all RST files for the page tree.
 
         Args:
@@ -1022,7 +1035,9 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
                     generated_files.update(child_files)
             except Exception as e:
                 if strict:
-                    raise IntroligoError(f"Strict mode: failed to generate {node.page_id}: {e}")
+                    raise IntroligoError(
+                        f"Strict mode: failed to generate {node.page_id}: {e}"
+                    ) from e
                 logger.error(f"⛔ Failed to generate {node.page_id}: {e}")
                 continue
         return generated_files
@@ -1042,9 +1057,9 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         logger.info("🔄 Generating RST files for page tree...")
         generated_files = self.generate_all_nodes(self.page_tree, template, self.strict)
 
-        if self.config.get('generate_index', True):
+        if self.config.get("generate_index", True):
             index_content = self.generate_index(self.page_tree)
-            index_path = self.output_dir / 'index.rst'
+            index_path = self.output_dir / "index.rst"
             generated_files[str(index_path)] = (index_content, index_path)
             logger.info("  📋 Generated: index.rst")
 
@@ -1064,7 +1079,7 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
 
         for content, full_path in generated_files.values():
             full_path.parent.mkdir(parents=True, exist_ok=True)
-            full_path.write_text(content, encoding='utf-8')
+            full_path.write_text(content, encoding="utf-8")
             logger.info(f"✅ Wrote: {full_path}")
 
     def generate_breathe_config(self) -> Optional[str]:
@@ -1076,8 +1091,8 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
         if not self.doxygen_config:
             return None
 
-        project_name = self.doxygen_config.get('project_name', 'default')
-        xml_path = self.doxygen_config.get('xml_path', '')
+        project_name = self.doxygen_config.get("project_name", "default")
+        xml_path = self.doxygen_config.get("xml_path", "")
 
         if not xml_path:
             return None
@@ -1115,19 +1130,20 @@ Examples:
   %(prog)s config.yaml -o docs
   %(prog)s config.yaml -o docs --dry-run
   %(prog)s config.yaml -o docs -t custom_template.jinja2
-        """
+        """,
     )
-    parser.add_argument('config', type=Path, help='YAML configuration file')
-    parser.add_argument('-o', '--output', type=Path, default=Path('docs'),
-                        help='Output directory (default: docs)')
-    parser.add_argument('-t', '--template', type=Path,
-                        help='Custom Jinja2 template file')
-    parser.add_argument('--dry-run', action='store_true',
-                        help='Show what would be generated without creating files')
-    parser.add_argument('--strict', action='store_true',
-                        help='Fail immediately if any page fails to generate')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='Enable verbose output')
+    parser.add_argument("config", type=Path, help="YAML configuration file")
+    parser.add_argument(
+        "-o", "--output", type=Path, default=Path("docs"), help="Output directory (default: docs)"
+    )
+    parser.add_argument("-t", "--template", type=Path, help="Custom Jinja2 template file")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would be generated without creating files"
+    )
+    parser.add_argument(
+        "--strict", action="store_true", help="Fail immediately if any page fails to generate"
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()
 
@@ -1140,7 +1156,7 @@ Examples:
             output_dir=args.output,
             template_file=args.template,
             dry_run=args.dry_run,
-            strict=args.strict
+            strict=args.strict,
         )
         generated_files = generator.generate_all()
         generator.write_files(generated_files)
@@ -1151,12 +1167,13 @@ Examples:
             generator.generated_dir.mkdir(parents=True, exist_ok=True)
 
             # Create __init__.py to make it a package
-            init_path = generator.generated_dir / '__init__.py'
+            init_path = generator.generated_dir / "__init__.py"
             if not init_path.exists():
-                init_path.write_text('"""Auto-generated documentation files."""\n', encoding='utf-8')
+                init_content = '"""Auto-generated documentation files."""\n'
+                init_path.write_text(init_content, encoding="utf-8")
 
-            breathe_config_path = generator.generated_dir / 'breathe_config.py'
-            breathe_config_path.write_text(breathe_config, encoding='utf-8')
+            breathe_config_path = generator.generated_dir / "breathe_config.py"
+            breathe_config_path.write_text(breathe_config, encoding="utf-8")
             logger.info(f"📝 Generated Breathe configuration: {breathe_config_path}")
             logger.info("💡 Import this in your conf.py: from generated.breathe_config import *")
 
@@ -1174,6 +1191,7 @@ Examples:
         logger.error(f"⛔ Unexpected error: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

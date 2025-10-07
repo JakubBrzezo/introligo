@@ -37,6 +37,7 @@ Attributes:
 """
 
 import argparse
+import contextlib
 import http.server
 import os
 import signal
@@ -58,7 +59,7 @@ INTROLIGO_CONFIG = DOCS_DIR / "composition" / "introligo_config.yaml"
 
 # Global flag for clean shutdown
 _shutdown_requested: bool = False
-_httpd: Optional['GracefulHTTPServer'] = None
+_httpd: Optional["GracefulHTTPServer"] = None
 
 
 def signal_handler(signum: int, frame: Optional[object]) -> None:
@@ -73,10 +74,9 @@ def signal_handler(signum: int, frame: Optional[object]) -> None:
         Uses threading to avoid blocking the signal handler.
     """
     global _shutdown_requested
-    signal_name = {
-        signal.SIGINT: "SIGINT (Ctrl+C)",
-        signal.SIGTERM: "SIGTERM"
-    }.get(signum, f"Signal {signum}")
+    signal_name = {signal.SIGINT: "SIGINT (Ctrl+C)", signal.SIGTERM: "SIGTERM"}.get(
+        signum, f"Signal {signum}"
+    )
 
     print(f"\n🛑 Received {signal_name}, shutting down gracefully...")
     _shutdown_requested = True
@@ -102,7 +102,7 @@ def setup_signal_handlers() -> None:
     """
     signal.signal(signal.SIGINT, signal_handler)
     # Handle SIGTERM on Unix systems
-    if hasattr(signal, 'SIGTERM'):
+    if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, signal_handler)
 
 
@@ -132,7 +132,7 @@ def run(cmd: list[Union[str, Path]], cwd: Optional[Path] = None) -> Tuple[int, s
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
-            timeout=300  # 5 minute timeout
+            timeout=300,  # 5 minute timeout
         )
         if proc.stdout:
             print(proc.stdout)
@@ -184,12 +184,7 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
 
     # Run Introligo as a Python module
     # This works whether introligo is installed via pip or running from source
-    cmd = [
-        sys.executable,
-        "-m", "introligo",
-        str(config_path),
-        "-o", str(DOCS_DIR)
-    ]
+    cmd = [sys.executable, "-m", "introligo", str(config_path), "-o", str(DOCS_DIR)]
 
     code, out = run(cmd, cwd=PROJECT_ROOT)
 
@@ -231,13 +226,7 @@ def run_sphinx() -> bool:
         return False
 
     # -n => nitpicky checks, -b html => HTML builder
-    code, out = run([
-        "sphinx-build",
-        "-n",
-        "-b", "html",
-        str(DOCS_DIR),
-        str(HTML_DIR)
-    ])
+    code, out = run(["sphinx-build", "-n", "-b", "html", str(DOCS_DIR), str(HTML_DIR)])
 
     if code != 0:
         print("⛔ Sphinx build failed")
@@ -265,8 +254,7 @@ class QuietHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             Only logs if the response contains error status codes.
         """
         # Only log errors and important messages
-        if any(code in args[1] if len(args) > 1 else ''
-               for code in ['404', '500', '403']):
+        if any(code in args[1] if len(args) > 1 else "" for code in ["404", "500", "403"]):
             super().log_message(format, *args)
 
 
@@ -285,17 +273,20 @@ class GracefulHTTPServer(http.server.ThreadingHTTPServer):
     allow_reuse_address = True
     timeout = 1.0  # Socket timeout for serve_forever
 
-    def __init__(self, server_address: Tuple[str, int],
-                 RequestHandlerClass: type,
-                 bind_and_activate: bool = True):
+    def __init__(
+        self,
+        server_address: Tuple[str, int],
+        request_handler_class: type,  # noqa: N803
+        bind_and_activate: bool = True,
+    ):
         """Initialize the graceful HTTP server.
 
         Args:
             server_address: (host, port) tuple for server binding
-            RequestHandlerClass: Handler class for processing requests
+            request_handler_class: Handler class for processing requests
             bind_and_activate: Whether to bind and activate immediately
         """
-        super().__init__(server_address, RequestHandlerClass, bind_and_activate)
+        super().__init__(server_address, request_handler_class, bind_and_activate)
         self.shutdown_flag = threading.Event()
 
     def serve_forever(self, poll_interval: float = 0.5) -> None:
@@ -396,17 +387,13 @@ def serve_docs(port: Optional[int] = None) -> None:
     finally:
         # Cleanup
         if _httpd:
-            try:
+            with contextlib.suppress(Exception):
                 _httpd.server_close()
-            except Exception:
-                pass
             _httpd = None
 
         # Restore original directory
-        try:
+        with contextlib.suppress(Exception):
             os.chdir(old_cwd)
-        except Exception:
-            pass
 
         print("🔄 Server stopped, cleanup completed")
 
@@ -437,32 +424,29 @@ Examples:
   %(prog)s --config custom.yaml    # Use custom Introligo config
   %(prog)s --port 8080             # Serve on specific port
   %(prog)s --no-serve              # Build only, don't serve
-        """
+        """,
     )
 
     parser.add_argument(
         "--config",
         type=Path,
-        help=f"Path to Introligo YAML configuration (default: {INTROLIGO_CONFIG})"
+        help=f"Path to Introligo YAML configuration (default: {INTROLIGO_CONFIG})",
     )
 
     parser.add_argument(
         "--skip-introligo",
         action="store_true",
-        help="Skip Introligo documentation generation (use existing RST files)"
+        help="Skip Introligo documentation generation (use existing RST files)",
     )
 
     parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="Port for the documentation server (default: 8000)"
+        "--port", type=int, default=8000, help="Port for the documentation server (default: 8000)"
     )
 
     parser.add_argument(
         "--no-serve",
         action="store_true",
-        help="Build documentation but don't start the preview server"
+        help="Build documentation but don't start the preview server",
     )
 
     args = parser.parse_args()
