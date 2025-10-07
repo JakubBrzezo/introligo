@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Preview builder for Introligo documentation.
 
 This script provides a complete documentation build and preview pipeline:
@@ -37,14 +36,14 @@ Attributes:
     _httpd (Optional[GracefulHTTPServer]): Global reference to HTTP server
 """
 
+import argparse
 import http.server
 import os
 import signal
 import socket
-import sys
 import subprocess
+import sys
 import threading
-import argparse
 from pathlib import Path
 from typing import Optional, Tuple, Union
 

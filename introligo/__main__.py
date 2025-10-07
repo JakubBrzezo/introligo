@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Introligo - Enhanced YAML to reStructuredText generator for Sphinx documentation.
 
@@ -113,14 +112,15 @@ Requirements:
 """
 
 import argparse
-import sys
+import logging
 import re
+import sys
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 import yaml
-from jinja2 import Template, Environment
-import logging
+from jinja2 import Environment, Template
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
@@ -181,7 +181,7 @@ def include_constructor(loader: IncludeLoader, node: yaml.Node) -> Any:
 
     # Load the included file with the same loader to support nested includes
     try:
-        with open(full_path, 'r', encoding='utf-8') as f:
+        with open(full_path, encoding='utf-8') as f:
             return yaml.load(f, Loader=IncludeLoader)
     except yaml.YAMLError as e:
         raise IntroligoError(f"Invalid YAML in included file {full_path}: {e}")
@@ -271,17 +271,17 @@ def count_display_width(text: str) -> int:
             0x1F600 <= code <= 0x1F64F or  # Emoticons
             0x1F680 <= code <= 0x1F6FF or  # Transport and Map
             0x1F900 <= code <= 0x1F9FF or  # Supplemental Symbols and Pictographs
-            0x2B50 == code or              # Star
-            0x2705 == code or              # Check mark
-            0x274C == code or              # Cross mark
-            0x2716 == code or              # Heavy multiplication X
-            0x2714 == code or              # Heavy check mark
-            0x2728 == code or              # Sparkles
-            0x203C == code or              # Double exclamation
-            0x2049 == code or              # Exclamation question
-            0x25B6 == code or              # Play button
-            0x25C0 == code or              # Reverse button
-            0x2139 == code or              # Information
+            code == 0x2B50 or              # Star
+            code == 0x2705 or              # Check mark
+            code == 0x274C or              # Cross mark
+            code == 0x2716 or              # Heavy multiplication X
+            code == 0x2714 or              # Heavy check mark
+            code == 0x2728 or              # Sparkles
+            code == 0x203C or              # Double exclamation
+            code == 0x2049 or              # Exclamation question
+            code == 0x25B6 or              # Play button
+            code == 0x25C0 or              # Reverse button
+            code == 0x2139 or              # Information
             0x2194 <= code <= 0x2199 or    # Arrows
             0x21A9 <= code <= 0x21AA or    # Return arrows
             0x231A <= code <= 0x231B or    # Watch + Hourglass
@@ -308,7 +308,7 @@ class PageNode:
         self.page_id = page_id
         self.config = config
         self.parent = parent
-        self.children: List['PageNode'] = []
+        self.children: List[PageNode] = []
 
         self.title = config.get('title', page_id)
         self.slug = slugify(self.title)
@@ -331,7 +331,7 @@ class PageNode:
         Returns:
             Full path to the output directory for this page.
         """
-        lineage = []
+        lineage: List[str] = []
         node = self.parent
         while node:
             lineage.insert(0, node.slug)
@@ -431,7 +431,7 @@ class IntroligoGenerator:
         logger.info(f"📖 Loading configuration from {self.config_file}")
 
         try:
-            with open(self.config_file, 'r', encoding='utf-8') as f:
+            with open(self.config_file, encoding='utf-8') as f:
                 self.config = yaml.load(f, Loader=IncludeLoader)
         except yaml.YAMLError as e:
             raise IntroligoError(f"Invalid YAML in {self.config_file}: {e}")

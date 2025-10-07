@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Introligo - YAML to reStructuredText documentation generator for Sphinx.
 
@@ -19,10 +18,10 @@ __license__ = "Apache-2.0"
 
 # Import main classes for public API
 from introligo.__main__ import (
-    IntroligoGenerator,
-    IntroligoError,
-    PageNode,
     IncludeLoader,
+    IntroligoError,
+    IntroligoGenerator,
+    PageNode,
     main,
 )
 

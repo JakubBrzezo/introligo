@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Setup script for Introligo.
 
@@ -10,7 +9,7 @@ Modern installations should use pyproject.toml.
 from setuptools import setup
 
 # Read the long description from README
-with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(

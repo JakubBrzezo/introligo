@@ -22,7 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **GitHub Actions CI/CD** - Automated deployment workflows
   - Added `.github/workflows/deploy-docs.yml` for GitHub Pages deployment after tagging.
   - Documentation auto-deploys to GitHub Pages on tag push
-  - Package auto-publishes to TestPyPI and PyPI on tag push
 - **Markdown file inclusion support** - Include external markdown files in documentation
   - Automatic markdown to RST conversion
   - Support for headers (H1-H4), code blocks, and text formatting
@@ -103,5 +102,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.1.0]: https://github.com/JakubBrzezo/introligo/compare/1.0.0...v1.1.0
+[1.1.0]: https://github.com/JakubBrzezo/introligo/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/JakubBrzezo/introligo/releases/tag/v1.0.0

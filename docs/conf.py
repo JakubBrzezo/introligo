@@ -5,11 +5,12 @@
 # This is an open-source component of the Celin Project
 
 from __future__ import annotations
-from datetime import datetime
+
 import subprocess
-import os
 import sys
+from datetime import datetime
 from pathlib import Path
+
 
 def read_version():
     """Read version from git tags, fallback to '1.1.0'.
