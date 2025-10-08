@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from introligo import IntroligoError, main
+from introligo import main
 
 
 class TestMainCLI:
@@ -227,15 +227,13 @@ class TestMainCLI:
         with patch(
             "introligo.__main__.IntroligoGenerator.generate_all",
             side_effect=RuntimeError("Unexpected error"),
-        ):
-            with patch("traceback.print_exc") as mock_traceback:
-                with patch.object(sys, "argv", test_args):
-                    with pytest.raises(SystemExit) as exc_info:
-                        main()
+        ), patch("traceback.print_exc") as mock_traceback, patch.object(sys, "argv", test_args):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
 
-                    assert exc_info.value.code == 1
-                    # Should print traceback in verbose mode
-                    mock_traceback.assert_called_once()
+            assert exc_info.value.code == 1
+            # Should print traceback in verbose mode
+            mock_traceback.assert_called_once()
 
 
 class TestMainEdgeCases:
@@ -256,6 +254,5 @@ class TestMainEdgeCases:
         """Test main() without arguments."""
         test_args = ["introligo"]
 
-        with patch.object(sys, "argv", test_args):
-            with pytest.raises(SystemExit):
-                main()
+        with patch.object(sys, "argv", test_args), pytest.raises(SystemExit):
+            main()

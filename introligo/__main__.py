@@ -166,7 +166,7 @@ def include_constructor(loader: IncludeLoader, node: yaml.Node) -> Any:
         IntroligoError: If the included file cannot be loaded
     """
     # Get the path from the node
-    include_path = loader.construct_scalar(node)
+    include_path = loader.construct_scalar(node)  # type: ignore[arg-type]
 
     # Resolve path relative to the current file's directory
     if hasattr(loader, "_root_dir"):

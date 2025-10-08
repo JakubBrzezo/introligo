@@ -1,7 +1,5 @@
 """Tests for utility functions (slugify and count_display_width)."""
 
-import pytest
-
 from introligo import __main__ as introligo
 
 

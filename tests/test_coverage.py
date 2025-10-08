@@ -1,7 +1,7 @@
 """Additional tests to achieve 100% code coverage."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import yaml
@@ -138,7 +138,7 @@ modules:
             return original_exists(self)
 
         with patch.object(Path, "exists", mock_exists):
-            with patch.object(Path, "read_text", side_effect=IOError("Read error")):
+            with patch.object(Path, "read_text", side_effect=OSError("Read error")):
                 with pytest.raises(IntroligoError) as exc_info:
                     generator.include_markdown_file("test.md")
 
@@ -165,7 +165,7 @@ modules:
         # This should log a warning but not fail
         node = generator.page_tree[0]
         with patch("introligo.__main__.logger.warning") as mock_warning:
-            content = generator.generate_rst_content(node, template)
+            generator.generate_rst_content(node, template)
             mock_warning.assert_called()
 
     def test_markdown_includes_as_string(self, markdown_file: Path, temp_dir: Path):
@@ -272,9 +272,11 @@ class TestIntroligoErrorCoverage:
 
     def test_error_raised_with_context(self):
         """Test raising IntroligoError with context in actual code path."""
-        from introligo.__main__ import include_constructor
         from io import StringIO
+
         import yaml
+
+        from introligo.__main__ import include_constructor
 
         # Create a mock loader
         stream = StringIO("test: value")
@@ -309,9 +311,7 @@ modules:
         template = generator.load_template()
 
         # Mock to cause error in strict mode
-        with patch.object(
-            generator, "generate_rst_content", side_effect=Exception("Test error")
-        ):
+        with patch.object(generator, "generate_rst_content", side_effect=Exception("Test error")):
             with pytest.raises(IntroligoError) as exc_info:
                 generator.generate_all_nodes(generator.page_tree, template, strict=True)
 

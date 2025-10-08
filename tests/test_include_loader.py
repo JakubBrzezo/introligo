@@ -110,15 +110,15 @@ class TestIncludeLoader:
         included.write_text("value: 42", encoding="utf-8")
 
         # Create main file with include
-        main = temp_dir / "main.yaml"
-        main_content = f"test: !include {included.name}"
+        temp_dir / "main.yaml"
 
         # Write and read without using file handle with name attribute
         from io import StringIO
 
+        import yaml
+
         # Simulate include_constructor being called without _root_dir
         from introligo.__main__ import include_constructor
-        import yaml
 
         stream = StringIO("test: value")
         loader = IncludeLoader(stream)

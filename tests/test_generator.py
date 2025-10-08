@@ -213,9 +213,7 @@ class TestTemplateLoading:
         template_file.write_text("Custom: {{ title }}", encoding="utf-8")
 
         output_dir = temp_dir / "output"
-        generator = IntroligoGenerator(
-            sample_yaml_config, output_dir, template_file=template_file
-        )
+        generator = IntroligoGenerator(sample_yaml_config, output_dir, template_file=template_file)
 
         template = generator.load_template()
         result = template.render(title="Test")
@@ -234,9 +232,7 @@ class TestTemplateLoading:
 class TestUsageExamples:
     """Test usage examples processing."""
 
-    def test_process_usage_examples_list_of_dicts(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_process_usage_examples_list_of_dicts(self, sample_yaml_config: Path, temp_dir: Path):
         """Test processing usage examples as list of dicts."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -255,9 +251,7 @@ class TestUsageExamples:
         assert processed[0]["title"] == "Example 1"
         assert processed[0]["code"] == "print('hello')"
 
-    def test_process_usage_examples_list_of_strings(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_process_usage_examples_list_of_strings(self, sample_yaml_config: Path, temp_dir: Path):
         """Test processing usage examples as list of strings."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -269,9 +263,7 @@ class TestUsageExamples:
         assert processed[0]["title"] == "Example"
         assert processed[0]["code"] == "code1"
 
-    def test_process_usage_examples_single_dict(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_process_usage_examples_single_dict(self, sample_yaml_config: Path, temp_dir: Path):
         """Test processing single example as dict."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -282,9 +274,7 @@ class TestUsageExamples:
         assert len(processed) == 1
         assert processed[0]["title"] == "Single"
 
-    def test_process_usage_examples_single_string(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_process_usage_examples_single_string(self, sample_yaml_config: Path, temp_dir: Path):
         """Test processing single example as string."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -317,9 +307,7 @@ class TestMarkdownInclusion:
         assert "Version 1.0.0" in content
         assert "Feature 1" in content
 
-    def test_include_markdown_missing_file(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_include_markdown_missing_file(self, sample_yaml_config: Path, temp_dir: Path):
         """Test including non-existent markdown file."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -329,9 +317,7 @@ class TestMarkdownInclusion:
 
         assert "Markdown file not found" in str(exc_info.value)
 
-    def test_convert_markdown_to_rst_headers(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_convert_markdown_to_rst_headers(self, sample_yaml_config: Path, temp_dir: Path):
         """Test markdown to RST header conversion."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -344,9 +330,7 @@ class TestMarkdownInclusion:
         assert "~~~" in rst or "~~" in rst  # H3 underline
         assert "^^^" in rst or "^^" in rst  # H4 underline
 
-    def test_convert_markdown_to_rst_code_blocks(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_convert_markdown_to_rst_code_blocks(self, sample_yaml_config: Path, temp_dir: Path):
         """Test markdown to RST code block conversion."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -357,9 +341,7 @@ class TestMarkdownInclusion:
         assert ".. code-block:: python" in rst
         assert "   print('hello')" in rst
 
-    def test_convert_markdown_skip_changelog_h1(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_convert_markdown_skip_changelog_h1(self, sample_yaml_config: Path, temp_dir: Path):
         """Test skipping first Changelog H1."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
@@ -541,9 +523,7 @@ class TestDoxygenConfiguration:
         assert "test_project" in breathe_config
         assert "doxygen/xml" in breathe_config
 
-    def test_generate_breathe_config_no_doxygen(
-        self, sample_yaml_config: Path, temp_dir: Path
-    ):
+    def test_generate_breathe_config_no_doxygen(self, sample_yaml_config: Path, temp_dir: Path):
         """Test breathe config returns None without Doxygen config."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(sample_yaml_config, output_dir)
