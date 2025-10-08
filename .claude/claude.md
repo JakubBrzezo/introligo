@@ -46,12 +46,45 @@ introligo/
 
 ## Development Guidelines
 
+### Code Quality Standards
+
+**All generated code must pass the following checks:**
+
+1. **Ruff Linter**: `ruff check .`
+   - No linting errors allowed
+   - Follow all PEP 8 conventions
+   - Use proper import ordering
+   - Avoid complexity issues
+
+2. **Ruff Formatter**: `ruff format --check .`
+   - All code must be properly formatted
+   - Consistent style across the codebase
+
+3. **MyPy Type Checker**: `mypy introligo`
+   - No type errors allowed
+   - All type hints must be correct
+   - Use proper type annotations
+
+4. **Python 3.8+ Compatibility**
+   - Code must be compatible with Python 3.8 and higher
+   - Use `contextlib.ExitStack` for combining context managers (not parenthesized `with` syntax which requires Python 3.9+)
+
+**Before committing code:**
+```bash
+# Run all checks
+ruff check .
+ruff format --check .
+mypy introligo
+pytest tests/ --cov=introligo
+```
+
 ### Code Style
 - Follow PEP 8 conventions for Python code
 - Use type hints where appropriate
 - Write comprehensive docstrings for all public functions and classes
 - Keep functions focused and modular
 - Use meaningful variable and function names
+- Maximum line length: 100 characters
 
 ### Documentation
 - All new features must be documented in the YAML configuration
@@ -293,17 +326,23 @@ my_module:
 
 When working with this project:
 
-1. **Always test changes** with both dry-run and actual generation
-2. **Update documentation** when modifying features
-3. **Follow existing code style** and patterns
-4. **Add examples** for new configuration options
-5. **Update CHANGELOG.md** for user-facing changes
-6. **Be mindful of RST syntax** when generating output
-7. **Test emoji support** when adding new features
-8. **Verify toctree generation** for hierarchical structures
-9. **Check markdown conversion** when modifying that feature
-10. **Use the preview server** to verify documentation builds correctly
-11. **Update CHANGELOG.md file** in next tag according to convention. Do not creates new paragraph until changes in last tags are not released (by tagging)
+1. **Always run code quality checks** before completing any task:
+   - `ruff check .` - Must pass with no errors
+   - `ruff format --check .` - Must pass with no errors
+   - `mypy introligo` - Must pass with no errors
+   - `pytest tests/` - All tests must pass
+2. **Always test changes** with both dry-run and actual generation
+3. **Update documentation** when modifying features
+4. **Follow existing code style** and patterns
+5. **Add examples** for new configuration options
+6. **Update CHANGELOG.md** for user-facing changes
+7. **Be mindful of RST syntax** when generating output
+8. **Test emoji support** when adding new features
+9. **Verify toctree generation** for hierarchical structures
+10. **Check markdown conversion** when modifying that feature
+11. **Use the preview server** to verify documentation builds correctly
+12. **Update CHANGELOG.md file** in next tag according to convention. Do not creates new paragraph until changes in last tags are not released (by tagging)
+13. **Ensure Python 3.8 compatibility** - Use `contextlib.ExitStack` for combining context managers instead of parenthesized `with` statements
 
 When creating or modifying documentation:
 - Use the existing YAML structure as a template

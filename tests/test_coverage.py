@@ -1,5 +1,6 @@
 """Additional tests to achieve 100% code coverage."""
 
+from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
 
@@ -137,12 +138,13 @@ modules:
                 return True
             return original_exists(self)
 
-        with patch.object(Path, "exists", mock_exists):
-            with patch.object(Path, "read_text", side_effect=OSError("Read error")):
-                with pytest.raises(IntroligoError) as exc_info:
-                    generator.include_markdown_file("test.md")
+        with ExitStack() as stack:
+            stack.enter_context(patch.object(Path, "exists", mock_exists))
+            stack.enter_context(patch.object(Path, "read_text", side_effect=OSError("Read error")))
+            exc_info = stack.enter_context(pytest.raises(IntroligoError))
+            generator.include_markdown_file("test.md")
 
-                assert "Error reading markdown file" in str(exc_info.value)
+        assert "Error reading markdown file" in str(exc_info.value)
 
     def test_markdown_warning_on_missing(self, temp_dir: Path):
         """Test warning when markdown include is missing."""
@@ -344,14 +346,17 @@ modules:
                 raise Exception("Test error")
             return f"{node.title}\n====="
 
-        with patch.object(generator, "generate_rst_content", side_effect=mock_generate):
-            with patch("introligo.__main__.logger.error") as mock_error:
-                result = generator.generate_all_nodes(generator.page_tree, template, strict=False)
+        with ExitStack() as stack:
+            stack.enter_context(
+                patch.object(generator, "generate_rst_content", side_effect=mock_generate)
+            )
+            mock_error = stack.enter_context(patch("introligo.__main__.logger.error"))
+            result = generator.generate_all_nodes(generator.page_tree, template, strict=False)
 
-                # Should log error but continue
-                mock_error.assert_called()
-                # Should have generated for second node (or partial result)
-                assert isinstance(result, dict)
+            # Should log error but continue
+            mock_error.assert_called()
+            # Should have generated for second node (or partial result)
+            assert isinstance(result, dict)
 
 
 class TestComplexMarkdown:

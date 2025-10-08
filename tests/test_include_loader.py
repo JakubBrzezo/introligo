@@ -1,5 +1,6 @@
 """Tests for IncludeLoader YAML loader class."""
 
+from contextlib import ExitStack
 from pathlib import Path
 
 import pytest
@@ -37,9 +38,10 @@ class TestIncludeLoader:
         main_file = temp_dir / "main.yaml"
         main_file.write_text("modules:\n  test: !include missing.yaml", encoding="utf-8")
 
-        with pytest.raises(IntroligoError) as exc_info:
-            with open(main_file, encoding="utf-8") as f:
-                yaml.load(f, Loader=IncludeLoader)
+        with ExitStack() as stack:
+            exc_info = stack.enter_context(pytest.raises(IntroligoError))
+            f = stack.enter_context(open(main_file, encoding="utf-8"))
+            yaml.load(f, Loader=IncludeLoader)
 
         assert "Include file not found" in str(exc_info.value)
 
@@ -51,9 +53,10 @@ class TestIncludeLoader:
         main_file = temp_dir / "main.yaml"
         main_file.write_text("modules:\n  test: !include invalid.yaml", encoding="utf-8")
 
-        with pytest.raises(IntroligoError) as exc_info:
-            with open(main_file, encoding="utf-8") as f:
-                yaml.load(f, Loader=IncludeLoader)
+        with ExitStack() as stack:
+            exc_info = stack.enter_context(pytest.raises(IntroligoError))
+            f = stack.enter_context(open(main_file, encoding="utf-8"))
+            yaml.load(f, Loader=IncludeLoader)
 
         assert "Invalid YAML" in str(exc_info.value)
 
@@ -144,9 +147,10 @@ class TestIncludeLoader:
         main.write_text(f"modules:\n  test: !include {included.name}", encoding="utf-8")
 
         try:
-            with pytest.raises(IntroligoError) as exc_info:
-                with open(main, encoding="utf-8") as f:
-                    yaml.load(f, Loader=IncludeLoader)
+            with ExitStack() as stack:
+                exc_info = stack.enter_context(pytest.raises(IntroligoError))
+                f = stack.enter_context(open(main, encoding="utf-8"))
+                yaml.load(f, Loader=IncludeLoader)
 
             assert "Error loading included file" in str(exc_info.value)
         finally:
