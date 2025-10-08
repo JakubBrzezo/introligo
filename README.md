@@ -1,5 +1,8 @@
 # Introligo - Documentation Generator
 
+[![Tests](https://github.com/JakubBrzezo/introligo/actions/workflows/tests.yml/badge.svg)](https://github.com/JakubBrzezo/introligo/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/JakubBrzezo/introligo/branch/main/graph/badge.svg)](https://codecov.io/gh/JakubBrzezo/introligo)
+
 YAML to reStructuredText documentation generator for Sphinx with hierarchical page organization and rich content support.
 
 > **Note**: Introligo is one of the open-source components of the Celin Project, available for free use in any project.
