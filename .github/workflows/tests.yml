@@ -96,5 +96,6 @@ jobs:
       if: matrix.python-version == '3.11'
       uses: codecov/codecov-action@v4
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV }}
         fail_ci_if_error: false
