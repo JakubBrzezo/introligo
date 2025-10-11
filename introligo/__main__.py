@@ -524,7 +524,31 @@ Features
 Installation
 ------------
 
+{% if installation is mapping %}
+{% if installation.title %}
+{{ installation.title }}
+{{ '~' * (installation.title|display_width) }}
+
+{% endif %}
+{% if installation.steps %}
+{% for step_info in installation.steps %}
+**{{ step_info.step }}**
+
+{% if step_info.description %}
+{{ step_info.description }}
+{% endif %}
+
+{% if step_info.code %}
+.. code-block:: bash
+
+{{ step_info.code|indent(4, true) }}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+{% else %}
 {{ installation }}
+{% endif %}
 {% endif %}
 
 {% if requirements %}
@@ -668,6 +692,135 @@ Additional Examples
 -------------------
 
 Examples can be found in the ``{{ examples_dir }}`` directory.
+{% endif %}
+
+{% if workflow %}
+Workflow
+--------
+
+{% if workflow is mapping %}
+{% if workflow.title %}
+{{ workflow.title }}
+{{ '~' * (workflow.title|display_width) }}
+
+{% endif %}
+{% if workflow.description %}
+{{ workflow.description }}
+
+{% endif %}
+{% if workflow.steps %}
+{% for step in workflow.steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+{% endif %}
+{% else %}
+{{ workflow }}
+{% endif %}
+{% endif %}
+
+{% if how_it_works %}
+How It Works
+------------
+
+{% if how_it_works is mapping %}
+{% if how_it_works.title %}
+{{ how_it_works.title }}
+{{ '~' * (how_it_works.title|display_width) }}
+
+{% endif %}
+{{ how_it_works.description if how_it_works.description else '' }}
+{% else %}
+{{ how_it_works }}
+{% endif %}
+{% endif %}
+
+{% if limitations %}
+Limitations
+-----------
+
+{% for limitation in limitations %}
+* {{ limitation }}
+{% endfor %}
+{% endif %}
+
+{% if troubleshooting %}
+Troubleshooting
+---------------
+
+{% for item in troubleshooting %}
+{% if item is mapping %}
+**{{ item.issue }}**
+
+{{ item.solution }}
+
+{% else %}
+* {{ item }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if best_practices %}
+Best Practices
+--------------
+
+{% for practice in best_practices %}
+* {{ practice }}
+{% endfor %}
+{% endif %}
+
+{% if python_api %}
+Python API
+----------
+
+{% for example in python_api %}
+{{ example.title }}
+{{ '~' * (example.title|display_width) }}
+
+{% if example.description %}
+{{ example.description }}
+
+{% endif %}
+.. code-block:: {{ example.language if example.language else 'python' }}
+
+{{ example.code|indent(4, true) }}
+
+{% endfor %}
+{% endif %}
+
+{% if examples %}
+Examples
+--------
+
+{% for example in examples %}
+{{ example.title }}
+{{ '~' * (example.title|display_width) }}
+
+{% if example.description %}
+{{ example.description }}
+
+{% endif %}
+{% if example.code %}
+.. code-block:: {{ example.language if example.language else 'bash' }}
+
+{{ example.code|indent(4, true) }}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if related_tools %}
+Related Tools
+-------------
+
+{% for tool in related_tools %}
+{% if tool is mapping %}
+* **{{ tool.name }}**: {{ tool.description }}{% if tool.url %}
+
+  {{ tool.url }}{% endif %}
+{% else %}
+* {{ tool }}
+{% endif %}
+{% endfor %}
 {% endif %}
 
 {% if custom_sections %}
@@ -939,6 +1092,14 @@ Examples can be found in the ``{{ examples_dir }}`` directory.
             "references": config.get("references", []),
             "changelog": config.get("changelog", ""),
             "examples_dir": config.get("examples_dir", ""),
+            "workflow": config.get("workflow", ""),
+            "how_it_works": config.get("how_it_works", ""),
+            "limitations": config.get("limitations", []),
+            "troubleshooting": config.get("troubleshooting", []),
+            "best_practices": config.get("best_practices", []),
+            "python_api": self.process_usage_examples(config.get("python_api")),
+            "examples": self.process_usage_examples(config.get("examples")),
+            "related_tools": config.get("related_tools", []),
             "custom_sections": config.get("custom_sections", []),
             "markdown_includes": markdown_content,
         }
