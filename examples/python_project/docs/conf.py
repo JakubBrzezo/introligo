@@ -4,36 +4,36 @@ import os
 import sys
 
 # Add the parent directory to the Python path so Sphinx can import the module
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
-project = 'String Utils'
-copyright = '2025, Example Project'
-author = 'Example Project'
-version = '1.0'
-release = '1.0.0'
+project = "String Utils"
+copyright = "2025, Example Project"
+author = "Example Project"
+version = "1.0"
+release = "1.0.0"
 
 # -- General configuration ---------------------------------------------------
 extensions = [
-    'sphinx.ext.autodoc',      # Auto-generate documentation from docstrings
-    'sphinx.ext.napoleon',     # Support for Google/NumPy style docstrings
-    'sphinx.ext.viewcode',     # Add links to highlighted source code
+    "sphinx.ext.autodoc",  # Auto-generate documentation from docstrings
+    "sphinx.ext.napoleon",  # Support for Google/NumPy style docstrings
+    "sphinx.ext.viewcode",  # Add links to highlighted source code
 ]
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'alabaster'
+html_theme = "alabaster"
 html_static_path = []
 
 # -- Options for autodoc extension -------------------------------------------
 autodoc_default_options = {
-    'members': True,
-    'member-order': 'bysource',
-    'special-members': '__init__',
-    'undoc-members': True,
-    'exclude-members': '__weakref__'
+    "members": True,
+    "member-order": "bysource",
+    "special-members": "__init__",
+    "undoc-members": True,
+    "exclude-members": "__weakref__",
 }
 
 # Napoleon settings for better docstring rendering
