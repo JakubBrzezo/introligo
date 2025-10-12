@@ -1,0 +1,78 @@
+# Introligo configuration for LaTeX equations example
+# This demonstrates how to include LaTeX mathematical equations in documentation
+
+index:
+  title: "Mathematical Formulas Documentation"
+  description: "Collection of important mathematical formulas and equations"
+
+generate_index: true
+
+modules:
+  # Parent category for organization
+  mathematics:
+    title: "Mathematics"
+    description: "Mathematical formulas and equations"
+
+  # Physics equations
+  physics_equations:
+    parent: "mathematics"
+    title: "Physics Equations"
+    description: "Fundamental equations in physics"
+
+    overview: |
+      This module contains fundamental physics equations including Einstein's
+      mass-energy equivalence, Maxwell's equations, and Schrödinger equation.
+
+      The equations are included from external LaTeX files and rendered using
+      Sphinx's math directive.
+
+    latex_includes: "equations.tex"
+
+    notes: |
+      .. note::
+
+         These equations require a LaTeX engine for proper rendering.
+         Sphinx uses MathJax by default for HTML output.
+
+      .. tip::
+
+         To render these in PDF output, ensure you have a working LaTeX
+         installation with the necessary packages.
+
+  # Calculus formulas
+  calculus_formulas:
+    parent: "mathematics"
+    title: "Calculus Formulas"
+    description: "Essential calculus formulas and theorems"
+
+    overview: |
+      This module contains fundamental calculus formulas including the
+      fundamental theorem of calculus, integration techniques, and
+      series expansions.
+
+    latex_includes: "calculus.tex"
+
+    usage_examples:
+      - title: "Using LaTeX in Documentation"
+        description: "How to include LaTeX equations in your docs"
+        language: "yaml"
+        code: |
+          modules:
+            my_math_module:
+              title: "My Math Module"
+              description: "Module with equations"
+
+              # Include single LaTeX file
+              latex_includes: "equations.tex"
+
+              # Or include multiple files
+              latex_includes:
+                - "equations.tex"
+                - "proofs.tex"
+
+    notes: |
+      .. important::
+
+         LaTeX files should contain only the mathematical content, not
+         the full document structure. Document preambles (\\documentclass,
+         \\usepackage, etc.) are automatically stripped.

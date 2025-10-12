@@ -839,6 +839,13 @@ Related Tools
 {{ markdown_content }}
 {% endfor %}
 {% endif %}
+
+{% if latex_includes %}
+{% for latex_content in latex_includes %}
+
+{{ latex_content }}
+{% endfor %}
+{% endif %}
 """
 
     def load_template(self) -> Template:
@@ -941,6 +948,76 @@ Related Tools
             return content
         except Exception as e:
             raise IntroligoError(f"Error reading markdown file {md_path_obj}: {e}") from e
+
+    def include_latex_file(self, latex_path: str) -> str:
+        """Include a LaTeX file as a math directive in reStructuredText.
+
+        Args:
+            latex_path: Path to the LaTeX file (relative to config file).
+
+        Returns:
+            The content of the LaTeX file wrapped in RST math directive.
+
+        Raises:
+            IntroligoError: If the LaTeX file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        latex_path_obj = Path(latex_path)
+        if not latex_path_obj.is_absolute():
+            latex_path_obj = self.config_file.parent / latex_path
+
+        if not latex_path_obj.exists():
+            raise IntroligoError(f"LaTeX file not found: {latex_path_obj}")
+
+        try:
+            content = latex_path_obj.read_text(encoding="utf-8")
+            # Wrap LaTeX content in RST math directive
+            rst_content = self._convert_latex_to_rst(content)
+            logger.info(f"  📐 Included LaTeX: {latex_path_obj}")
+            return rst_content
+        except Exception as e:
+            raise IntroligoError(f"Error reading LaTeX file {latex_path_obj}: {e}") from e
+
+    def _convert_latex_to_rst(self, latex: str) -> str:
+        """Convert LaTeX content to reStructuredText math directive.
+
+        Args:
+            latex: LaTeX content to convert.
+
+        Returns:
+            RST-formatted math content.
+        """
+        # Strip common LaTeX document wrappers if present
+        content = latex.strip()
+
+        # Remove document class and begin/end document if present
+        lines = content.split("\n")
+        filtered_lines = []
+        skip_preamble = False
+
+        for line in lines:
+            stripped = line.strip()
+            # Skip common LaTeX document commands
+            if stripped.startswith("\\documentclass") or stripped.startswith("\\usepackage"):
+                skip_preamble = True
+                continue
+            if stripped == "\\begin{document}":
+                skip_preamble = False
+                continue
+            if stripped == "\\end{document}":
+                break
+            if not skip_preamble:
+                filtered_lines.append(line)
+
+        clean_content = "\n".join(filtered_lines).strip()
+
+        # Wrap in RST math directive
+        result = [".. math::", ""]
+        for line in clean_content.split("\n"):
+            result.append("   " + line)
+        result.append("")
+
+        return "\n".join(result)
 
     def _convert_markdown_to_rst(self, markdown: str) -> str:
         """Convert basic markdown syntax to reStructuredText.
@@ -1068,6 +1145,19 @@ Related Tools
             except IntroligoError as e:
                 logger.warning(f"⚠️  {e}")
 
+        # Process LaTeX includes
+        latex_includes = config.get("latex_includes", [])
+        if isinstance(latex_includes, str):
+            latex_includes = [latex_includes]
+
+        latex_content = []
+        for latex_path in latex_includes:
+            try:
+                content = self.include_latex_file(latex_path)
+                latex_content.append(content)
+            except IntroligoError as e:
+                logger.warning(f"⚠️  {e}")
+
         context = {
             "title": node.title,
             "module": config.get("module", ""),
@@ -1102,6 +1192,7 @@ Related Tools
             "related_tools": config.get("related_tools", []),
             "custom_sections": config.get("custom_sections", []),
             "markdown_includes": markdown_content,
+            "latex_includes": latex_content,
         }
 
         # Clean up empty values, but keep language field

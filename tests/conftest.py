@@ -127,3 +127,49 @@ modules:
 """
     config_file.write_text(config_content, encoding="utf-8")
     return config_file
+
+
+@pytest.fixture
+def latex_file(temp_dir: Path) -> Path:
+    """Create a sample LaTeX file."""
+    latex_file = temp_dir / "equations.tex"
+    latex_content = r"""E = mc^2
+
+\frac{d}{dx} \int_a^x f(t) dt = f(x)
+
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}"""
+    latex_file.write_text(latex_content, encoding="utf-8")
+    return latex_file
+
+
+@pytest.fixture
+def latex_file_with_document(temp_dir: Path) -> Path:
+    """Create a LaTeX file with document wrapper."""
+    latex_file = temp_dir / "document.tex"
+    latex_content = r"""\documentclass{article}
+\usepackage{amsmath}
+
+\begin{document}
+
+E = mc^2
+
+\frac{d}{dx} \int_a^x f(t) dt = f(x)
+
+\end{document}"""
+    latex_file.write_text(latex_content, encoding="utf-8")
+    return latex_file
+
+
+@pytest.fixture
+def config_with_latex(temp_dir: Path, latex_file: Path) -> Path:
+    """Create configuration that includes LaTeX files."""
+    config_file = temp_dir / "latex_config.yaml"
+    config_content = f"""
+modules:
+  module_with_latex:
+    title: "Module with LaTeX"
+    description: "Module that includes LaTeX equations"
+    latex_includes: "{latex_file.name}"
+"""
+    config_file.write_text(config_content, encoding="utf-8")
+    return config_file

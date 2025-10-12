@@ -42,6 +42,22 @@ cd ../..
 python docs/preview.py --example c_project
 ```
 
+### 3. LaTeX Project (`latex_project/`)
+Demonstrates how to include LaTeX mathematical equations in documentation.
+
+**Features:**
+- LaTeX equation files
+- Automatic conversion to RST math directive
+- MathJax rendering in HTML
+- Document preamble stripping
+- Multiple file support
+
+**Quick Start:**
+```bash
+# Run the LaTeX example (no prerequisites needed)
+python docs/preview.py --example latex_project
+```
+
 ## Using the Preview Script
 
 The `docs/preview.py` script has been enhanced with example support:

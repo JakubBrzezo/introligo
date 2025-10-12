@@ -354,6 +354,78 @@ class TestMarkdownInclusion:
         assert "Version 1.0" in rst
 
 
+class TestLatexInclusion:
+    """Test LaTeX file inclusion."""
+
+    def test_include_latex_file(self, config_with_latex: Path, latex_file: Path, temp_dir: Path):
+        """Test including LaTeX file."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(config_with_latex, output_dir)
+
+        content = generator.include_latex_file(latex_file.name)
+        assert ".. math::" in content
+        assert "E = mc^2" in content
+        assert "\\frac{d}{dx}" in content
+        assert "\\sum_{i=1}^{n}" in content
+
+    def test_include_latex_missing_file(self, sample_yaml_config: Path, temp_dir: Path):
+        """Test including non-existent LaTeX file."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        with pytest.raises(IntroligoError) as exc_info:
+            generator.include_latex_file("missing.tex")
+
+        assert "LaTeX file not found" in str(exc_info.value)
+
+    def test_convert_latex_to_rst_basic(self, sample_yaml_config: Path, temp_dir: Path):
+        """Test converting basic LaTeX to RST math directive."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        latex = r"E = mc^2"
+        rst = generator._convert_latex_to_rst(latex)
+
+        assert ".. math::" in rst
+        assert "   E = mc^2" in rst
+
+    def test_convert_latex_with_document_wrapper(
+        self, latex_file_with_document: Path, sample_yaml_config: Path, temp_dir: Path
+    ):
+        """Test converting LaTeX with document wrapper."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        latex_content = latex_file_with_document.read_text(encoding="utf-8")
+        rst = generator._convert_latex_to_rst(latex_content)
+
+        # Document wrapper should be stripped
+        assert "\\documentclass" not in rst
+        assert "\\usepackage" not in rst
+        assert "\\begin{document}" not in rst
+        assert "\\end{document}" not in rst
+
+        # Math content should be present
+        assert ".. math::" in rst
+        assert "E = mc^2" in rst
+
+    def test_convert_latex_multiline(self, sample_yaml_config: Path, temp_dir: Path):
+        """Test converting multiline LaTeX equations."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        latex = r"""\begin{align}
+E &= mc^2 \\
+F &= ma
+\end{align}"""
+        rst = generator._convert_latex_to_rst(latex)
+
+        assert ".. math::" in rst
+        assert "\\begin{align}" in rst
+        assert "E &= mc^2" in rst
+        assert "F &= ma" in rst
+
+
 class TestRSTGeneration:
     """Test RST content generation."""
 
@@ -386,6 +458,7 @@ class TestRSTGeneration:
                 node = n
                 break
 
+        assert node is not None, "cpp_module node not found"
         content = generator.generate_rst_content(node, template)
         assert "doxygenfile" in content
         assert "test_project" in content

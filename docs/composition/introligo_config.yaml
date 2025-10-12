@@ -617,6 +617,199 @@ modules:
     title: "🔧 Troubleshooting"
     markdown_includes: "markdown/troubleshooting.md"
 
+  latex_includes:
+    parent: "user_guide"
+    title: "📐 LaTeX Includes"
+    description: "Include LaTeX mathematical equations in your documentation"
+    overview: |
+      Include external LaTeX files containing mathematical equations as part of
+      your module documentation. Introligo automatically converts LaTeX content
+      to reStructuredText math directives for rendering with Sphinx.
+
+      This feature is perfect for scientific documentation, educational materials,
+      and technical specifications that require mathematical formulas.
+
+    features:
+      - "📐 **LaTeX to RST conversion** - Automatic conversion to ``.. math::`` directive"
+      - "📄 **Single or multiple files** - Include one or many LaTeX files"
+      - "🧹 **Auto-cleanup** - Strips document preambles and wrappers"
+      - "🌐 **MathJax rendering** - Beautiful equations in HTML output"
+      - "📦 **No LaTeX required** - HTML rendering works without LaTeX installation"
+      - "🎯 **PDF support** - Full LaTeX support for PDF generation"
+
+    usage_examples:
+      - title: "Basic LaTeX Inclusion"
+        description: "Include a single LaTeX file with equations"
+        language: "yaml"
+        code: |
+          modules:
+            physics_equations:
+              title: "Physics Equations"
+              description: "Fundamental physics formulas"
+
+              # Include single LaTeX file
+              latex_includes: "equations.tex"
+
+      - title: "Multiple LaTeX Files"
+        description: "Include multiple LaTeX files in one module"
+        language: "yaml"
+        code: |
+          modules:
+            mathematics:
+              title: "Mathematics"
+              description: "Mathematical formulas"
+
+              # Include multiple LaTeX files
+              latex_includes:
+                - "algebra.tex"
+                - "calculus.tex"
+                - "statistics.tex"
+
+      - title: "LaTeX File Content"
+        description: "Example LaTeX file with equations"
+        language: "latex"
+        code: |
+          % equations.tex
+          % Just the mathematical content - no document structure
+
+          E = mc^2
+
+          \frac{d}{dx} \int_a^x f(t) dt = f(x)
+
+          \nabla \cdot \mathbf{E} = \frac{\rho}{\epsilon_0}
+
+          \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+
+      - title: "LaTeX with Document Wrapper (Auto-Stripped)"
+        description: "LaTeX files with document structure are automatically cleaned"
+        language: "latex"
+        code: |
+          \documentclass{article}
+          \usepackage{amsmath}
+
+          \begin{document}
+
+          E = mc^2
+
+          \end{document}
+
+          % Introligo automatically strips:
+          % - \documentclass commands
+          % - \usepackage commands
+          % - \begin{document} and \end{document}
+
+      - title: "Sphinx Configuration"
+        description: "Enable math rendering in Sphinx conf.py"
+        language: "python"
+        code: |
+          # docs/conf.py
+
+          extensions = [
+              'sphinx.ext.mathjax',  # For HTML output
+              # or 'sphinx.ext.imgmath' for image-based math
+          ]
+
+          # MathJax configuration (optional)
+          mathjax3_config = {
+              'tex': {
+                  'inlineMath': [['\\(', '\\)']],
+                  'displayMath': [['\\[', '\\]']],
+              }
+          }
+
+    custom_sections:
+      - title: "How It Works"
+        content: |
+          **Conversion Process:**
+
+          1. **Read LaTeX file** - Content is read from the .tex file
+          2. **Strip wrappers** - Document preambles are automatically removed
+          3. **Wrap in math directive** - Content is wrapped in ``.. math::`` directive
+          4. **Indent content** - LaTeX code is indented for RST format
+          5. **Include in RST** - Math directive is included in generated documentation
+
+          **Input** (``equations.tex``):
+
+          .. code-block:: latex
+
+             E = mc^2
+
+             \frac{d}{dx} \int_a^x f(t) dt = f(x)
+
+          **Generated RST**:
+
+          .. code-block:: rst
+
+             .. math::
+
+                E = mc^2
+
+                \frac{d}{dx} \int_a^x f(t) dt = f(x)
+
+          **Rendered Output**: Beautiful mathematical equations in HTML/PDF
+
+      - title: "File Location"
+        content: |
+          **Relative Paths:**
+
+          LaTeX file paths are resolved relative to the configuration file location:
+
+          .. code-block:: text
+
+             project/
+             ├── docs/
+             │   └── composition/
+             │       └── introligo_config.yaml
+             └── equations/
+                 └── physics.tex
+
+          .. code-block:: yaml
+
+             # From introligo_config.yaml
+             latex_includes: "../../equations/physics.tex"
+
+      - title: "Supported LaTeX"
+        content: |
+          **Supported LaTeX Features:**
+
+          * All standard math symbols and operators
+          * AMS math environments (align, equation, etc.)
+          * Matrices and arrays
+          * Greek letters and special symbols
+          * Fractions, integrals, summations
+          * Subscripts and superscripts
+          * Custom macros (if defined in Sphinx conf.py)
+
+          **Not Stripped:**
+
+          * Math environments (``\begin{align}``, etc.)
+          * Equation numbering commands
+          * Math-specific commands
+
+    notes: |
+      .. tip::
+
+         **No LaTeX Installation Needed**: For HTML output, MathJax renders
+         equations in the browser, so you don't need a LaTeX installation.
+         LaTeX is only required for PDF generation.
+
+      .. important::
+
+         **File Content**: LaTeX files should contain mathematical content only.
+         Document structure (``\documentclass``, ``\usepackage``, etc.) is
+         automatically stripped, but it's cleaner to omit it entirely.
+
+      .. note::
+
+         **Sphinx Extensions**: Make sure to include ``sphinx.ext.mathjax`` in
+         your Sphinx configuration's ``extensions`` list for HTML output.
+
+    see_also:
+      - ":doc:`markdown_includes` - Including Markdown files"
+      - "`Sphinx Math <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#math>`_ - Sphinx math directive documentation"
+      - "`MathJax <https://www.mathjax.org/>`_ - JavaScript display engine for mathematics"
+      - "`LaTeX Mathematics <https://en.wikibooks.org/wiki/LaTeX/Mathematics>`_ - LaTeX math syntax reference"
+
   templates:
     parent: "user_guide"
     title: "🎨 Custom Templates"
@@ -1334,6 +1527,87 @@ modules:
               "calculator": "../output/xml"
           }
           breathe_default_project = "calculator"
+
+  example_latex_config:
+    parent: "examples"
+    title: "📐 LaTeX Example Configuration"
+    description: "Detailed walkthrough of the LaTeX example configuration"
+    overview: |
+      The LaTeX example demonstrates how to include mathematical equations from
+      external LaTeX files into your Sphinx documentation using Introligo.
+
+    usage_examples:
+      - title: "LaTeX Example - introligo_config.yaml"
+        description: "Configuration for including LaTeX equations"
+        language: "yaml"
+        code: |
+          index:
+            title: "Mathematical Formulas Documentation"
+            description: "Collection of important mathematical formulas"
+
+          generate_index: true
+
+          modules:
+            mathematics:
+              title: "Mathematics"
+              description: "Mathematical formulas and equations"
+
+            physics_equations:
+              parent: "mathematics"
+              title: "Physics Equations"
+              description: "Fundamental equations in physics"
+
+              # Include LaTeX file
+              latex_includes: "equations.tex"
+
+              overview: |
+                This module contains fundamental physics equations.
+
+            calculus_formulas:
+              parent: "mathematics"
+              title: "Calculus Formulas"
+              description: "Essential calculus formulas"
+
+              latex_includes: "calculus.tex"
+
+      - title: "LaTeX Example - equations.tex"
+        description: "LaTeX file with mathematical equations"
+        language: "latex"
+        code: |
+          % Mathematical equations for physics documentation
+
+          % Einstein's mass-energy equivalence
+          E = mc^2
+
+          % Maxwell's equations
+          \nabla \cdot \mathbf{E} = \frac{\rho}{\epsilon_0}
+
+          % Schrödinger equation
+          i\hbar\frac{\partial}{\partial t}\Psi = \hat{H}\Psi
+
+          % Fourier transform
+          \hat{f}(\xi) = \int_{-\infty}^{\infty} f(x) e^{-2\pi i x \xi} dx
+
+      - title: "LaTeX Example - conf.py"
+        description: "Sphinx configuration with MathJax"
+        language: "python"
+        code: |
+          # Configuration file for LaTeX documentation
+          project = 'Mathematical Formulas'
+
+          extensions = [
+              'sphinx.ext.mathjax',  # For rendering math
+          ]
+
+          html_theme = 'alabaster'
+
+          # MathJax configuration
+          mathjax3_config = {
+              'tex': {
+                  'inlineMath': [['\\(', '\\)']],
+                  'displayMath': [['\\[', '\\]']],
+              }
+          }
 
   example_basic:
     parent: "examples"
