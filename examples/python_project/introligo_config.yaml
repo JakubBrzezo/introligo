@@ -1,0 +1,108 @@
+# Introligo configuration for Python String Utils example
+# This demonstrates how to document Python code using Introligo with Sphinx autodoc
+
+index:
+  title: "String Utils Documentation"
+  description: "Common string manipulation utilities for Python"
+
+generate_index: true
+
+modules:
+  # Parent category for organization
+  utilities:
+    title: "Utility Functions"
+    description: "Collection of utility modules for common tasks"
+
+  # String utilities module
+  string_utils:
+    parent: "utilities"
+    module: "string_utils"
+    title: "String Utilities"
+    description: "Common string manipulation and analysis functions"
+
+    overview: |
+      The String Utils module provides a collection of helpful functions for
+      working with strings in Python. All functions are well-documented with
+      examples and type hints.
+
+    features:
+      - "Capitalize words in strings"
+      - "Count vowels and words"
+      - "Reverse strings efficiently"
+      - "Check for palindromes with normalization"
+      - "Full type hints for better IDE support"
+
+    requirements:
+      - "Python 3.8 or higher"
+
+    installation: |
+      No installation required - just copy the module to your project:
+
+      .. code-block:: bash
+
+         wget https://raw.githubusercontent.com/example/string_utils.py
+         # Or simply copy the file to your project directory
+
+    usage_examples:
+      - title: "Basic String Manipulation"
+        description: "Capitalize words and reverse strings"
+        language: "python"
+        code: |
+          from string_utils import capitalize_words, reverse_string
+
+          # Capitalize each word
+          text = "hello world from python"
+          result = capitalize_words(text)
+          print(result)  # Output: "Hello World From Python"
+
+          # Reverse a string
+          reversed_text = reverse_string("Hello")
+          print(reversed_text)  # Output: "olleH"
+
+      - title: "String Analysis"
+        description: "Count vowels and words, check palindromes"
+        language: "python"
+        code: |
+          from string_utils import count_vowels, word_count, is_palindrome
+
+          text = "Hello world"
+
+          # Count vowels
+          vowels = count_vowels(text)
+          print(f"Vowels: {vowels}")  # Output: 3
+
+          # Count words
+          words = word_count(text)
+          print(f"Words: {words}")  # Output: 2
+
+          # Check palindrome
+          print(is_palindrome("racecar"))  # Output: True
+          print(is_palindrome("hello"))    # Output: False
+
+      - title: "Advanced Palindrome Check"
+        description: "Palindrome detection with normalization"
+        language: "python"
+        code: |
+          from string_utils import is_palindrome
+
+          # Works with spaces and punctuation
+          text1 = "A man a plan a canal Panama"
+          print(is_palindrome(text1))  # Output: True
+
+          # Case insensitive
+          text2 = "RaceCar"
+          print(is_palindrome(text2))  # Output: True
+
+    notes: |
+      .. tip::
+
+         All functions include docstring examples that can be tested with
+         Python's doctest module:
+
+         .. code-block:: bash
+
+            python -m doctest string_utils.py -v
+
+    see_also:
+      - "`Python str documentation <https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str>`_ - Built-in string methods"
+      - "`Python re module <https://docs.python.org/3/library/re.html>`_ - Regular expressions for advanced string processing"

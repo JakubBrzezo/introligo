@@ -1,0 +1,64 @@
+# Introligo configuration for C Calculator example
+# This demonstrates how to document C code using Introligo with Doxygen/Breathe
+
+index:
+  title: "Calculator Library Documentation"
+  description: "Simple calculator library with basic arithmetic operations"
+
+generate_index: true
+
+# Global Doxygen configuration
+# This points to the XML output from Doxygen
+doxygen:
+  xml_path: "output/xml"
+  project_name: "calculator"
+
+modules:
+  # Parent category for grouping
+  api_reference:
+    title: "API Reference"
+    description: "Complete API documentation for the calculator library"
+
+  # Calculator module documentation
+  calculator:
+    parent: "api_reference"
+    title: "Calculator Functions"
+    language: c
+    description: "Basic arithmetic operations including add, subtract, multiply, and divide"
+
+    # Doxygen files to document
+    doxygen_files:
+      - calculator.h
+      - calculator.c
+
+    overview: |
+      The Calculator library provides simple arithmetic operations for integer values.
+      All functions are implemented with basic error handling.
+
+    features:
+      - "Addition and subtraction operations"
+      - "Multiplication and division with zero-check"
+      - "Simple integer-based API"
+
+    usage_examples:
+      - title: "Basic Usage"
+        description: "Example of using calculator functions in C"
+        language: "c"
+        code: |
+          #include "calculator.h"
+          #include <stdio.h>
+
+          int main() {
+              int result;
+
+              result = add(5, 3);
+              printf("5 + 3 = %d\n", result);
+
+              result = multiply(4, 7);
+              printf("4 * 7 = %d\n", result);
+
+              result = divide(10, 2);
+              printf("10 / 2 = %d\n", result);
+
+              return 0;
+          }

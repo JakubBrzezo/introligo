@@ -1034,11 +1034,310 @@ modules:
     title: "💡 Examples"
     description: "Real-world examples and use cases"
     overview: |
-      Learn from practical examples of Introligo usage in different scenarios.
+      Learn from practical, working examples of Introligo usage in different scenarios.
+
+      The Introligo repository includes complete example projects demonstrating how to
+      document Python and C/C++ code. These examples are fully functional and can be
+      built and previewed using the ``preview.py`` script.
+
+  example_projects:
+    parent: "examples"
+    title: "📦 Complete Example Projects"
+    description: "Working example projects included in the repository"
+    overview: |
+      The ``examples/`` directory contains two complete, working example projects that
+      demonstrate how to use Introligo for different languages and scenarios. Each example
+      includes all necessary configuration files, source code, and documentation.
+
+      These examples can be built and previewed using the enhanced ``preview.py`` script:
+
+      .. code-block:: bash
+
+         # List all available examples
+         python docs/preview.py --list-examples
+
+         # Run a specific example
+         python docs/preview.py --example python_project
+         python docs/preview.py --example c_project
+
+    usage_examples:
+      - title: "🐍 Python Project Example"
+        description: "String utilities module with autodoc integration"
+        language: "bash"
+        code: |
+          # Run the Python example (ready to use immediately)
+          python docs/preview.py --example python_project
+
+          # Or build manually
+          cd examples/python_project
+          python -m introligo introligo_config.yaml -o docs
+          cd docs && sphinx-build -b html . _build/html
+
+      - title: "🔬 C Project Example"
+        description: "Calculator library with Doxygen/Breathe integration"
+        language: "bash"
+        code: |
+          # First generate Doxygen XML
+          cd examples/c_project
+          doxygen Doxyfile
+          cd ../..
+
+          # Then build and serve documentation
+          python docs/preview.py --example c_project
+
+    custom_sections:
+      - title: "Python Example Contents"
+        content: |
+          **Python Project (``examples/python_project/``)**
+
+          A complete example showing how to document Python code using Introligo with
+          Sphinx autodoc:
+
+          * ``string_utils.py`` - Python module with 5 utility functions
+          * ``introligo_config.yaml`` - Introligo configuration
+          * ``docs/conf.py`` - Sphinx configuration with autodoc & Napoleon
+          * ``README.md`` - Complete step-by-step guide
+
+          **Features demonstrated:**
+
+          * Python module documentation with docstrings
+          * Type hints support
+          * Google-style docstrings with Napoleon
+          * Usage examples in YAML
+          * Automatic API reference generation
+          * Hierarchical page organization
+
+      - title: "C Example Contents"
+        content: |
+          **C Project (``examples/c_project/``)**
+
+          A complete example showing how to document C code using Introligo with
+          Doxygen and Breathe:
+
+          * ``calculator.h`` / ``calculator.c`` - C library with Doxygen comments
+          * ``Doxyfile`` - Doxygen configuration
+          * ``introligo_config.yaml`` - Introligo configuration for C/Breathe
+          * ``docs/conf.py`` - Sphinx configuration with Breathe extension
+          * ``README.md`` - Complete guide including Doxygen setup
+
+          **Features demonstrated:**
+
+          * C code documentation with Doxygen comments
+          * Breathe/Sphinx integration
+          * Multiple file documentation (header + implementation)
+          * XML generation and processing
+          * API documentation from C comments
+
+      - title: "Using the Examples"
+        content: |
+          **Quick Start:**
+
+          The ``preview.py`` script has been enhanced with example support:
+
+          .. code-block:: bash
+
+             # List all available examples
+             python docs/preview.py --list-examples
+
+             # Run Python example (works immediately)
+             python docs/preview.py --example python_project
+
+             # Run C example (requires Doxygen first)
+             cd examples/c_project && doxygen Doxyfile && cd ../..
+             python docs/preview.py --example c_project
+
+          **What Each Example Includes:**
+
+          Each example project contains:
+
+          * Complete source code with documentation comments
+          * ``introligo_config.yaml`` - Introligo configuration
+          * ``docs/conf.py`` - Sphinx configuration
+          * ``README.md`` - Step-by-step guide
+          * All necessary configuration files
+
+          **Learning from Examples:**
+
+          1. Explore the example directory structure
+          2. Read the README.md for step-by-step instructions
+          3. Examine the introligo_config.yaml configuration
+          4. Run the example using preview.py
+          5. View the generated documentation
+          6. Adapt the configuration for your own project
+
+    notes: |
+      .. tip::
+
+         **Try the Examples**: The best way to learn Introligo is to run the included
+         examples and examine their configuration files. Start with the Python example
+         as it requires no additional setup.
+
+      .. important::
+
+         **C/C++ Examples**: The C example requires Doxygen to be installed and run
+         before building the documentation. See the example's README.md for detailed
+         instructions.
+
+      .. note::
+
+         **Creating Your Own**: Use these examples as templates for your own projects.
+         Copy the relevant files and modify them for your specific needs.
+
+  example_python_config:
+    parent: "examples"
+    title: "🐍 Python Example Configuration"
+    description: "Detailed walkthrough of the Python example configuration"
+    overview: |
+      The Python example demonstrates best practices for documenting Python modules
+      with Introligo and Sphinx autodoc.
+
+    usage_examples:
+      - title: "Python Example - introligo_config.yaml"
+        description: "Configuration for Python module documentation"
+        language: "yaml"
+        code: |
+          index:
+            title: "String Utils Documentation"
+            description: "Common string manipulation utilities for Python"
+
+          generate_index: true
+
+          modules:
+            utilities:
+              title: "Utility Functions"
+              description: "Collection of utility modules"
+
+            string_utils:
+              parent: "utilities"
+              module: "string_utils"
+              title: "String Utilities"
+              description: "Common string manipulation and analysis functions"
+
+              overview: |
+                The String Utils module provides a collection of helpful functions
+                for working with strings in Python.
+
+              features:
+                - "Capitalize words in strings"
+                - "Count vowels and words"
+                - "Reverse strings efficiently"
+                - "Check for palindromes"
+                - "Full type hints for IDE support"
+
+              usage_examples:
+                - title: "Basic String Manipulation"
+                  description: "Capitalize and reverse strings"
+                  language: "python"
+                  code: |
+                    from string_utils import capitalize_words, reverse_string
+
+                    text = "hello world"
+                    result = capitalize_words(text)
+                    print(result)  # "Hello World"
+
+      - title: "Python Example - conf.py"
+        description: "Sphinx configuration for Python autodoc"
+        language: "python"
+        code: |
+          # Configuration file for Sphinx documentation
+          import os
+          import sys
+
+          # Add parent directory to path for module imports
+          sys.path.insert(0, os.path.abspath('..'))
+
+          project = 'String Utils'
+          extensions = [
+              'sphinx.ext.autodoc',    # Auto-generate from docstrings
+              'sphinx.ext.napoleon',   # Google/NumPy style docstrings
+              'sphinx.ext.viewcode',   # Add source code links
+          ]
+
+          html_theme = 'alabaster'
+
+          # Napoleon settings
+          napoleon_google_docstring = True
+          napoleon_include_init_with_doc = True
+
+  example_c_config:
+    parent: "examples"
+    title: "🔬 C Example Configuration"
+    description: "Detailed walkthrough of the C example configuration"
+    overview: |
+      The C example demonstrates how to integrate Doxygen-generated documentation
+      into Sphinx using Introligo and Breathe.
+
+    usage_examples:
+      - title: "C Example - introligo_config.yaml"
+        description: "Configuration for C code documentation with Doxygen/Breathe"
+        language: "yaml"
+        code: |
+          index:
+            title: "Calculator Library Documentation"
+            description: "Simple calculator library"
+
+          generate_index: true
+
+          # Global Doxygen configuration
+          doxygen:
+            xml_path: "output/xml"
+            project_name: "calculator"
+
+          modules:
+            api_reference:
+              title: "API Reference"
+              description: "Complete API documentation"
+
+            calculator:
+              parent: "api_reference"
+              title: "Calculator Functions"
+              language: c
+              description: "Basic arithmetic operations"
+
+              # Document both header and implementation
+              doxygen_files:
+                - calculator.h
+                - calculator.c
+
+              features:
+                - "Addition and subtraction"
+                - "Multiplication and division"
+                - "Zero-division checking"
+
+      - title: "C Example - Doxyfile"
+        description: "Doxygen configuration for XML generation"
+        language: "text"
+        code: |
+          PROJECT_NAME = "Calculator Library"
+          OUTPUT_DIRECTORY = output
+
+          INPUT = calculator.h calculator.c
+          GENERATE_XML = YES
+          GENERATE_HTML = YES
+          EXTRACT_ALL = YES
+
+      - title: "C Example - conf.py"
+        description: "Sphinx configuration with Breathe"
+        language: "python"
+        code: |
+          # Configuration file for C documentation with Breathe
+          project = 'Calculator Library'
+
+          extensions = [
+              'breathe',  # Doxygen integration
+          ]
+
+          html_theme = 'alabaster'
+
+          # Breathe configuration
+          breathe_projects = {
+              "calculator": "../output/xml"
+          }
+          breathe_default_project = "calculator"
 
   example_basic:
     parent: "examples"
-    title: "Basic Documentation"
+    title: "📝 Basic Documentation"
     description: "Simple flat documentation structure"
     usage_examples:
       - title: "Basic Configuration"
@@ -1058,7 +1357,7 @@ modules:
 
   example_hierarchical:
     parent: "examples"
-    title: "Hierarchical Documentation"
+    title: "🗂️ Hierarchical Documentation"
     description: "Organized multi-level documentation"
     usage_examples:
       - title: "Hierarchical Structure"

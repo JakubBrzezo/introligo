@@ -1,0 +1,24 @@
+# Doxyfile for Calculator Example
+
+# Project information
+PROJECT_NAME           = "Calculator Library"
+PROJECT_BRIEF          = "Simple calculator for basic arithmetic operations"
+OUTPUT_DIRECTORY       = output
+
+# Input files
+INPUT                  = calculator.h calculator.c
+RECURSIVE              = NO
+
+# Output formats
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+
+# Documentation extraction
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+
+# Other settings
+QUIET                  = NO
+WARNINGS               = YES

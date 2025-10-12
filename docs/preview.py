@@ -45,6 +45,7 @@ import socket
 import subprocess
 import sys
 import threading
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
@@ -53,6 +54,7 @@ DOCS_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = DOCS_DIR.parent
 BUILD_DIR = DOCS_DIR / "_build"
 HTML_DIR = BUILD_DIR / "html"
+EXAMPLES_DIR = PROJECT_ROOT / "examples"
 
 # Default Introligo configuration file
 INTROLIGO_CONFIG = DOCS_DIR / "composition" / "introligo_config.yaml"
@@ -74,9 +76,11 @@ def signal_handler(signum: int, frame: Optional[object]) -> None:
         Uses threading to avoid blocking the signal handler.
     """
     global _shutdown_requested
-    signal_name = {signal.SIGINT: "SIGINT (Ctrl+C)", signal.SIGTERM: "SIGTERM"}.get(
-        signum, f"Signal {signum}"
-    )
+    signal_map: dict[int, str] = {
+        int(signal.SIGINT): "SIGINT (Ctrl+C)",
+        int(signal.SIGTERM): "SIGTERM",
+    }
+    signal_name = signal_map.get(signum, f"Signal {signum}")
 
     print(f"\n🛑 Received {signal_name}, shutting down gracefully...")
     _shutdown_requested = True
@@ -106,12 +110,67 @@ def setup_signal_handlers() -> None:
         signal.signal(signal.SIGTERM, signal_handler)
 
 
-def run(cmd: list[Union[str, Path]], cwd: Optional[Path] = None) -> Tuple[int, str]:
+def list_examples() -> list[str]:
+    """List all available examples in the examples directory.
+
+    Returns:
+        A list of example names (directory names in examples/)
+
+    Note:
+        Only directories containing introligo_config.yaml are considered valid examples.
+    """
+    if not EXAMPLES_DIR.exists():
+        return []
+
+    examples = []
+    for item in EXAMPLES_DIR.iterdir():
+        if item.is_dir() and (item / "introligo_config.yaml").exists():
+            examples.append(item.name)
+    return sorted(examples)
+
+
+def get_example_config(example_name: str) -> Optional[Path]:
+    """Get the path to an example's Introligo configuration file.
+
+    Args:
+        example_name: Name of the example (directory name in examples/)
+
+    Returns:
+        Path to the example's introligo_config.yaml if it exists, None otherwise
+
+    Note:
+        Prints error messages if the example is not found or invalid.
+    """
+    example_dir = EXAMPLES_DIR / example_name
+    config_file = example_dir / "introligo_config.yaml"
+
+    if not example_dir.exists():
+        print(f"⛔ Example '{example_name}' not found in {EXAMPLES_DIR}")
+        available = list_examples()
+        if available:
+            print(f"   Available examples: {', '.join(available)}")
+        else:
+            print("   No examples found. Create examples in the examples/ directory.")
+        return None
+
+    if not config_file.exists():
+        print(f"⛔ Example '{example_name}' is missing introligo_config.yaml")
+        return None
+
+    return config_file
+
+
+def run(
+    cmd: Sequence[Union[str, Path]],
+    cwd: Optional[Path] = None,
+    env: Optional[dict[str, str]] = None,
+) -> Tuple[int, str]:
     """Run a command and return its exit code and output.
 
     Args:
         cmd: Command and arguments to execute
         cwd: Working directory for command execution (defaults to current directory)
+        env: Environment variables for the command (defaults to current environment)
 
     Returns:
         A tuple containing (return_code, combined_stdout_stderr)
@@ -129,6 +188,7 @@ def run(cmd: list[Union[str, Path]], cwd: Optional[Path] = None) -> Tuple[int, s
         proc = subprocess.run(
             cmd,
             cwd=cwd,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -148,12 +208,15 @@ def run(cmd: list[Union[str, Path]], cwd: Optional[Path] = None) -> Tuple[int, s
         return 1, ""
 
 
-def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> bool:
+def run_introligo(
+    config_file: Optional[Path] = None, skip: bool = False, output_dir: Optional[Path] = None
+) -> bool:
     """Run Introligo to generate RST documentation from YAML configuration.
 
     Args:
         config_file: Path to Introligo YAML configuration file
         skip: If True, skip Introligo generation
+        output_dir: Directory to output generated RST files (defaults to DOCS_DIR)
 
     Returns:
         True if Introligo completed successfully or was skipped, False otherwise
@@ -171,6 +234,7 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
         return False
 
     config_path = config_file or INTROLIGO_CONFIG
+    out_dir = output_dir or DOCS_DIR
 
     # Check if configuration file exists
     if not config_path.exists():
@@ -180,13 +244,43 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
 
     print("▶ Generating documentation structure with Introligo…")
     print(f"  📄 Config: {config_path}")
-    print(f"  📁 Output: {DOCS_DIR}")
+    print(f"  📁 Output: {out_dir}")
 
-    # Run Introligo as a Python module
-    # This works whether introligo is installed via pip or running from source
-    cmd = [sys.executable, "-m", "introligo", str(config_path), "-o", str(DOCS_DIR)]
+    # Use the config file's parent directory as working directory for relative paths
+    config_dir = config_path.parent
 
-    code, out = run(cmd, cwd=PROJECT_ROOT)
+    # Always try to run from source first since we're in the introligo repository
+    introligo_main = PROJECT_ROOT / "introligo" / "__main__.py"
+
+    if introligo_main.exists():
+        # Run from source directory - we're in the introligo repo
+        # Add project root to PYTHONPATH so introligo can be imported
+        cmd_env = os.environ.copy()
+        pythonpath = cmd_env.get("PYTHONPATH", "")
+        cmd_env["PYTHONPATH"] = (
+            f"{PROJECT_ROOT}{os.pathsep}{pythonpath}" if pythonpath else str(PROJECT_ROOT)
+        )
+        cmd = [sys.executable, str(introligo_main), str(config_path), "-o", str(out_dir)]
+        print("  ℹ️  Running from source (not installed)")
+    else:
+        # Try installed version as fallback
+        test_import = subprocess.run(
+            [sys.executable, "-c", "import introligo"],
+            capture_output=True,
+            text=True,
+        )
+
+        if test_import.returncode == 0:
+            # Introligo is installed, use -m to run it
+            cmd = [sys.executable, "-m", "introligo", str(config_path), "-o", str(out_dir)]
+            cmd_env = None
+        else:
+            print("⛔ Introligo not found as installed package or in source directory")
+            print(f"   Expected source at: {introligo_main}")
+            print("   Install with: pip install -e .")
+            return False
+
+    code, out = run(cmd, cwd=config_dir, env=cmd_env)
 
     if code != 0:
         print("⛔ Introligo failed to generate documentation structure")
@@ -194,7 +288,7 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
         return False
 
     # Verify that files were generated
-    generated_dir = DOCS_DIR / "generated"
+    generated_dir = out_dir / "generated"
     if generated_dir.exists():
         rst_files = list(generated_dir.rglob("*.rst"))
         print(f"✅ Introligo generated {len(rst_files)} RST files")
@@ -204,8 +298,12 @@ def run_introligo(config_file: Optional[Path] = None, skip: bool = False) -> boo
     return True
 
 
-def run_sphinx() -> bool:
+def run_sphinx(docs_dir: Optional[Path] = None, html_dir: Optional[Path] = None) -> bool:
     """Run Sphinx documentation build.
+
+    Args:
+        docs_dir: Directory containing Sphinx source files (defaults to DOCS_DIR)
+        html_dir: Directory for HTML output (defaults to HTML_DIR)
 
     Returns:
         True if Sphinx build completed successfully, False otherwise
@@ -216,17 +314,20 @@ def run_sphinx() -> bool:
     if _shutdown_requested:
         return False
 
+    src_dir = docs_dir or DOCS_DIR
+    out_dir = html_dir or HTML_DIR
+
     print("▶ Building Sphinx documentation…")
 
     # Check if conf.py exists
-    conf_path = DOCS_DIR / "conf.py"
+    conf_path = src_dir / "conf.py"
     if not conf_path.exists():
         print(f"⛔ Sphinx conf.py not found at {conf_path}")
         print("   Please create a Sphinx configuration file")
         return False
 
     # -n => nitpicky checks, -b html => HTML builder
-    code, out = run(["sphinx-build", "-n", "-b", "html", str(DOCS_DIR), str(HTML_DIR)])
+    code, out = run(["sphinx-build", "-n", "-b", "html", str(src_dir), str(out_dir)])
 
     if code != 0:
         print("⛔ Sphinx build failed")
@@ -339,14 +440,16 @@ def find_free_port(preferred: int = 8000) -> int:
 
     with socket.socket() as s:
         s.bind(("", 0))
-        return s.getsockname()[1]
+        port: int = s.getsockname()[1]
+        return port
 
 
-def serve_docs(port: Optional[int] = None) -> None:
+def serve_docs(port: Optional[int] = None, html_dir: Optional[Path] = None) -> None:
     """Serve built docs and handle shutdown gracefully.
 
     Args:
         port: Port number to serve on (defaults to auto-detection starting at 8000)
+        html_dir: Directory containing HTML files to serve (defaults to HTML_DIR)
 
     Raises:
         SystemExit: If HTML directory doesn't exist
@@ -360,14 +463,16 @@ def serve_docs(port: Optional[int] = None) -> None:
     if _shutdown_requested:
         return
 
-    if not HTML_DIR.exists():
-        print(f"⛔ HTML directory does not exist: {HTML_DIR}")
+    serve_dir = html_dir or HTML_DIR
+
+    if not serve_dir.exists():
+        print(f"⛔ HTML directory does not exist: {serve_dir}")
         sys.exit(2)
 
     port = port or find_free_port(8000)
     old_cwd = Path.cwd()
     try:
-        os.chdir(HTML_DIR)
+        os.chdir(serve_dir)
 
         # Create server with custom handler
         _httpd = GracefulHTTPServer(("", port), QuietHTTPRequestHandler)
@@ -424,6 +529,8 @@ Examples:
   %(prog)s --config custom.yaml    # Use custom Introligo config
   %(prog)s --port 8080             # Serve on specific port
   %(prog)s --no-serve              # Build only, don't serve
+  %(prog)s --example python_project # Run example by name
+  %(prog)s --list-examples         # List all available examples
         """,
     )
 
@@ -449,19 +556,78 @@ Examples:
         help="Build documentation but don't start the preview server",
     )
 
+    parser.add_argument(
+        "--example",
+        type=str,
+        help="Run a specific example by name (e.g., python_project, c_project)",
+    )
+
+    parser.add_argument(
+        "--list-examples",
+        action="store_true",
+        help="List all available examples in the examples/ directory",
+    )
+
     args = parser.parse_args()
 
     try:
+        # Handle --list-examples
+        if args.list_examples:
+            examples = list_examples()
+            if examples:
+                print("📚 Available examples:")
+                for example in examples:
+                    example_dir = EXAMPLES_DIR / example
+                    readme = example_dir / "README.md"
+                    if readme.exists():
+                        # Try to extract first line of README as description
+                        with open(readme) as f:
+                            first_line = f.readline().strip().lstrip("#").strip()
+                        print(f"  • {example:<20} - {first_line}")
+                    else:
+                        print(f"  • {example}")
+                print(f"\n💡 Run an example with: {sys.argv[0]} --example <name>")
+            else:
+                print("📚 No examples found in examples/ directory")
+            sys.exit(0)
+
+        # Handle --example
+        if args.example:
+            example_config = get_example_config(args.example)
+            if not example_config:
+                sys.exit(1)
+
+            # Override config with example config
+            args.config = example_config
+
+            # Use example directory for output
+            example_dir = EXAMPLES_DIR / args.example
+            example_docs_dir = example_dir / "docs"
+
+            print(f"🎯 Running example: {args.example}")
+            print(f"📁 Example directory: {example_dir}")
+            print("-" * 50)
+
         # Set up signal handlers first
         setup_signal_handlers()
 
+        # Determine output directory
+        if args.example:
+            output_dir = example_docs_dir
+            build_dir = output_dir / "_build"
+            html_dir = build_dir / "html"
+        else:
+            output_dir = DOCS_DIR
+            build_dir = BUILD_DIR
+            html_dir = HTML_DIR
+
         print("🚀 Starting Introligo documentation build...")
-        print(f"📁 Working directory: {DOCS_DIR}")
-        print(f"🎯 Output directory: {HTML_DIR}")
+        print(f"📁 Working directory: {output_dir.parent if args.example else DOCS_DIR}")
+        print(f"🎯 Output directory: {html_dir}")
         print("-" * 50)
 
         # Run Introligo first to generate RST structure
-        if not run_introligo(args.config, args.skip_introligo):
+        if not run_introligo(args.config, args.skip_introligo, output_dir):
             print("⛔ Build failed at Introligo stage")
             sys.exit(1)
 
@@ -470,7 +636,7 @@ Examples:
             sys.exit(0)
 
         # Run Sphinx
-        if not run_sphinx():
+        if not run_sphinx(output_dir, html_dir):
             print("⛔ Build failed at Sphinx stage")
             sys.exit(1)
 
@@ -483,10 +649,10 @@ Examples:
 
         # Serve the documentation unless --no-serve flag is used
         if not args.no_serve:
-            serve_docs(port=args.port)
+            serve_docs(port=args.port, html_dir=html_dir)
         else:
-            print(f"📁 Documentation built at: {HTML_DIR}")
-            print(f"💡 To serve manually: python -m http.server {args.port} --directory {HTML_DIR}")
+            print(f"📁 Documentation built at: {html_dir}")
+            print(f"💡 To serve manually: python -m http.server {args.port} --directory {html_dir}")
 
     except KeyboardInterrupt:
         print("\n🛑 Process interrupted by user")
