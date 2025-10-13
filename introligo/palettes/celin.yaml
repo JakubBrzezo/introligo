@@ -1,0 +1,155 @@
+# Celin Color Palette for Sphinx Furo Theme
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+# Cosmic-inspired color scheme with light and dark modes
+
+name: "Celin"
+description: "Cosmic-inspired color scheme from the Celin Project"
+
+# Color palette definitions
+colors:
+  intergalactic_space:
+    1: "#060E1D"
+    2: "#08162C"
+    3: "#0B1D3A"
+    4: "#0E2448"
+    5: "#102C57"
+
+  cosmic_dawn:
+    1: "#1D3E80"
+    2: "#2C5EBF"
+    3: "#3A7DFF"
+    4: "#489CFF"
+    5: "#57BBFF"
+
+  clouds_of_uranus:
+    1: "#167173"
+    2: "#22AAAC"
+    3: "#2DE2E6"
+    4: "#38FFFF"
+    5: "#44FFFF"
+
+  pulsar_light:
+    1: "#7A7C7D"
+    2: "#B7B9BB"
+    3: "#F4F7FA"
+    4: "#FFFFFF"
+    5: "#FFFFFF"
+
+  aurora_borealis:
+    1: "#2E793C"
+    2: "#45B55B"
+    3: "#5CF279"
+    4: "#73FF97"
+    5: "#8AFFB5"
+
+  betelgeuse_flash:
+    1: "#804826"
+    2: "#BF6D3A"
+    3: "#FF914D"
+    4: "#FFB560"
+    5: "#FFDA73"
+
+  galactic_dust:
+    1: "#795463"
+    2: "#B57D94"
+    3: "#F2A7C6"
+    4: "#FFD1F8"
+    5: "#FFFBFF"
+
+  meteor_arc:
+    1: "#7C6B2E"
+    2: "#BBA045"
+    3: "#F9D65C"
+    4: "#FFFF73"
+    5: "#FFFF8A"
+
+  echo_of_mars:
+    1: "#802636"
+    2: "#BF3A52"
+    3: "#FF4D6D"
+    4: "#FF6088"
+    5: "#FF73A3"
+
+# Light mode theme mapping
+light_mode:
+  # Brand colors
+  color-brand-primary: "{cosmic_dawn.3}"  # #3A7DFF
+  color-brand-content: "{clouds_of_uranus.3}"  # #2DE2E6
+
+  # Background colors
+  color-background-primary: "{pulsar_light.3}"  # #F4F7FA
+  color-background-secondary: "{pulsar_light.4}"  # #FFFFFF
+
+  # Foreground/text colors
+  color-foreground-primary: "{intergalactic_space.3}"  # #0B1D3A
+  color-foreground-secondary: "{intergalactic_space.2}"  # #08162C
+
+  # Sidebar colors
+  color-sidebar-background: "{pulsar_light.3}"
+  color-sidebar-background-border: "#E5E5E5"
+  color-sidebar-item-background--current: "{cosmic_dawn.3}"
+  color-sidebar-item-background--hover: "{cosmic_dawn.1}"
+  color-sidebar-link-text: "{intergalactic_space.3}"
+  color-sidebar-link-text--top-level: "{intergalactic_space.3}"
+
+  # Links
+  color-link: "{cosmic_dawn.3}"
+  color-link--hover: "{clouds_of_uranus.3}"
+  color-link-underline: "{cosmic_dawn.3}"
+  color-link-underline--hover: "{clouds_of_uranus.3}"
+
+  # Code blocks
+  color-inline-code-background: "#EEF2F7"
+  color-inline-code-foreground: "{intergalactic_space.3}"
+
+  # Headers
+  color-header-background: "{pulsar_light.3}"
+  color-header-border: "#E5E5E5"
+  color-header-text: "{intergalactic_space.3}"
+
+  # Admonitions
+  color-admonition-background: "#EEF7FF"
+  color-admonition-title-background: "{cosmic_dawn.3}"
+  color-admonition-title: "{pulsar_light.4}"
+
+# Dark mode theme mapping
+dark_mode:
+  # Brand colors
+  color-brand-primary: "{cosmic_dawn.3}"
+  color-brand-content: "{clouds_of_uranus.3}"
+
+  # Background colors (dark)
+  color-background-primary: "{intergalactic_space.3}"
+  color-background-secondary: "{intergalactic_space.2}"
+
+  # Foreground/text colors (light)
+  color-foreground-primary: "{pulsar_light.3}"
+  color-foreground-secondary: "#DEE5EA"
+
+  # Sidebar (dark)
+  color-sidebar-background: "{intergalactic_space.2}"
+  color-sidebar-background-border: "#1A2B47"
+  color-sidebar-item-background--current: "{cosmic_dawn.3}"
+  color-sidebar-item-background--hover: "{intergalactic_space.5}"
+  color-sidebar-link-text: "{pulsar_light.3}"
+  color-sidebar-link-text--top-level: "{pulsar_light.3}"
+
+  # Links
+  color-link: "{cosmic_dawn.3}"
+  color-link--hover: "{clouds_of_uranus.3}"
+  color-link-underline: "{cosmic_dawn.3}"
+  color-link-underline--hover: "{clouds_of_uranus.3}"
+
+  # Code blocks (dark)
+  color-inline-code-background: "#102953"
+  color-inline-code-foreground: "{pulsar_light.3}"
+
+  # Headers (dark)
+  color-header-background: "{intergalactic_space.2}"
+  color-header-border: "#1A2B47"
+  color-header-text: "{pulsar_light.3}"
+
+  # Admonitions (dark)
+  color-admonition-background: "#102953"
+  color-admonition-title-background: "{cosmic_dawn.3}"
+  color-admonition-title: "{pulsar_light.4}"

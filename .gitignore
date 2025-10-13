@@ -211,3 +211,4 @@ __marimo__/
 generated/
 *.rst
 htmlcov/
+*/conf.py

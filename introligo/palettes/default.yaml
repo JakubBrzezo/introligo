@@ -1,0 +1,108 @@
+# Default Color Palette for Sphinx Furo Theme
+# Simple, clean color scheme suitable for any documentation
+
+name: "Default"
+description: "Clean and simple color scheme for general documentation"
+
+# Color palette definitions
+colors:
+  primary_blue:
+    1: "#0051C3"
+    2: "#0066FF"
+    3: "#3385FF"
+
+  neutral_gray:
+    1: "#1A1A1A"
+    2: "#333333"
+    3: "#666666"
+    4: "#999999"
+    5: "#F5F5F5"
+    6: "#FFFFFF"
+
+  accent_green:
+    1: "#00A86B"
+    2: "#00CC85"
+
+# Light mode theme mapping
+light_mode:
+  # Brand colors
+  color-brand-primary: "{primary_blue.2}"
+  color-brand-content: "{primary_blue.3}"
+
+  # Background colors
+  color-background-primary: "{neutral_gray.6}"
+  color-background-secondary: "{neutral_gray.5}"
+
+  # Foreground/text colors
+  color-foreground-primary: "{neutral_gray.1}"
+  color-foreground-secondary: "{neutral_gray.2}"
+
+  # Sidebar colors
+  color-sidebar-background: "{neutral_gray.5}"
+  color-sidebar-background-border: "{neutral_gray.4}"
+  color-sidebar-item-background--current: "{primary_blue.2}"
+  color-sidebar-item-background--hover: "{primary_blue.1}"
+  color-sidebar-link-text: "{neutral_gray.1}"
+  color-sidebar-link-text--top-level: "{neutral_gray.1}"
+
+  # Links
+  color-link: "{primary_blue.2}"
+  color-link--hover: "{primary_blue.3}"
+  color-link-underline: "{primary_blue.2}"
+  color-link-underline--hover: "{primary_blue.3}"
+
+  # Code blocks
+  color-inline-code-background: "{neutral_gray.5}"
+  color-inline-code-foreground: "{neutral_gray.1}"
+
+  # Headers
+  color-header-background: "{neutral_gray.5}"
+  color-header-border: "{neutral_gray.4}"
+  color-header-text: "{neutral_gray.1}"
+
+  # Admonitions
+  color-admonition-background: "#E6F2FF"
+  color-admonition-title-background: "{primary_blue.2}"
+  color-admonition-title: "{neutral_gray.6}"
+
+# Dark mode theme mapping
+dark_mode:
+  # Brand colors
+  color-brand-primary: "{primary_blue.3}"
+  color-brand-content: "{primary_blue.3}"
+
+  # Background colors (dark)
+  color-background-primary: "{neutral_gray.1}"
+  color-background-secondary: "{neutral_gray.2}"
+
+  # Foreground/text colors (light)
+  color-foreground-primary: "{neutral_gray.5}"
+  color-foreground-secondary: "{neutral_gray.6}"
+
+  # Sidebar (dark)
+  color-sidebar-background: "{neutral_gray.2}"
+  color-sidebar-background-border: "{neutral_gray.3}"
+  color-sidebar-item-background--current: "{primary_blue.2}"
+  color-sidebar-item-background--hover: "{primary_blue.1}"
+  color-sidebar-link-text: "{neutral_gray.5}"
+  color-sidebar-link-text--top-level: "{neutral_gray.5}"
+
+  # Links
+  color-link: "{primary_blue.3}"
+  color-link--hover: "{accent_green.2}"
+  color-link-underline: "{primary_blue.3}"
+  color-link-underline--hover: "{accent_green.2}"
+
+  # Code blocks (dark)
+  color-inline-code-background: "{neutral_gray.2}"
+  color-inline-code-foreground: "{neutral_gray.5}"
+
+  # Headers (dark)
+  color-header-background: "{neutral_gray.2}"
+  color-header-border: "{neutral_gray.3}"
+  color-header-text: "{neutral_gray.5}"
+
+  # Admonitions (dark)
+  color-admonition-background: "#1A3A5C"
+  color-admonition-title-background: "{primary_blue.2}"
+  color-admonition-title: "{neutral_gray.6}"

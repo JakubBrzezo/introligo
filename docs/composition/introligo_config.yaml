@@ -21,6 +21,54 @@ index:
 
 generate_index: true
 
+# Sphinx configuration - auto-generates conf.py
+sphinx:
+  project: "Introligo"
+  author: "WT Tech Jakub Brzezowski"
+
+  # Version management from git tags
+  version_from_git: true
+  fallback_version: "1.1.0"
+
+  # Path configuration
+  project_root: "."
+  add_project_to_path: true
+
+  # Sphinx extensions
+  extensions:
+    - "sphinx.ext.autodoc"
+    - "sphinx.ext.viewcode"
+    - "sphinx.ext.napoleon"
+    - "sphinx.ext.intersphinx"
+
+  # Template and build settings
+  templates_path: ["_templates"]
+  exclude_patterns: ["_build", "Thumbs.db", ".DS_Store"]
+  language: "en"
+
+  # Intersphinx mapping
+  intersphinx_mapping:
+    python:
+      - "https://docs.python.org/3"
+      - null
+    sphinx:
+      - "https://www.sphinx-doc.org/en/master"
+      - null
+
+  # HTML output configuration
+  html_theme: "furo"
+  html_static_path: ["_static"]
+  html_title: "Introligo Documentation"
+  html_logo: "str(PROJECT_ROOT / '_assets' / 'introligo-logo.png')"
+  html_favicon: "str(PROJECT_ROOT / '_assets' / 'favicon.ico')"
+
+  # Use Celin color palette
+  palette: "celin"
+
+  # Theme options for Furo
+  html_theme_options:
+    sidebar_hide_name: false
+
 modules:
   # ============================================================================
   # GETTING STARTED
@@ -600,22 +648,65 @@ modules:
   md_basic_usage:
     parent: "markdown_includes"
     title: "📚 Basic Usage"
-    markdown_includes: "markdown/basic_usage.md"
+    markdown_includes: "markdown/md_tutorial/basic_usage.md"
 
   md_best_practices:
     parent: "markdown_includes"
     title: "🎯 Best Practices"
-    markdown_includes: "markdown/best_practices.md"
+    markdown_includes: "markdown/md_tutorial/best_practices.md"
 
   md_use_cases:
     parent: "markdown_includes"
     title: "💼 Use Cases"
-    markdown_includes: "markdown/use_cases.md"
+    markdown_includes: "markdown/md_tutorial/use_cases.md"
 
   md_troubleshooting:
     parent: "markdown_includes"
     title: "🔧 Troubleshooting"
-    markdown_includes: "markdown/troubleshooting.md"
+    markdown_includes: "markdown/md_tutorial/troubleshooting.md"
+
+  sphinx_tutorial:
+    parent: "user_guide"
+    title: "📘 Sphinx Configuration Tutorial"
+    description: "Complete guide to using Sphinx with Introligo"
+    overview: |
+      Learn how to configure and use Sphinx with Introligo's auto-generation features.
+      This comprehensive tutorial covers everything from basic setup to advanced features
+      like autodoc, themes, color palettes, and custom extensions.
+
+      **What You'll Learn:**
+
+      - Setting up Sphinx with Introligo
+      - Auto-generating conf.py from YAML
+      - Configuring themes and color palettes
+      - Using extensions (autodoc, Breathe, etc.)
+      - Advanced features and best practices
+
+      This tutorial uses the same markdown inclusion feature it teaches you about!
+
+  sphinx_tutorial_intro:
+    parent: "sphinx_tutorial"
+    title: "1️⃣ Introduction"
+    description: "Get started with Sphinx and Introligo"
+    markdown_includes: "markdown/sphinx_tutorial/01_introduction.md"
+
+  sphinx_tutorial_config:
+    parent: "sphinx_tutorial"
+    title: "2️⃣ Configuration"
+    description: "Learn how to configure Sphinx in YAML"
+    markdown_includes: "markdown/sphinx_tutorial/02_configuration.md"
+
+  sphinx_tutorial_themes:
+    parent: "sphinx_tutorial"
+    title: "3️⃣ Themes and Colors"
+    description: "Make your documentation beautiful"
+    markdown_includes: "markdown/sphinx_tutorial/03_themes_and_colors.md"
+
+  sphinx_tutorial_advanced:
+    parent: "sphinx_tutorial"
+    title: "4️⃣ Advanced Features"
+    description: "Master autodoc, Breathe, and more"
+    markdown_includes: "markdown/sphinx_tutorial/04_advanced.md"
 
   latex_includes:
     parent: "user_guide"

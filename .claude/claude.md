@@ -71,12 +71,14 @@ introligo/
 
 **Before committing code:**
 ```bash
-# Run all checks
+# Run all checks (same as CI/CD pipeline in .github/workflows/tests.yml)
 ruff check .
 ruff format --check .
 mypy introligo
-pytest tests/ --cov=introligo
+pytest tests/ --cov=introligo --cov-report=term-missing --cov-report=xml
 ```
+
+**All checks must pass without errors.**
 
 ### Code Style
 - Follow PEP 8 conventions for Python code
@@ -93,10 +95,35 @@ pytest tests/ --cov=introligo
 - Keep documentation up-to-date with code changes
 
 ### Testing
+
+**Test Coverage Requirements:**
+- **Target Coverage**: Test coverage should oscillate around **100%**
+- **Minimum Coverage**: Never drop below 95%
+- All new features must include comprehensive tests
+- Test both happy paths and edge cases
+
+**Running Tests:**
+```bash
+# Run all tests with coverage report
+pytest tests/ --cov=introligo --cov-report=term-missing --cov-report=xml
+
+# The coverage report will show which lines are not covered
+# Example output:
+# Name                    Stmts   Miss  Cover   Missing
+# -----------------------------------------------------
+# introligo/__init__.py       5      0   100%
+# introligo/__main__.py     450      0   100%
+# -----------------------------------------------------
+# TOTAL                     455      0   100%
+```
+
+**Test Best Practices:**
 - Test all changes with both dry-run and actual generation
 - Verify RST output builds correctly with Sphinx
 - Test with different configuration scenarios
 - Ensure backward compatibility
+- Test error handling and edge cases
+- Use fixtures for common test setup
 
 ## Working with Introligo
 
@@ -326,11 +353,11 @@ my_module:
 
 When working with this project:
 
-1. **Always run code quality checks** before completing any task:
+1. **Always run code quality checks** before completing any task (matching CI/CD pipeline in `.github/workflows/tests.yml`):
    - `ruff check .` - Must pass with no errors
    - `ruff format --check .` - Must pass with no errors
    - `mypy introligo` - Must pass with no errors
-   - `pytest tests/` - All tests must pass
+   - `pytest tests/ --cov=introligo --cov-report=term-missing` - All tests must pass, coverage ~100%
 2. **Always test changes** with both dry-run and actual generation
 3. **Update documentation** when modifying features
 4. **Follow existing code style** and patterns

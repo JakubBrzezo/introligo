@@ -1,0 +1,50 @@
+# Example Introligo configuration with custom color palette
+# This shows how to reference a custom palette file
+
+index:
+  title: "Documentation with Custom Colors"
+  description: "Using a custom color palette"
+
+generate_index: true
+
+# Sphinx configuration with custom palette
+sphinx:
+  project: "Custom Styled Docs"
+  author: "Your Name"
+  copyright_year: "2025"
+  release: "1.0.0"
+
+  # Path configuration
+  add_project_to_path: true
+
+  # Sphinx extensions
+  extensions:
+    - "sphinx.ext.autodoc"
+    - "sphinx.ext.napoleon"
+
+  # Template and build settings
+  templates_path: ["_templates"]
+  exclude_patterns: ["_build", "Thumbs.db", ".DS_Store"]
+
+  # HTML output configuration
+  html_theme: "furo"
+  html_title: "Custom Styled Documentation"
+
+  # Use the default palette (built-in)
+  # You can also use: "celin" or a path to a custom palette file
+  # e.g., palette: "path/to/my_custom_palette.yaml"
+  palette: "default"
+
+  # Theme options
+  html_theme_options:
+    sidebar_hide_name: false
+
+  # Autodoc configuration
+  autodoc_default_options:
+    members: true
+    undoc-members: true
+
+modules:
+  introduction:
+    title: "Introduction"
+    description: "Getting started with the project"

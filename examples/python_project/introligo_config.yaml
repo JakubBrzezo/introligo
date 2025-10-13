@@ -7,6 +7,63 @@ index:
 
 generate_index: true
 
+# Sphinx configuration - auto-generates conf.py
+sphinx:
+  project: "String Utils"
+  author: "Example Project"
+  copyright_year: "2025"
+  release: "1.0.0"
+  version: "1.0"
+
+  # Version management
+  version_from_git: false
+  fallback_version: "1.0.0"
+
+  # Path configuration
+  project_root: "."  # Relative to docs directory
+  add_project_to_path: true  # Add project to sys.path
+
+  # Sphinx extensions - AUTO-DETECTED!
+  # Python modules are automatically detected, so autodoc, napoleon, and viewcode
+  # are added automatically. You only need to specify custom extensions.
+  # extensions:
+  #   - "sphinx.ext.intersphinx"  # Add only custom extensions if needed
+
+  # Template and build settings
+  templates_path: ["_templates"]
+  exclude_patterns: ["_build", "Thumbs.db", ".DS_Store"]
+  language: "en"
+
+  # HTML output configuration
+  html_theme: "alabaster"
+  html_static_path: []
+  html_title: "String Utils Documentation"
+
+  # Theme options (for alabaster theme)
+  html_theme_options:
+    description: "Common string manipulation utilities"
+    github_user: "example"
+    github_repo: "string-utils"
+
+  # Autodoc configuration
+  autodoc_default_options:
+    members: true
+    member-order: "bysource"
+    special-members: "__init__"
+    undoc-members: true
+    exclude-members: "__weakref__"
+
+  # Napoleon settings for docstring rendering
+  napoleon_settings:
+    napoleon_google_docstring: true
+    napoleon_numpy_docstring: false
+    napoleon_include_init_with_doc: true
+    napoleon_include_private_with_doc: false
+    napoleon_include_special_with_doc: true
+    napoleon_use_param: true
+    napoleon_use_rtype: true
+    napoleon_attr_annotations: true
+
 modules:
   # Parent category for organization
   utilities:

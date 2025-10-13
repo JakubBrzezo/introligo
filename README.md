@@ -14,15 +14,18 @@ Introligo streamlines the documentation process by converting structured YAML co
 ## Features
 
 - 📝 **YAML to RST conversion** - Write documentation in simple YAML, generate complex RST
+- ⚙️ **Sphinx auto-configuration** - Auto-generate `conf.py` from YAML (NEW!)
+- 🎨 **Color palettes** - Built-in themes (Celin, Default) or create custom palettes (NEW!)
 - 🌳 **Hierarchical organization** - Parent-child relationships for logical structure
 - 🔄 **Automatic toctree generation** - Navigation built automatically from structure
 - 📦 **Sphinx autodoc integration** - Seamless API documentation from Python modules
 - 🔬 **Breathe/Doxygen support** - Document C/C++ code with single or multiple files
-- 🎨 **Rich content support** - Features, examples, installation guides, and more
+- 🎯 **Rich content support** - Features, examples, installation guides, and more
 - 🏷️ **ASCII-safe naming** - Automatic slug generation for filesystem compatibility
 - 📁 **File includes** - Modular configuration with `!include` directive
 - 📝 **Markdown includes** - Include markdown files in your documentation
-- 🎯 **Template customization** - Use Jinja2 templates for custom output formats
+- 📐 **LaTeX support** - Include mathematical equations from .tex files
+- 🖼️ **Template customization** - Use Jinja2 templates for custom output formats
 - 🚀 **Dry-run mode** - Preview changes before generating files
 
 ## Installation
@@ -112,6 +115,118 @@ modules:
 ```
 
 Paths are resolved relative to the configuration file.
+
+## Sphinx Configuration Auto-Generation
+
+**NEW!** Introligo can automatically generate `conf.py` for Sphinx from your YAML configuration. No more manual Python configuration files!
+
+### Automatic Extension Detection
+
+**NEW!** Introligo automatically detects your project type and adds the appropriate Sphinx extensions:
+
+- **Python projects** → Automatically adds `sphinx.ext.autodoc`, `sphinx.ext.napoleon`, `sphinx.ext.viewcode`
+- **C/C++ projects** → Automatically adds `breathe` extension
+- **LaTeX/Math content** → Automatically adds `sphinx.ext.mathjax`
+
+You no longer need to manually specify common extensions!
+
+### Basic Sphinx Configuration
+
+```yaml
+sphinx:
+  project: "My Project"
+  author: "Your Name"
+  html_theme: "furo"
+  palette: "celin"  # Built-in cosmic color palette
+
+  # Extensions are now OPTIONAL - auto-detected from your modules!
+  # You can still add custom extensions if needed:
+  # extensions:
+  #   - "sphinx.ext.intersphinx"
+  #   - "custom_extension"
+```
+
+When you run Introligo, it automatically generates a complete `conf.py` file with:
+- **Auto-detected extensions** based on project type
+- Project metadata and version management
+- Theme configuration with color palettes
+- Autodoc and Napoleon settings
+- Intersphinx mappings
+- And much more!
+
+### Built-in Color Palettes
+
+Choose from professional color palettes:
+
+- **`celin`** - Cosmic-inspired theme with deep space colors
+- **`default`** - Clean, simple colors for general documentation
+
+Or create your own custom palette!
+
+### Complete Example
+
+```yaml
+index:
+  title: "My Project Documentation"
+  description: "Beautiful documentation"
+
+generate_index: true
+
+sphinx:
+  project: "My Project"
+  author: "Your Name"
+
+  # Auto-read version from git tags
+  version_from_git: true
+  fallback_version: "1.0.0"
+
+  # Theme with colors
+  html_theme: "furo"
+  palette: "celin"
+  html_title: "My Project Docs"
+
+  # Extensions are now AUTO-DETECTED!
+  # Only add custom extensions if needed:
+  extensions:
+    - "sphinx.ext.intersphinx"  # Custom extension
+
+  # Intersphinx (link to other docs)
+  intersphinx_mapping:
+    python:
+      - "https://docs.python.org/3"
+      - null
+
+  # Autodoc settings
+  autodoc_default_options:
+    members: true
+    undoc-members: true
+
+modules:
+  api:
+    title: "API Reference"
+    module: "myproject"  # Python module detected → autodoc, napoleon, viewcode added!
+    description: "Complete API documentation"
+```
+
+### What You Get
+
+Running `python -m introligo config.yaml -o docs` generates:
+- ✅ All RST files for your documentation
+- ✅ `conf.py` with full Sphinx configuration
+- ✅ Color palette integrated into theme
+- ✅ All extensions properly configured
+- ✅ Ready to build with `sphinx-build`
+
+No manual `conf.py` editing needed!
+
+### Learn More
+
+See the **Sphinx Configuration Tutorial** in the documentation for:
+- Complete configuration reference
+- Theme customization
+- Creating custom color palettes
+- Advanced features (autodoc, Breathe, math support)
+- Best practices
 
 ## Requirements
 
