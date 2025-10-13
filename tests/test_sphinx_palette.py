@@ -593,6 +593,7 @@ modules:
 
         # Generate RST content - should log warnings but not fail
         import logging
+
         with caplog.at_level(logging.WARNING):
             node = generator.page_tree[0]
             rst_content = generator.generate_rst_content(node, template)
@@ -663,6 +664,7 @@ modules:
         }
 
         import logging
+
         with caplog.at_level(logging.WARNING):
             resolved = generator.resolve_color_references(palette_colors, theme_mapping)
 
@@ -738,6 +740,7 @@ modules:
         # Mock command line arguments
         import logging
         import sys
+
         monkeypatch.setattr(
             sys,
             "argv",
@@ -770,6 +773,7 @@ modules:
 
         # Mock command line arguments (no --dry-run)
         import sys
+
         monkeypatch.setattr(
             sys,
             "argv",
