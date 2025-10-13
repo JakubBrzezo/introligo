@@ -1,5 +1,3 @@
-Advanced Sphinx Features
-
 ## Autodoc for Python Projects
 
 Automatically generate API documentation from Python docstrings.
