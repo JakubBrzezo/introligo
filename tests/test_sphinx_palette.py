@@ -1,8 +1,10 @@
 """Tests for Sphinx configuration and palette features."""
 
-import pytest
 from pathlib import Path
-from introligo.__main__ import IntroligoGenerator, IntroligoError
+
+import pytest
+
+from introligo.__main__ import IntroligoError, IntroligoGenerator
 
 
 class TestPaletteFunctions:
@@ -687,7 +689,7 @@ dark_mode:
 """
         palette_file.write_text(palette_content)
 
-        config_content = f"""
+        config_content = """
 sphinx:
   project: "Test"
   author: "Test"
@@ -734,8 +736,8 @@ modules:
         config_file.write_text(config_content)
 
         # Mock command line arguments
-        import sys
         import logging
+        import sys
         monkeypatch.setattr(
             sys,
             "argv",
