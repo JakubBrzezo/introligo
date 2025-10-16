@@ -901,6 +901,39 @@ modules:
       - "`MathJax <https://www.mathjax.org/>`_ - JavaScript display engine for mathematics"
       - "`LaTeX Mathematics <https://en.wikibooks.org/wiki/LaTeX/Mathematics>`_ - LaTeX math syntax reference"
 
+  devcontainer_tutorial:
+    parent: "user_guide"
+    title: "🐳 Development Containers"
+    description: "Complete guide to using and configuring devcontainers"
+    overview: |
+      Learn how to use Introligo's pre-configured development container for a consistent
+      development environment, and how to set up devcontainers in your own projects.
+
+      Development containers provide isolated, reproducible development environments using
+      Docker, ensuring consistency across all developers and platforms.
+
+      **What You'll Learn:**
+
+      - Using Introligo's devcontainer for development
+      - Running tests, building docs, and code quality tools
+      - Setting up devcontainers in your own projects
+      - Customization and best practices
+      - Troubleshooting common issues
+
+      This tutorial demonstrates practical devcontainer usage for Python documentation projects.
+
+  devcontainer_usage:
+    parent: "devcontainer_tutorial"
+    title: "1️⃣ Running Code in Devcontainer"
+    description: "Complete guide for using Introligo's devcontainer"
+    markdown_includes: "markdown/devcontainer_tutorial/devcontainer_usage.md"
+
+  devcontainer_setup:
+    parent: "devcontainer_tutorial"
+    title: "2️⃣ Setting Up Devcontainer"
+    description: "Configure devcontainers for your own projects"
+    markdown_includes: "markdown/devcontainer_tutorial/devcontainer_setup.md"
+
   templates:
     parent: "user_guide"
     title: "🎨 Custom Templates"

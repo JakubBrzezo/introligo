@@ -6,6 +6,7 @@ This script provides a complete documentation build and preview pipeline:
 - Builds Sphinx HTML documentation
 - Serves the site locally IF build succeeds
 - Gracefully shuts down on Ctrl+C (SIGINT)
+- Optionally watches for file changes and auto-rebuilds
 
 Copyright (c) 2025 WT Tech Jakub Brzezowski
 This is an open-source component of the Celin Project
@@ -22,6 +23,9 @@ Example:
 
     Build only, don't serve:
         $ python preview.py --no-serve
+
+    Watch for changes and auto-rebuild:
+        $ python preview.py --watch
 
     The script will build docs and serve them at http://localhost:8000
     Press Ctrl+C to stop the server gracefully.
@@ -45,9 +49,18 @@ import socket
 import subprocess
 import sys
 import threading
+import time
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional, Tuple, Union
+
+try:
+    from watchdog.events import FileSystemEvent, FileSystemEventHandler
+    from watchdog.observers import Observer
+
+    WATCHDOG_AVAILABLE = True
+except ImportError:
+    WATCHDOG_AVAILABLE = False
 
 # Path configuration
 DOCS_DIR = Path(__file__).resolve().parent
@@ -520,6 +533,159 @@ def serve_docs(port: Optional[int] = None, html_dir: Optional[Path] = None) -> N
         print("🔄 Server stopped, cleanup completed")
 
 
+class DocumentationWatcher(FileSystemEventHandler):
+    """File system event handler for watching documentation source files.
+
+    Monitors changes to YAML, Python, RST, and Markdown files and triggers
+    documentation rebuild when changes are detected.
+
+    Attributes:
+        config_file (Optional[Path]): Path to Introligo config file
+        docs_dir (Path): Directory containing documentation source
+        html_dir (Path): Directory for HTML output
+        debounce_seconds (float): Minimum seconds between rebuilds
+        last_build_time (float): Timestamp of last successful build
+        build_lock (threading.Lock): Lock to prevent concurrent rebuilds
+    """
+
+    def __init__(
+        self,
+        config_file: Optional[Path] = None,
+        docs_dir: Optional[Path] = None,
+        html_dir: Optional[Path] = None,
+        debounce_seconds: float = 2.0,
+    ):
+        """Initialize the documentation watcher.
+
+        Args:
+            config_file: Path to Introligo configuration file
+            docs_dir: Directory containing documentation source
+            html_dir: Directory for HTML output
+            debounce_seconds: Minimum seconds between rebuilds (default: 2.0)
+        """
+        super().__init__()
+        self.config_file = config_file
+        self.docs_dir = docs_dir or DOCS_DIR
+        self.html_dir = html_dir or HTML_DIR
+        self.debounce_seconds = debounce_seconds
+        self.last_build_time = 0.0
+        self.build_lock = threading.Lock()
+
+    def on_any_event(self, event: FileSystemEvent) -> None:
+        """Handle any file system event.
+
+        Args:
+            event: The file system event that occurred
+
+        Note:
+            Filters events to only rebuild on relevant file changes.
+            Uses debouncing to avoid excessive rebuilds.
+        """
+        if _shutdown_requested:
+            return
+
+        # Ignore directory events and build output
+        if event.is_directory or "_build" in str(event.src_path):
+            return
+
+        # Only watch relevant file types
+        relevant_extensions = {".yaml", ".yml", ".py", ".rst", ".md", ".txt"}
+        file_path = Path(event.src_path)
+
+        if file_path.suffix not in relevant_extensions:
+            return
+
+        # Debounce: skip if last build was too recent
+        current_time = time.time()
+        if current_time - self.last_build_time < self.debounce_seconds:
+            return
+
+        # Try to acquire lock (non-blocking)
+        if not self.build_lock.acquire(blocking=False):
+            return  # Build already in progress
+
+        try:
+            print(f"\n📝 Detected change in: {file_path.name}")
+            print("🔄 Rebuilding documentation...")
+            print("-" * 50)
+
+            # Run Introligo and Sphinx
+            if run_introligo(self.config_file, output_dir=self.docs_dir):
+                if run_sphinx(self.docs_dir, self.html_dir):
+                    print("✅ Documentation rebuilt successfully!")
+                    print(f"🕒 Last updated: {time.strftime('%H:%M:%S')}")
+                    self.last_build_time = current_time
+                else:
+                    print("⛔ Sphinx build failed")
+            else:
+                print("⛔ Introligo generation failed")
+
+            print("-" * 50)
+        finally:
+            self.build_lock.release()
+
+
+def watch_and_serve(
+    config_file: Optional[Path] = None,
+    docs_dir: Optional[Path] = None,
+    html_dir: Optional[Path] = None,
+    port: Optional[int] = None,
+) -> None:
+    """Watch for file changes and auto-rebuild while serving documentation.
+
+    Args:
+        config_file: Path to Introligo configuration file
+        docs_dir: Directory containing documentation source
+        html_dir: Directory for HTML output
+        port: Port number for documentation server
+
+    Raises:
+        SystemExit: If watchdog is not available
+
+    Note:
+        Runs the file watcher and HTTP server in parallel threads.
+        Watches for changes in the documentation source directory.
+    """
+    if not WATCHDOG_AVAILABLE:
+        print("⛔ Watch mode requires the 'watchdog' package")
+        print("   Install with: pip install watchdog")
+        print("   Or install dev dependencies: pip install -e .[dev]")
+        sys.exit(1)
+
+    watch_dir = docs_dir or DOCS_DIR
+    serve_dir = html_dir or HTML_DIR
+
+    print("👀 Starting watch mode...")
+    print(f"📂 Watching: {watch_dir}")
+    print("   Monitoring: *.yaml, *.yml, *.py, *.rst, *.md files")
+    print("-" * 50)
+
+    # Set up file watcher
+    event_handler = DocumentationWatcher(
+        config_file=config_file,
+        docs_dir=watch_dir,
+        html_dir=serve_dir,
+    )
+
+    observer = Observer()
+    observer.schedule(event_handler, str(watch_dir), recursive=True)
+
+    # Also watch the examples directory if we're in the main docs
+    if watch_dir == DOCS_DIR and EXAMPLES_DIR.exists():
+        observer.schedule(event_handler, str(EXAMPLES_DIR), recursive=True)
+        print(f"📂 Also watching: {EXAMPLES_DIR}")
+
+    observer.start()
+
+    try:
+        # Start the HTTP server (this will block until shutdown)
+        serve_docs(port=port, html_dir=serve_dir)
+    finally:
+        print("🛑 Stopping file watcher...")
+        observer.stop()
+        observer.join()
+
+
 def main() -> None:
     """Main entry point for the documentation builder and server.
 
@@ -547,6 +713,7 @@ Examples:
   %(prog)s --config custom.yaml    # Use custom Introligo config
   %(prog)s --port 8080             # Serve on specific port
   %(prog)s --no-serve              # Build only, don't serve
+  %(prog)s --watch                 # Watch for changes and auto-rebuild
   %(prog)s --example python_project # Run example by name
   %(prog)s --list-examples         # List all available examples
         """,
@@ -572,6 +739,12 @@ Examples:
         "--no-serve",
         action="store_true",
         help="Build documentation but don't start the preview server",
+    )
+
+    parser.add_argument(
+        "--watch",
+        action="store_true",
+        help="Watch for file changes and auto-rebuild documentation (requires watchdog)",
     )
 
     parser.add_argument(
@@ -667,8 +840,21 @@ Examples:
 
         # Serve the documentation unless --no-serve flag is used
         if not args.no_serve:
-            serve_docs(port=args.port, html_dir=html_dir)
+            if args.watch:
+                # Watch mode: monitor for changes and auto-rebuild
+                watch_and_serve(
+                    config_file=args.config,
+                    docs_dir=output_dir,
+                    html_dir=html_dir,
+                    port=args.port,
+                )
+            else:
+                # Regular mode: just serve
+                serve_docs(port=args.port, html_dir=html_dir)
         else:
+            if args.watch:
+                print("⚠️  Warning: --watch and --no-serve are incompatible")
+                print("   Watch mode requires serving to be useful")
             print(f"📁 Documentation built at: {html_dir}")
             print(f"💡 To serve manually: python -m http.server {args.port} --directory {html_dir}")
 

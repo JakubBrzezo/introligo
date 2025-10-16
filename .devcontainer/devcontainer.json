@@ -1,0 +1,72 @@
+{
+	"name": "Introligo Development",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+
+	// Configure tool-specific properties
+	"customizations": {
+		"vscode": {
+			// Set *default* container specific settings.json values on container create
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/local/bin/python",
+				"python.linting.enabled": true,
+				"python.linting.pylintEnabled": false,
+				"python.linting.flake8Enabled": false,
+				"python.formatting.provider": "none",
+				"python.testing.pytestEnabled": true,
+				"python.testing.unittestEnabled": false,
+				"[python]": {
+					"editor.defaultFormatter": "charliermarsh.ruff",
+					"editor.formatOnSave": true,
+					"editor.codeActionsOnSave": {
+						"source.organizeImports": "explicit"
+					}
+				},
+				"terminal.integrated.shell.linux": "/bin/bash"
+			},
+
+			// Add the IDs of extensions you want installed when the container is created
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"charliermarsh.ruff",
+				"ms-python.mypy-type-checker",
+				"redhat.vscode-yaml",
+				"yzhang.markdown-all-in-one",
+				"streetsidesoftware.code-spell-checker",
+				"eamodio.gitlens"
+			]
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally
+	"forwardPorts": [8000],
+
+	// Use 'postCreateCommand' to run commands after the container is created
+	"postCreateCommand": "pip install -e .[dev,docs,cpp] && pip install pytest-cov coverage",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root
+	"remoteUser": "vscode",
+
+	// Mount the project directory
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+	"workspaceFolder": "/workspace",
+
+	// Features to add to the dev container
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": true,
+			"installOhMyZsh": true,
+			"upgradePackages": true,
+			"username": "vscode",
+			"userUid": "1000",
+			"userGid": "1000"
+		},
+		"ghcr.io/devcontainers/features/git:1": {
+			"version": "latest",
+			"ppa": true
+		}
+	}
+}

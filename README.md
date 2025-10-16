@@ -237,6 +237,44 @@ See the **Sphinx Configuration Tutorial** in the documentation for:
 - Breathe >= 4.0 (optional, for C/C++ documentation)
 - Doxygen (optional, for C/C++ documentation)
 
+## Development Environment
+
+Introligo includes a pre-configured development container (devcontainer) for a consistent development environment across all platforms.
+
+### Using Devcontainer (Recommended)
+
+The devcontainer provides:
+- Python 3.11 with all dependencies pre-installed
+- VS Code extensions (Python, Ruff, Mypy, etc.)
+- System tools (git, doxygen, graphviz)
+- Automatic project setup
+
+**Quick Start:**
+1. Install Docker and VS Code with Dev Containers extension
+2. Open project in VS Code
+3. Click "Reopen in Container" when prompted
+4. Start developing immediately!
+
+**Documentation:**
+- [Running Code in Devcontainer](docs/devcontainer_usage.md) - Complete guide for using the devcontainer
+- [Setting Up Devcontainer in Your Project](docs/devcontainer_setup.md) - Configure devcontainers for your own projects
+
+### Manual Setup
+
+If you prefer not to use devcontainers:
+
+```bash
+# Install dependencies
+pip install -e .[dev,docs,cpp]
+
+# Install development tools
+pip install pytest pytest-cov ruff mypy
+
+# For C++ documentation support
+sudo apt-get install doxygen graphviz  # Linux
+brew install doxygen graphviz          # macOS
+```
+
 ## Documentation
 
 Introligo has comprehensive documentation built with Sphinx and the Furo theme, using the Celin color palette.

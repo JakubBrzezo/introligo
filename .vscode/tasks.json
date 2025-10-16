@@ -1,0 +1,55 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Serve Docs (Watch Mode)",
+			"type": "shell",
+			"command": "python docs/preview.py --watch",
+			"problemMatcher": [],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"focus": false
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Serve Docs",
+			"type": "shell",
+			"command": "python docs/preview.py",
+			"problemMatcher": [],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"focus": false
+			}
+		},
+		{
+			"label": "Build Docs Only",
+			"type": "shell",
+			"command": "python docs/preview.py --no-serve",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Serve Example (Python)",
+			"type": "shell",
+			"command": "python docs/preview.py --example python_project --watch",
+			"problemMatcher": [],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"focus": false
+			}
+		}
+	]
+}
