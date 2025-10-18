@@ -116,6 +116,16 @@ modules:
 
 Paths are resolved relative to the configuration file.
 
+**NEW!** Markdown links are automatically converted to reStructuredText format:
+- External links: `[text](https://url)` → `` `text <https://url>`_ ``
+- Links with anchors: `[Guide](./setup.md#install)` → `:doc:`Guide (Install) <setup>``
+- Images, anchors, and more are supported
+
+**Documentation:**
+- [Quick Reference](docs/MARKDOWN_LINK_QUICK_REFERENCE.md) - Cheat sheet & common patterns
+- [Complete Examples](docs/MARKDOWN_LINK_EXAMPLES.md) - 6 real-world examples
+- [Technical Details](docs/MARKDOWN_LINK_CONVERSION.md) - Full feature documentation
+
 ## Sphinx Configuration Auto-Generation
 
 **NEW!** Introligo can automatically generate `conf.py` for Sphinx from your YAML configuration. No more manual Python configuration files!

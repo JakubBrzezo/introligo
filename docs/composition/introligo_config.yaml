@@ -665,6 +665,24 @@ modules:
     title: "🔧 Troubleshooting"
     markdown_includes: "markdown/md_tutorial/troubleshooting.md"
 
+  md_link_conversion:
+    parent: "markdown_includes"
+    title: "🔗 Link Conversion"
+    description: "Automatic markdown to RST link conversion"
+    markdown_includes: "markdown/md_tutorial/link_conversion.md"
+
+  md_link_examples:
+    parent: "markdown_includes"
+    title: "💡 Link Examples"
+    description: "Real-world link conversion examples"
+    markdown_includes: "markdown/md_tutorial/link_examples.md"
+
+  md_working_with_images:
+    parent: "markdown_includes"
+    title: "🖼️ Working with Images"
+    description: "How to include and work with images in documentation"
+    markdown_includes: "markdown/md_tutorial/working_with_images.md"
+
   sphinx_tutorial:
     parent: "user_guide"
     title: "📘 Sphinx Configuration Tutorial"

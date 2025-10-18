@@ -206,3 +206,16 @@ generated/
 *.rst
 htmlcov/
 */conf.py
+
+# Documentation images moved to static folder
+docs/_static/*.png
+docs/_static/*.jpg
+docs/_static/*.jpeg
+docs/_static/*.gif
+docs/_static/*.svg
+docs/_static/*.webp
+docs/_static/*.ico
+docs/_static/*.bmp
+docs/_static/*.tiff
+docs/_static/*.psd
+docs/_static/*.ai

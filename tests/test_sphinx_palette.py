@@ -886,3 +886,76 @@ modules:
         assert breathe_config is not None
         assert str(xml_dir) in breathe_config
         assert "myproject" in breathe_config
+
+    def test_load_palette_file_read_error(self, temp_dir: Path):
+        """Test error handling when palette file cannot be read (lines 1633-1634)."""
+        # Create a directory instead of a file to cause read error
+        palette_dir = temp_dir / "bad_palette.yaml"
+        palette_dir.mkdir()
+
+        config_content = f"""
+sphinx:
+  theme:
+    name: "furo"
+    palette: "{palette_dir}"
+
+modules:
+  test:
+    title: "Test"
+"""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(config_content)
+
+        generator = IntroligoGenerator(
+            config_file=config_file,
+            output_dir=temp_dir,
+        )
+        generator.load_config()
+
+        with pytest.raises(IntroligoError, match="Error loading palette"):
+            generator.load_palette(str(palette_dir))
+
+    def test_generate_conf_py_missing_template(self, temp_dir: Path):
+        """Test conf.py generation when template is missing (lines 1830-1831)."""
+        import shutil
+
+        import introligo.__main__
+
+        config_content = """
+sphinx:
+  project: "Test Project"
+  author: "Test Author"
+
+modules:
+  test:
+    title: "Test"
+"""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(config_content)
+
+        generator = IntroligoGenerator(
+            config_file=config_file,
+            output_dir=temp_dir,
+        )
+        generator.load_config()
+
+        # Physically move the template file to make it not found
+        from pathlib import Path as PathlibPath
+
+        template_path = (
+            PathlibPath(introligo.__main__.__file__).parent / "templates" / "conf.py.jinja2"
+        )
+        backup_path = template_path.parent / ".conf.py.jinja2.backup"
+
+        try:
+            # Move template file away
+            if template_path.exists():
+                shutil.move(str(template_path), str(backup_path))
+
+            # Should return None and log warning when template not found
+            result = generator.generate_conf_py()
+            assert result is None
+        finally:
+            # Restore template file
+            if backup_path.exists():
+                shutil.move(str(backup_path), str(template_path))

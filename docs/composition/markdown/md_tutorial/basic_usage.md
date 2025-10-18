@@ -1,8 +1,22 @@
 This section demonstrates the markdown inclusion feature with practical examples.
 
-## 📚 Including Multiple Markdown Files
+## Quick Start Checklist
 
-You can include multiple markdown files in your module documentation:
+Use this checklist to get started with markdown includes:
+
+.. raw:: html
+
+   <input type="checkbox" checked> Install Introligo and Sphinx<br>
+   <input type="checkbox" checked> Create introligo configuration file<br>
+   <input type="checkbox"> Identify existing markdown files to include<br>
+   <input type="checkbox"> Add <code>markdown_includes</code> to module configuration<br>
+   <input type="checkbox"> Run Introligo to generate RST files<br>
+   <input type="checkbox"> Build documentation with Sphinx<br>
+   <input type="checkbox"> Preview generated documentation
+
+## Including Multiple Markdown Files
+
+Multiple markdown files can be included in module documentation:
 
 ```yaml
 # Include multiple markdown files
@@ -19,9 +33,9 @@ modules:
       - "CONTRIBUTING.md"
 ```
 
-## 📄 Single Markdown File
+## Single Markdown File
 
-For simpler cases, use a single file:
+For simpler cases, a single file can be specified:
 
 ```yaml
 # Include single file (string instead of list)
@@ -31,7 +45,7 @@ modules:
     markdown_includes: "README.md"
 ```
 
-## 🔗 Relative Paths
+## Relative Paths
 
 All paths are resolved relative to the configuration file:
 
@@ -46,17 +60,17 @@ modules:
       - "../../docs/guides/setup.md"
 ```
 
-## ✨ Why Use Markdown Includes?
+## Advantages of Markdown Includes
 
-### 🎯 Benefits
+### Benefits
 
-- **Reuse existing documentation** - Include your README.md and other markdown files directly
-- **DRY principle** - Don't duplicate documentation across formats
-- **Easy maintenance** - Update once, reflect everywhere
-- **Version control friendly** - Markdown files are easy to review in pull requests
-- **Familiar format** - Write in markdown, generate RST documentation
+- **Reuse existing documentation**: Include README.md and other markdown files directly
+- **DRY principle**: Avoid documentation duplication across formats
+- **Easy maintenance**: Update once, changes reflect everywhere
+- **Version control friendly**: Markdown files are easily reviewed in pull requests
+- **Familiar format**: Write in markdown, generate RST documentation automatically
 
-### 🚀 Perfect For
+### Recommended Use Cases
 
 - Project overviews and README files
 - Detailed user guides and tutorials

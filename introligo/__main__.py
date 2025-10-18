@@ -136,7 +136,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import yaml
 from jinja2 import Environment, Template
@@ -185,7 +185,7 @@ def include_constructor(loader: IncludeLoader, node: yaml.Node) -> Any:
         IntroligoError: If the included file cannot be loaded
     """
     # Get the path from the node
-    include_path = loader.construct_scalar(node)
+    include_path = loader.construct_scalar(cast(yaml.ScalarNode, node))
 
     # Resolve path relative to the current file's directory
     if hasattr(loader, "_root_dir"):
@@ -1046,6 +1046,167 @@ Related Tools
 
         return "\n".join(result)
 
+    def _convert_markdown_links_to_rst(self, text: str) -> str:
+        """Convert markdown links to RST format.
+
+        Handles:
+        - External links: [text](http://url) -> `text <http://url>`_
+        - External links with anchors: [text](http://url#anchor) -> `text <http://url#anchor>`_
+        - Internal docs with anchors: [text](./file.md#anchor) -> :doc:`text <file>` (see section)
+        - Internal docs: [text](./file.md) -> :doc:`file`
+        - Anchor links: [text](#anchor) -> :ref:`anchor`
+        - Images: ![alt](path) -> .. image:: path
+
+        Args:
+            text: Line of text potentially containing markdown links.
+
+        Returns:
+            Text with links converted to RST format.
+        """
+        import re
+
+        # Handle images first: ![alt](path)
+        text = re.sub(
+            r"!\[([^\]]*)\]\(([^)]+)\)",
+            lambda m: f"\n\n.. image:: {m.group(2)}\n   :alt: {m.group(1)}\n\n",
+            text,
+        )
+
+        # Handle external links with anchors: [text](http://...#anchor or https://...#anchor)
+        text = re.sub(
+            r"\[([^\]]+)\]\((https?://[^)]+)\)", lambda m: f"`{m.group(1)} <{m.group(2)}>`_", text
+        )
+
+        # Handle internal document links with anchors: [text](./file.md#anchor)
+        # Convert to :doc: reference with note about the section
+        def convert_doc_link_with_anchor(match):
+            link_text = match.group(1)
+            file_path = match.group(2)
+            anchor = match.group(3)
+
+            # Remove .md/.rst extension and leading ./
+            doc_path = file_path.replace(".md", "").replace(".rst", "")
+            if doc_path.startswith("./"):
+                doc_path = doc_path[2:]
+            elif doc_path.startswith("../"):
+                # Keep relative paths as-is
+                pass
+
+            # Create a more informative link text that includes the section
+            # This helps users know which section they're linking to
+            section_name = anchor.replace("-", " ").replace("_", " ").title()
+
+            # If link text already mentions the section, use it as-is
+            if link_text != section_name and section_name.lower() not in link_text.lower():
+                combined_text = f"{link_text} ({section_name})"
+            else:
+                combined_text = link_text
+
+            return f":doc:`{combined_text} <{doc_path}>`"
+
+        text = re.sub(
+            r"\[([^\]]+)\]\(([^)#:]+\.(?:md|rst))#([^)]+)\)", convert_doc_link_with_anchor, text
+        )
+
+        # Handle anchor-only links: [text](#anchor)
+        text = re.sub(r"\[([^\]]+)\]\(#([^)]+)\)", lambda m: f":ref:`{m.group(2)}`", text)
+
+        # Handle internal document links without anchors:
+        # [text](./file.md) or [text](path/to/file.md)
+        # Convert to :doc: reference without .md extension
+        def convert_doc_link(match):
+            link_text = match.group(1)
+            file_path = match.group(2)
+
+            # Remove .md extension and leading ./
+            doc_path = file_path.replace(".md", "").replace(".rst", "")
+            if doc_path.startswith("./"):
+                doc_path = doc_path[2:]
+            elif doc_path.startswith("../"):
+                # Keep relative paths as-is for now
+                pass
+
+            # For simple cases, use the link as-is
+            # Sphinx will handle the resolution
+            if link_text != doc_path:
+                return f":doc:`{link_text} <{doc_path}>`"
+            else:
+                return f":doc:`{doc_path}`"
+
+        text = re.sub(r"\[([^\]]+)\]\(([^)#:]+\.(?:md|rst))\)", convert_doc_link, text)
+
+        # Handle remaining local file links (without extension)
+        # These might be relative paths like [text](./path/to/doc)
+        text = re.sub(
+            r"\[([^\]]+)\]\((\./[^)#:]+|\.\.\/[^)#:]+)\)",
+            lambda m: f":doc:`{m.group(1)} <{m.group(2).replace('./', '').replace('../', '')}>`",
+            text,
+        )
+
+        return text
+
+    def _convert_markdown_table_to_rst(self, lines: list, start_index: int) -> tuple:
+        """Convert markdown table to RST list-table directive.
+
+        Args:
+            lines: List of all lines in the document
+            start_index: Index where the table starts
+
+        Returns:
+            Tuple of (rst_lines, end_index) where rst_lines is the converted table
+            and end_index is the index after the table ends
+        """
+
+        table_lines = []
+        i = start_index
+
+        # Collect all table lines
+        while i < len(lines) and "|" in lines[i]:
+            table_lines.append(lines[i])
+            i += 1
+
+        if len(table_lines) < 2:
+            return ([], start_index)
+
+        # Parse table
+        rows = []
+        for line in table_lines:
+            # Split by | and clean up
+            cells = [cell.strip() for cell in line.split("|")]
+            # Remove empty first/last cells from leading/trailing |
+            if cells and cells[0] == "":
+                cells = cells[1:]
+            if cells and cells[-1] == "":
+                cells = cells[:-1]
+            if cells:
+                rows.append(cells)
+
+        if len(rows) < 2:
+            return ([], start_index)
+
+        # First row is header, second is separator, rest is data
+        headers = rows[0]
+        data_rows = rows[2:] if len(rows) > 2 else []
+
+        # Build RST list-table
+        rst_lines = ["", ".. list-table::", "   :header-rows: 1", "   :widths: auto", ""]
+
+        # Add header row
+        rst_lines.append("   * - " + headers[0])
+        for header in headers[1:]:
+            rst_lines.append("     - " + header)
+
+        # Add data rows
+        for row in data_rows:
+            if row:  # Skip empty rows
+                rst_lines.append("   * - " + row[0])
+                for cell in row[1:]:
+                    rst_lines.append("     - " + cell)
+
+        rst_lines.append("")
+
+        return (rst_lines, i)
+
     def _convert_markdown_to_rst(self, markdown: str) -> str:
         """Convert basic markdown syntax to reStructuredText.
 
@@ -1086,6 +1247,24 @@ Related Tools
                 result.append("   " + line)
                 i += 1
                 continue
+
+            # Handle tables (before link conversion to preserve table structure)
+            if (
+                "|" in line
+                and not in_code_block
+                and i + 1 < len(lines)
+                and "|" in lines[i + 1]
+                and ("-" in lines[i + 1] or "=" in lines[i + 1])
+            ):
+                # This is a table!
+                rst_table, new_index = self._convert_markdown_table_to_rst(lines, i)
+                if rst_table:
+                    result.extend(rst_table)
+                    i = new_index
+                    continue
+
+            # Convert markdown links to RST (before processing headers)
+            line = self._convert_markdown_links_to_rst(line)
 
             # Handle headers
             if line.startswith("# "):

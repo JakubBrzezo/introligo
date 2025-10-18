@@ -590,7 +590,8 @@ class DocumentationWatcher(FileSystemEventHandler):
 
         # Only watch relevant file types
         relevant_extensions = {".yaml", ".yml", ".py", ".rst", ".md", ".txt"}
-        file_path = Path(event.src_path)
+        src_path_str = str(event.src_path) if isinstance(event.src_path, bytes) else event.src_path
+        file_path = Path(src_path_str)
 
         if file_path.suffix not in relevant_extensions:
             return

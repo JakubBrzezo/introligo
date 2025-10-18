@@ -662,3 +662,41 @@ modules:
 
         # Should not include index.rst
         assert not any("index.rst" in str(path) for _, path in generated_files.values())
+
+    def test_include_latex_file_read_error(self, temp_dir: Path):
+        """Test error handling when reading LaTeX file fails (lines 1005-1006)."""
+        config_content = """
+modules:
+  test_module:
+    title: "Test Module"
+"""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(config_content, encoding="utf-8")
+
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(config_file, output_dir)
+
+        # Create a file with invalid encoding to cause read error
+        latex_file = temp_dir / "latex_file.tex"
+        # Write binary data that will cause encoding error
+        latex_file.write_bytes(b"\x80\x81\x82\x83")
+
+        with pytest.raises(IntroligoError, match="Error reading LaTeX file"):
+            generator.include_latex_file(str(latex_file))
+
+    def test_auto_configure_without_sphinx_config(self, temp_dir: Path):
+        """Test auto_configure_extensions when sphinx is not in config (line 1753)."""
+        config_content = """
+modules:
+  test_module:
+    title: "Test Module"
+"""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(config_content, encoding="utf-8")
+
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(config_file, output_dir)
+
+        # Should return early without error when sphinx not in config
+        generator.auto_configure_extensions()
+        # No exception should be raised

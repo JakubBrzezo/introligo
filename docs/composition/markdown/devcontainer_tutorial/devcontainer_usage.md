@@ -310,3 +310,8 @@ docker rmi introligo-development
 - [Docker Documentation](https://docs.docker.com/)
 - [Devcontainer Specification](https://containers.dev/)
 - [Introligo Documentation](https://jakubbrzezo.github.io/introligo)
+
+## See Also
+
+- [Setting Up Devcontainer in Your Project](./devcontainer_setup.md) - Configure devcontainers for your own projects
+- [Introligo README](../../README.md) - Main project documentation

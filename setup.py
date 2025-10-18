@@ -6,7 +6,7 @@ This file is provided for backwards compatibility.
 Modern installations should use pyproject.toml.
 """
 
-from setuptools import setup
+from setuptools import setup  # type: ignore[import-untyped]
 
 # Read the long description from README
 with open("README.md", encoding="utf-8") as fh:
