@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from introligo.__main__ import IntroligoGenerator, IntroligoError
+from introligo.__main__ import IntroligoError, IntroligoGenerator
 
 
 class TestRSTIncludes:

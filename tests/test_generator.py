@@ -796,9 +796,7 @@ modules:
         assert "Unsupported file type" in str(exc_info.value)
         assert ".xyz" in str(exc_info.value)
 
-    def test_generate_with_file_includes(
-        self, config_with_file_includes: Path, temp_dir: Path
-    ):
+    def test_generate_with_file_includes(self, config_with_file_includes: Path, temp_dir: Path):
         """Test generating documentation with file_includes."""
         output_dir = temp_dir / "output"
         generator = IntroligoGenerator(config_with_file_includes, output_dir)

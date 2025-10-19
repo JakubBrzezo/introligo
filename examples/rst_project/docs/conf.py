@@ -10,16 +10,12 @@
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
-
-
 
 # -- Paths --------------------------------------------------------------------
 DOCS_DIR = Path(__file__).resolve().parent
 
 PROJECT_ROOT = DOCS_DIR.parent
-
 
 
 # -- Project information -------------------------------------------------------
@@ -37,18 +33,13 @@ version = "2.0"
 
 # -- General configuration -----------------------------------------------------
 extensions = [
-
     "sphinx.ext.autodoc",
-
     "sphinx.ext.napoleon",
-
     "sphinx.ext.viewcode",
-
 ]
 
 templates_path = []
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- HTML output options -------------------------------------------------------
@@ -58,28 +49,8 @@ html_theme = "alabaster"
 html_title = "Example System Documentation"
 
 
-
-
-
 html_theme_options = {
-
-
-
-
-
     "description": "Modern system with comprehensive API",
-
-
-
     "github_user": "example",
-
-
-
     "github_repo": "example-system",
-
-
 }
-
-
-
-
