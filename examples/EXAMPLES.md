@@ -42,7 +42,27 @@ Demonstrates including LaTeX mathematical content in documentation.
 - Math directive generation
 - Mathematical documentation
 
-### 4. Furo with Celin Palette (`introligo_with_furo_celin.yaml`)
+**Run:**
+```bash
+python preview.py --example latex_project
+```
+
+### 4. RST Project (`rst_project/`)
+Demonstrates including existing reStructuredText files in documentation.
+
+**Features:**
+- RST file inclusion (native format, no conversion)
+- Single and multiple file inclusion
+- Mixed content (RST includes + YAML config)
+- Documentation organization
+- Team collaboration workflows
+
+**Run:**
+```bash
+python preview.py --example rst_project
+```
+
+### 5. Furo with Celin Palette (`introligo_with_furo_celin.yaml`)
 Example configuration using the Furo theme with Celin cosmic color palette.
 
 **Features:**
@@ -59,7 +79,7 @@ cd /tmp/test_docs
 sphinx-build -b html . _build/html
 ```
 
-### 5. Custom Palette (`introligo_with_custom_palette.yaml`)
+### 6. Custom Palette (`introligo_with_custom_palette.yaml`)
 Example using the default color palette with Furo theme.
 
 **Features:**

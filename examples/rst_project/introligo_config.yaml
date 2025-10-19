@@ -1,0 +1,139 @@
+# Introligo configuration for RST inclusion example
+# This demonstrates how to include reStructuredText files in documentation
+
+index:
+  title: "Example System Documentation"
+  description: "Complete documentation for the example system with RST includes"
+
+generate_index: true
+
+# Sphinx configuration - auto-generates conf.py
+sphinx:
+  project: "Example System"
+  author: "Example Project Team"
+  copyright_year: "2025"
+  release: "2.0.0"
+  version: "2.0"
+
+  # Path configuration
+  templates_path: []
+  exclude_patterns: ["_build", "Thumbs.db", ".DS_Store"]
+  html_static_path: []
+
+  # Theme configuration
+  html_theme: "alabaster"
+  html_title: "Example System Documentation"
+
+  # Theme options
+  html_theme_options:
+    description: "Modern system with comprehensive API"
+    github_user: "example"
+    github_repo: "example-system"
+
+modules:
+  # Parent category for organization
+  documentation:
+    title: "Documentation"
+    description: "System documentation and guides"
+
+  # Architecture documentation using RST includes
+  architecture_guide:
+    parent: "documentation"
+    title: "Architecture Guide"
+    description: "System architecture and design patterns"
+
+    overview: |
+      This guide provides a comprehensive overview of the system architecture,
+      including core components, design patterns, and scalability considerations.
+
+      The architecture documentation is maintained in a separate RST file for
+      easier collaboration and version control.
+
+    # Include single RST file
+    rst_includes: "architecture.rst"
+
+    notes: |
+      .. tip::
+
+         The architecture is designed to be modular and extensible.
+         Each component can be customized or replaced as needed.
+
+  # API documentation using RST includes
+  api_documentation:
+    parent: "documentation"
+    title: "API Documentation"
+    description: "Complete REST API reference with examples"
+
+    overview: |
+      This section contains detailed documentation for all API endpoints,
+      including authentication, request/response formats, and error handling.
+
+    # Include single RST file
+    rst_includes: "api_details.rst"
+
+    features:
+      - "RESTful API design"
+      - "JSON request/response format"
+      - "OAuth 2.0 authentication"
+      - "Rate limiting and throttling"
+      - "Comprehensive error messages"
+
+    see_also:
+      - "`API Status Page <https://status.example.com>`_ - Check API availability"
+      - "`Postman Collection <https://www.postman.com/example>`_ - Ready-to-use API tests"
+
+  # Tutorial with multiple RST includes
+  getting_started:
+    parent: "documentation"
+    title: "Getting Started"
+    description: "Quick start guide and tutorials"
+
+    overview: |
+      New to the Example System? This tutorial will get you up and running
+      in just a few minutes!
+
+    # Include single RST file
+    rst_includes: "tutorial.rst"
+
+    requirements:
+      - "Python 3.8 or higher"
+      - "pip package manager"
+      - "Valid API key (sign up at https://example.com)"
+
+    installation: |
+      Install the Example System client library:
+
+      .. code-block:: bash
+
+         pip install example-system
+
+      Or install from source:
+
+      .. code-block:: bash
+
+         git clone https://github.com/example/example-system.git
+         cd example-system
+         pip install -e .
+
+  # Advanced usage showing multiple RST includes
+  advanced_topics:
+    title: "Advanced Topics"
+    description: "Advanced usage patterns and best practices"
+
+    overview: |
+      For advanced users who want to get the most out of the Example System.
+
+    # You can include multiple RST files
+    rst_includes:
+      - "architecture.rst"
+      - "api_details.rst"
+
+    notes: |
+      .. warning::
+
+         Some advanced features may have performance implications.
+         Always test in a development environment first.
+
+      .. seealso::
+
+         Check the GitHub repository for more examples and community contributions.

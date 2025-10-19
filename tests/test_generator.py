@@ -700,3 +700,113 @@ modules:
         # Should return early without error when sphinx not in config
         generator.auto_configure_extensions()
         # No exception should be raised
+
+    def test_include_rst_file(self, config_with_rst: Path, rst_file: Path, temp_dir: Path):
+        """Test including RST file."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(config_with_rst, output_dir)
+
+        content = generator.include_rst_file(rst_file.name)
+        assert "Architecture Overview" in content
+        assert "System Components" in content
+        assert "Component A" in content
+
+    def test_include_rst_missing_file(self, sample_yaml_config: Path, temp_dir: Path):
+        """Test including non-existent RST file."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        with pytest.raises(IntroligoError) as exc_info:
+            generator.include_rst_file("missing.rst")
+
+        assert "RST file not found" in str(exc_info.value)
+
+    def test_include_txt_file(self, text_file: Path, sample_yaml_config: Path, temp_dir: Path):
+        """Test including text file."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        content = generator.include_txt_file(text_file.name)
+        assert "::" in content  # Literal block marker
+        assert "Important Notes" in content
+        assert "Update documentation" in content
+
+    def test_include_txt_missing_file(self, sample_yaml_config: Path, temp_dir: Path):
+        """Test including non-existent text file."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        with pytest.raises(IntroligoError) as exc_info:
+            generator.include_txt_file("missing.txt")
+
+        assert "Text file not found" in str(exc_info.value)
+
+    def test_include_file_auto_detection_rst(
+        self, rst_file: Path, sample_yaml_config: Path, temp_dir: Path
+    ):
+        """Test file auto-detection for RST files."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        content = generator.include_file(rst_file.name)
+        assert "Architecture Overview" in content
+
+    def test_include_file_auto_detection_md(
+        self, markdown_file: Path, sample_yaml_config: Path, temp_dir: Path
+    ):
+        """Test file auto-detection for Markdown files."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        content = generator.include_file(markdown_file.name)
+        assert "Version 1.0.0" in content
+
+    def test_include_file_auto_detection_tex(
+        self, latex_file: Path, sample_yaml_config: Path, temp_dir: Path
+    ):
+        """Test file auto-detection for LaTeX files."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        content = generator.include_file(latex_file.name)
+        assert ".. math::" in content
+
+    def test_include_file_auto_detection_txt(
+        self, text_file: Path, sample_yaml_config: Path, temp_dir: Path
+    ):
+        """Test file auto-detection for text files."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        content = generator.include_file(text_file.name)
+        assert "::" in content
+
+    def test_include_file_unsupported_type(self, sample_yaml_config: Path, temp_dir: Path):
+        """Test including file with unsupported extension."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+
+        # Create a file with unsupported extension
+        unsupported_file = temp_dir / "test.xyz"
+        unsupported_file.write_text("content", encoding="utf-8")
+
+        with pytest.raises(IntroligoError) as exc_info:
+            generator.include_file(unsupported_file.name)
+
+        assert "Unsupported file type" in str(exc_info.value)
+        assert ".xyz" in str(exc_info.value)
+
+    def test_generate_with_file_includes(
+        self, config_with_file_includes: Path, temp_dir: Path
+    ):
+        """Test generating documentation with file_includes."""
+        output_dir = temp_dir / "output"
+        generator = IntroligoGenerator(config_with_file_includes, output_dir)
+        generator.load_config()
+
+        # Get the first module's config
+        module_config = generator.config["modules"]["module_with_files"]
+
+        # Verify file_includes are processed
+        assert "file_includes" in module_config
+        assert len(module_config["file_includes"]) == 4

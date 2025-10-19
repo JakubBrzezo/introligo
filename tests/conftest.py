@@ -173,3 +173,85 @@ modules:
 """
     config_file.write_text(config_content, encoding="utf-8")
     return config_file
+
+
+@pytest.fixture
+def rst_file(temp_dir: Path) -> Path:
+    """Create a sample RST file."""
+    rst_file = temp_dir / "architecture.rst"
+    rst_content = """Architecture Overview
+=====================
+
+System Components
+-----------------
+
+The system consists of the following components:
+
+* Component A: Handles data processing
+* Component B: Manages user interactions
+* Component C: Provides storage layer
+
+Code Example
+~~~~~~~~~~~~
+
+.. code-block:: python
+
+   class SystemComponent:
+       def __init__(self, name):
+           self.name = name
+
+       def process(self, data):
+           return f"Processing {data}"
+"""
+    rst_file.write_text(rst_content, encoding="utf-8")
+    return rst_file
+
+
+@pytest.fixture
+def text_file(temp_dir: Path) -> Path:
+    """Create a sample text file."""
+    txt_file = temp_dir / "notes.txt"
+    txt_content = """Important Notes:
+
+1. Remember to update configuration
+2. Check compatibility with Python 3.8+
+3. Run tests before deployment
+4. Update documentation"""
+    txt_file.write_text(txt_content, encoding="utf-8")
+    return txt_file
+
+
+@pytest.fixture
+def config_with_rst(temp_dir: Path, rst_file: Path) -> Path:
+    """Create configuration that includes RST files."""
+    config_file = temp_dir / "rst_config.yaml"
+    config_content = f"""
+modules:
+  module_with_rst:
+    title: "Module with RST"
+    description: "Module that includes RST documentation"
+    rst_includes: "{rst_file.name}"
+"""
+    config_file.write_text(config_content, encoding="utf-8")
+    return config_file
+
+
+@pytest.fixture
+def config_with_file_includes(
+    temp_dir: Path, rst_file: Path, markdown_file: Path, latex_file: Path, text_file: Path
+) -> Path:
+    """Create configuration that uses file_includes with auto-detection."""
+    config_file = temp_dir / "file_includes_config.yaml"
+    config_content = f"""
+modules:
+  module_with_files:
+    title: "Module with Multiple Files"
+    description: "Module that includes multiple file types"
+    file_includes:
+      - "{rst_file.name}"
+      - "{markdown_file.name}"
+      - "{latex_file.name}"
+      - "{text_file.name}"
+"""
+    config_file.write_text(config_content, encoding="utf-8")
+    return config_file

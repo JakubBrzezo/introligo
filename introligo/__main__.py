@@ -21,7 +21,8 @@ Features:
 - Support for multiple documentation sections
 - ASCII-safe folder naming
 - File inclusion support with !include directive for modular configurations
-- Markdown file inclusion for documentation modules
+- Multi-format file inclusion (RST, Markdown, LaTeX, Text) with auto-detection
+- Smart Markdown to RST conversion with link handling
 - Support for Python (autodoc), C, and C++ (Doxygen/Breathe) documentation
 
 Include Directive Usage:
@@ -104,26 +105,71 @@ Language Support:
     You can still manually specify extensions in your config if needed, and they
     will be preserved alongside auto-detected ones.
 
-Markdown Inclusion:
-    Include external markdown files as part of your documentation::
+File Inclusion:
+    Introligo now supports multiple file types for documentation composition.
+    You can combine RST, Markdown, LaTeX, and text files seamlessly.
+
+    **Unified File Inclusion (Recommended)**:
+    Use the `file_includes` field for automatic type detection::
 
         modules:
           my_module:
             title: "My Module"
-            description: "Module with markdown docs"
+            description: "Module documentation"
+            file_includes:
+              - "docs/overview.rst"      # Auto-detected as RST
+              - "README.md"               # Auto-detected as Markdown
+              - "proofs/theorem.tex"      # Auto-detected as LaTeX
+              - "notes.txt"               # Auto-detected as text
+
+    **Type-Specific Inclusion**:
+    You can also use type-specific fields for explicit control:
+
+    RST Inclusion::
+
+        modules:
+          my_module:
+            title: "My Module"
+            rst_includes:
+              - "docs/architecture.rst"
+              - "docs/api_details.rst"
+
+    Markdown Inclusion::
+
+        modules:
+          my_module:
+            title: "My Module"
             markdown_includes:
               - "docs/user_guide.md"
               - "docs/api_reference.md"
 
-    Or single file::
+    LaTeX Inclusion (wrapped in math directive)::
 
         modules:
           my_module:
             title: "My Module"
-            markdown_includes: "README.md"
+            latex_includes: "formulas/equations.tex"
 
-    Paths are resolved relative to the configuration file. Markdown content
-    is included at the end of the generated documentation page.
+    **Supported File Types**:
+    - `.rst` - Included as-is (native reStructuredText)
+    - `.md` - Converted to RST format with smart link handling
+    - `.tex` - Wrapped in RST math directive
+    - `.txt` - Wrapped in literal code block
+
+    **Mixed Usage Example**::
+
+        modules:
+          core:
+            title: "Core Module"
+            description: "Main functionality"
+
+            # Mix different inclusion methods
+            file_includes: "README.md"       # Unified approach
+            rst_includes: "architecture.rst"  # Type-specific
+            latex_includes: "proofs.tex"      # Type-specific
+
+    All paths are resolved relative to the configuration file.
+    Content is included at the end of the generated documentation page.
 
 Requirements:
     pip install PyYAML jinja2
@@ -860,6 +906,13 @@ Related Tools
 {% endfor %}
 {% endif %}
 
+{% if rst_includes %}
+{% for rst_content in rst_includes %}
+
+{{ rst_content }}
+{% endfor %}
+{% endif %}
+
 {% if markdown_includes %}
 {% for markdown_content in markdown_includes %}
 
@@ -871,6 +924,13 @@ Related Tools
 {% for latex_content in latex_includes %}
 
 {{ latex_content }}
+{% endfor %}
+{% endif %}
+
+{% if file_includes %}
+{% for file_content in file_includes %}
+
+{{ file_content }}
 {% endfor %}
 {% endif %}
 """
@@ -1004,6 +1064,105 @@ Related Tools
             return rst_content
         except Exception as e:
             raise IntroligoError(f"Error reading LaTeX file {latex_path_obj}: {e}") from e
+
+    def include_rst_file(self, rst_path: str) -> str:
+        """Include a reStructuredText file as-is.
+
+        Args:
+            rst_path: Path to the RST file (relative to config file).
+
+        Returns:
+            The content of the RST file.
+
+        Raises:
+            IntroligoError: If the RST file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        rst_path_obj = Path(rst_path)
+        if not rst_path_obj.is_absolute():
+            rst_path_obj = self.config_file.parent / rst_path
+
+        if not rst_path_obj.exists():
+            raise IntroligoError(f"RST file not found: {rst_path_obj}")
+
+        try:
+            content = rst_path_obj.read_text(encoding="utf-8")
+            logger.info(f"  📝 Included RST: {rst_path_obj}")
+            return content
+        except Exception as e:
+            raise IntroligoError(f"Error reading RST file {rst_path_obj}: {e}") from e
+
+    def include_txt_file(self, txt_path: str) -> str:
+        """Include a text file as a literal block in reStructuredText.
+
+        Args:
+            txt_path: Path to the text file (relative to config file).
+
+        Returns:
+            The content of the text file wrapped in literal block.
+
+        Raises:
+            IntroligoError: If the text file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        txt_path_obj = Path(txt_path)
+        if not txt_path_obj.is_absolute():
+            txt_path_obj = self.config_file.parent / txt_path
+
+        if not txt_path_obj.exists():
+            raise IntroligoError(f"Text file not found: {txt_path_obj}")
+
+        try:
+            content = txt_path_obj.read_text(encoding="utf-8")
+            # Wrap in literal block
+            rst_content = "::\n\n"
+            for line in content.split("\n"):
+                rst_content += "   " + line + "\n"
+            logger.info(f"  📄 Included text: {txt_path_obj}")
+            return rst_content
+        except Exception as e:
+            raise IntroligoError(f"Error reading text file {txt_path_obj}: {e}") from e
+
+    def include_file(self, file_path: str) -> str:
+        """Include a file with auto-detection based on file extension.
+
+        Supports:
+        - .rst: included as-is
+        - .md: converted to RST
+        - .tex: wrapped in math directive
+        - .txt: wrapped in literal block
+
+        Args:
+            file_path: Path to the file (relative to config file).
+
+        Returns:
+            The processed content of the file.
+
+        Raises:
+            IntroligoError: If the file cannot be read or type is unsupported.
+        """
+        path_obj = Path(file_path)
+        if not path_obj.is_absolute():
+            path_obj = self.config_file.parent / file_path
+
+        if not path_obj.exists():
+            raise IntroligoError(f"Include file not found: {path_obj}")
+
+        suffix = path_obj.suffix.lower()
+
+        if suffix == ".rst":
+            return self.include_rst_file(file_path)
+        elif suffix == ".md":
+            return self.include_markdown_file(file_path)
+        elif suffix == ".tex":
+            return self.include_latex_file(file_path)
+        elif suffix == ".txt":
+            return self.include_txt_file(file_path)
+        else:
+            raise IntroligoError(
+                f"Unsupported file type '{suffix}' for file: {path_obj}. "
+                f"Supported types: .rst, .md, .tex, .txt"
+            )
 
     def _convert_latex_to_rst(self, latex: str) -> str:
         """Convert LaTeX content to reStructuredText math directive.
@@ -1364,6 +1523,32 @@ Related Tools
             except IntroligoError as e:
                 logger.warning(f"⚠️  {e}")
 
+        # Process RST includes
+        rst_includes = config.get("rst_includes", [])
+        if isinstance(rst_includes, str):
+            rst_includes = [rst_includes]
+
+        rst_content = []
+        for rst_path in rst_includes:
+            try:
+                content = self.include_rst_file(rst_path)
+                rst_content.append(content)
+            except IntroligoError as e:
+                logger.warning(f"⚠️  {e}")
+
+        # Process generic file includes (auto-detection)
+        file_includes = config.get("file_includes", [])
+        if isinstance(file_includes, str):
+            file_includes = [file_includes]
+
+        file_content = []
+        for file_path in file_includes:
+            try:
+                content = self.include_file(file_path)
+                file_content.append(content)
+            except IntroligoError as e:
+                logger.warning(f"⚠️  {e}")
+
         context = {
             "title": node.title,
             "module": config.get("module", ""),
@@ -1399,6 +1584,8 @@ Related Tools
             "custom_sections": config.get("custom_sections", []),
             "markdown_includes": markdown_content,
             "latex_includes": latex_content,
+            "rst_includes": rst_content,
+            "file_includes": file_content,
         }
 
         # Clean up empty values, but keep language field
