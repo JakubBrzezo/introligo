@@ -1,0 +1,42 @@
+# Quick Start Guide
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "getting_started"
+title: "⚡ Quick Start"
+description: "Get started with Introligo in 5 minutes"
+overview: |
+  This quick start guide will have you generating documentation in minutes.
+
+usage_examples:
+  - title: "🚀 Basic Usage"
+    description: "Generate documentation from a YAML configuration"
+    language: "bash"
+    code: |
+      # Generate RST files in docs directory
+      python introligo.py config.yaml -o docs
+
+      # Preview what would be generated (dry run)
+      python introligo.py config.yaml -o docs --dry-run
+
+      # Use verbose output for debugging
+      python introligo.py config.yaml -o docs -v
+
+  - title: "📝 Simple Configuration File"
+    description: "Create your first YAML configuration"
+    language: "yaml"
+    code: |
+      # config.yaml
+      index:
+        title: "My Project Documentation"
+        description: "Comprehensive documentation"
+
+      generate_index: true
+
+      modules:
+        my_module:
+          title: "My Module"
+          module: "myproject.my_module"
+          description: "A useful module"
+          features:
+            - "Feature 1"
+            - "Feature 2"

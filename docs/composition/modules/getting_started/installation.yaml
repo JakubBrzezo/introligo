@@ -1,0 +1,42 @@
+# Installation Guide
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "getting_started"
+title: "📦 Installation"
+description: "How to install Introligo and its dependencies"
+overview: |
+  Introligo requires Python 3.8 or higher and a few dependencies for generating
+  documentation.
+
+requirements:
+  - "Python 3.8 or higher"
+  - "PyYAML >= 6.0 - YAML parsing"
+  - "Jinja2 >= 3.0 - Template rendering"
+  - "Sphinx >= 4.0 - Documentation building (for output)"
+  - "Breathe >= 4.0 - For C/C++ Doxygen integration (optional)"
+  - "Doxygen - For generating C/C++ XML documentation (optional)"
+
+installation: |
+  Install Introligo and its dependencies:
+
+  .. code-block:: bash
+
+     # Install required packages
+     pip install PyYAML jinja2
+
+     # For building the generated docs
+     pip install sphinx furo
+
+     # For C/C++ documentation support (optional)
+     pip install breathe
+     sudo apt-get install doxygen  # or brew install doxygen on macOS
+
+  Or add to your requirements.txt:
+
+  .. code-block:: text
+
+     PyYAML>=6.0
+     jinja2>=3.0
+     sphinx>=4.0
+     furo>=2023.3.27
+     breathe>=4.0  # For C/C++ documentation

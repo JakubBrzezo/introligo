@@ -121,7 +121,7 @@ class TestIncludeLoader:
         import yaml
 
         # Simulate include_constructor being called without _root_dir
-        from introligo.__main__ import include_constructor
+        from introligo.yaml_loader import include_constructor
 
         stream = StringIO("test: value")
         loader = IncludeLoader(stream)

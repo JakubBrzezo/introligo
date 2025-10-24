@@ -2,7 +2,6 @@
 */docs/_build/
 */docs/generated/
 */docs/*.rst
-!*/docs/conf.py
 
 # Doxygen output
 */output/

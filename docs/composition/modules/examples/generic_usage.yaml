@@ -1,0 +1,12 @@
+# Generic Usage Examples
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "examples"
+title: "🌟 Generic Usage"
+description: "Generic documentation generation patterns and hub mode examples"
+overview: |
+  Learn how to use Introligo for generic documentation generation including
+  the powerful Hub Mode for automatic documentation discovery and organization.
+
+markdown_includes:
+  - "../../examples/EXAMPLES.md"

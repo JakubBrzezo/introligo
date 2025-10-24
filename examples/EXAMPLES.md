@@ -2,7 +2,40 @@
 
 This directory contains example configurations demonstrating various features of Introligo.
 
-## Available Examples
+## NEW! Hub Mode Examples
+
+### Hub Example (`hub_example.yaml`)
+**Demonstrates the new Documentation Hub mode** - automatically discover and organize all documentation in your repository.
+
+**Features:**
+- 🔍 Auto-discovery of README, CHANGELOG, CONTRIBUTING, LICENSE
+- 🧠 Smart categorization into logical sections
+- 📚 Repository-wide documentation scanning
+- 🎯 Mix auto-discovered with manual modules
+- 📂 Flexible scan paths and exclusion patterns
+
+**What it does:**
+- Scans repository for documentation files
+- Categorizes into Getting Started, Guides, API, About
+- Combines markdown, RST, and other formats
+- Generates organized Sphinx documentation
+
+**Generate:**
+```bash
+python -m introligo examples/hub_example.yaml -o /tmp/hub_docs -v
+cd /tmp/hub_docs
+sphinx-build -b html . _build/html
+```
+
+**Perfect for:**
+- Projects with scattered documentation
+- Repositories with READMEs in multiple directories
+- Combining existing markdown guides with API docs
+- Quick documentation setup without manual configuration
+
+---
+
+## Classic Mode Examples
 
 ### 1. Python Project (`python_project/`)
 Demonstrates documentation for a Python project using Sphinx autodoc.
@@ -92,33 +125,133 @@ Example using the default color palette with Furo theme.
 python -m introligo examples/introligo_with_custom_palette.yaml -o /tmp/test_docs -v
 ```
 
-## Creating Your Own Configuration
+## Hub Mode vs Classic Mode
 
-### Basic Structure
+### When to Use Hub Mode
+
+✅ **Use Hub Mode when you:**
+- Have existing documentation scattered across your repository
+- Want automatic organization and discovery
+- Have READMEs, CHANGELOGs, and markdown guides
+- Want minimal configuration
+- Need to combine documentation from multiple sources
+- Prefer convention over configuration
+
+**Example use cases:**
+- Open-source projects with established documentation
+- Repositories with multiple README files
+- Projects transitioning to Sphinx from markdown
+- Documentation consolidation projects
+
+### When to Use Classic Mode
+
+✅ **Use Classic Mode when you:**
+- Want precise control over documentation structure
+- Are building documentation from scratch
+- Need custom organization beyond standard categories
+- Have complex hierarchical requirements
+- Prefer explicit configuration over auto-discovery
+
+**Example use cases:**
+- New projects starting with structured documentation
+- API-heavy projects with specific organization needs
+- Documentation with complex parent-child relationships
+- Projects requiring custom content sections
+
+### Hybrid Approach (Recommended!)
+
+Combine both for maximum flexibility:
 
 ```yaml
-# Basic project info
+# Auto-discover common files
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
+    contributing: true
+
+# Manually define specific structure
+modules:
+  # API documentation with precise control
+  api:
+    title: "📚 API Reference"
+    module: "myproject"
+
+  # Advanced guides
+  advanced:
+    title: "🚀 Advanced Topics"
+    file_includes:
+      - "docs/performance.md"
+      - "docs/architecture.md"
+```
+
+## Creating Your Own Configuration
+
+### Hub Mode Configuration
+
+```yaml
+index:
+  title: "📚 My Project Documentation Hub"
+  description: "Auto-organized documentation"
+
+# Enable documentation hub
+discovery:
+  enabled: true
+
+  # Where to scan
+  scan_paths:
+    - "."
+    - "docs/"
+
+  # What to auto-include
+  auto_include:
+    readme: true
+    changelog: true
+    contributing: true
+    license: true
+    markdown_docs: "docs/**/*.md"
+
+  # What to exclude
+  exclude_patterns:
+    - "node_modules"
+    - ".venv"
+    - "build"
+
+# Optional: Sphinx configuration
+sphinx:
+  project: "My Project"
+  author: "Your Name"
+  html_theme: "furo"
+  palette: "celin"
+
+# Optional: Manual modules (mixed with auto-discovered)
+modules:
+  api:
+    title: "API Reference"
+    module: "myproject"
+```
+
+### Classic Mode Configuration
+
+```yaml
 index:
   title: "My Project Documentation"
   description: "Project description"
-
-generate_index: true
 
 # Sphinx configuration (auto-generates conf.py)
 sphinx:
   project: "My Project"
   author: "Your Name"
-  copyright_year: "2025"
-
-  html_theme: "furo"  # or "alabaster", "sphinx_rtd_theme", etc.
-  palette: "celin"    # "celin", "default", or path to custom palette
+  html_theme: "furo"
+  palette: "celin"
 
   # Extensions are AUTO-DETECTED! Only add custom ones if needed:
   # extensions:
   #   - "sphinx.ext.intersphinx"  # Custom extension only
   # autodoc, napoleon, viewcode are added automatically for Python projects!
 
-# Your documentation modules
+# Manually define all modules
 modules:
   my_module:
     title: "My Module"

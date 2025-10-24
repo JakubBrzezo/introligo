@@ -1,0 +1,31 @@
+# Getting Started - Main Category
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+title: "🚀 Getting Started"
+description: "Quick start guide for Introligo"
+overview: |
+  Get up and running with Introligo in minutes. This guide covers installation,
+  basic usage, and your first documentation project.
+
+  Introligo streamlines the documentation process by converting structured YAML
+  configurations into properly formatted reStructuredText files for Sphinx. It supports
+  hierarchical page organization, automatic toctree generation, and rich content features
+  including code examples, API documentation, and custom sections.
+
+  The tool is designed to work seamlessly with Sphinx's autodoc extension, making it
+  perfect for documenting Python projects with complex module structures. It automatically
+  handles the creation of directory hierarchies, cross-references, and navigation structures.
+
+features:
+  - "📝 **YAML to RST conversion** - Write documentation in simple YAML, generate complex RST"
+  - "🌳 **Hierarchical organization** - Parent-child relationships for logical structure"
+  - "🔄 **Automatic toctree generation** - Navigation built automatically from structure"
+  - "📦 **Sphinx autodoc integration** - Seamless API documentation from Python modules"
+  - "🔬 **Breathe/Doxygen support** - Document C/C++ code with single or multiple files"
+  - "🎨 **Rich content support** - Features, examples, installation guides, and more"
+  - "🏷️ **ASCII-safe naming** - Automatic slug generation for filesystem compatibility"
+  - "📁 **File includes** - Modular configuration with !include directive"
+  - "🎯 **Template customization** - Use Jinja2 templates for custom output formats"
+  - "🚀 **Dry-run mode** - Preview changes before generating files"
+  - "⚡ **Batch processing** - Generate entire documentation trees in one command"
+  - "🔧 **Extensible design** - Add custom sections and fields as needed"

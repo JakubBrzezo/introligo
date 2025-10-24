@@ -1,0 +1,88 @@
+# MyProject Documentation Hub Configuration
+# This example demonstrates how Introligo automatically discovers and organizes
+# all documentation in a repository into a coherent Sphinx site.
+
+index:
+  title: "📚 MyProject Documentation Hub"
+  description: "Complete documentation automatically organized from multiple sources"
+  overview: |
+    Welcome to MyProject! This documentation is automatically generated and organized
+    from various sources throughout the repository:
+
+    - README.md provides project overview and quick start
+    - CHANGELOG.md tracks version history
+    - CONTRIBUTING.md explains how to contribute
+    - LICENSE contains legal information
+    - docs/ folder contains tutorials and guides
+
+    Everything is automatically discovered and categorized!
+
+# Enable Documentation Hub
+discovery:
+  enabled: true
+
+  # Scan these directories for documentation
+  scan_paths:
+    - "."          # Repository root (for README, CHANGELOG, etc.)
+    - "docs/"      # Documentation directory
+
+  # Automatically include these document types
+  auto_include:
+    readme: true          # Find README.md
+    changelog: true       # Find CHANGELOG.md
+    contributing: true    # Find CONTRIBUTING.md
+    license: true         # Find LICENSE
+    markdown_docs: "docs/**/*.md"  # All markdown in docs/
+
+  # Exclude these directories from scanning
+  exclude_patterns:
+    - "node_modules"
+    - ".venv"
+    - "venv"
+    - "build"
+    - "_build"
+    - ".git"
+    - "__pycache__"
+
+# Optional: Sphinx configuration for beautiful output
+sphinx:
+  project: "MyProject"
+  author: "MyProject Contributors"
+  copyright_year: "2025"
+
+  # Path configuration - allow Sphinx to find the myproject package
+  project_root: "."
+  add_project_to_path: true
+
+  # Use Furo theme with Celin palette
+  html_theme: "furo"
+  palette: "celin"
+
+  html_title: "MyProject Docs"
+
+  # Extensions are auto-detected based on content!
+  # Add custom ones if needed:
+  extensions:
+    - "sphinx.ext.intersphinx"
+
+  intersphinx_mapping:
+    python:
+      - "https://docs.python.org/3"
+      - null
+
+# Manual modules (mixed with auto-discovered)
+# API documentation for the Python package
+modules:
+  python_api:
+    title: "🐍 Python API"
+    description: "Python API documentation for MyProject package"
+    overview: |
+      This section contains the complete API reference for the MyProject Python package.
+      The documentation is automatically generated from Python docstrings using Sphinx autodoc.
+
+      The package includes:
+
+      - **ComplexNumber**: A class for working with complex numbers
+
+    module: "myproject"
+    language: "python"

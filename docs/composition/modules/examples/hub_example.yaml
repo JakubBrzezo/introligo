@@ -1,0 +1,119 @@
+# Hub Example Configuration
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "generic_usage"
+title: "🔍 Hub Mode Example"
+description: "Example configuration for Hub Mode documentation discovery"
+overview: |
+  This example demonstrates how to configure Introligo's Hub Mode for automatic
+  documentation discovery and organization. Hub Mode scans your repository for
+  documentation files and automatically categorizes them into logical sections.
+
+  **Key Features:**
+
+  - Automatic discovery of README, CHANGELOG, CONTRIBUTING, LICENSE files
+  - Smart categorization into Getting Started, Guides, API, About sections
+  - Flexible scan paths and exclusion patterns
+  - Mix auto-discovered content with manually defined modules
+
+custom_sections:
+  - title: "Example Configuration File"
+    content: |
+      Here's a complete example of a Hub Mode configuration:
+
+      .. code-block:: yaml
+
+         # Example: Documentation Hub Configuration
+         # This example shows how to use introligo as a documentation hub
+         # to automatically discover and organize all documentation in your repository
+
+         index:
+           title: "📚 Project Documentation Hub"
+           description: "Comprehensive documentation automatically organized from multiple sources"
+           overview: |
+             This documentation is automatically generated from various sources throughout
+             the repository including README files, markdown guides, changelogs, and more.
+
+         # Enable automatic documentation discovery
+         discovery:
+           enabled: true
+
+           # Directories to scan for documentation
+           scan_paths:
+             - "."          # Root directory
+             - "docs/"      # Documentation directory
+             - "examples/"  # Examples directory
+
+           # What to automatically include
+           auto_include:
+             readme: true          # Auto-discover README.md files
+             changelog: true       # Auto-discover CHANGELOG.md
+             contributing: true    # Auto-discover CONTRIBUTING.md
+             license: true         # Auto-discover LICENSE files
+             markdown_docs: "docs/**/*.md"  # All markdown in docs/
+
+           # Patterns to exclude from discovery
+           exclude_patterns:
+             - "node_modules"
+             - ".venv"
+             - "build"
+             - "_build"
+
+         # Hub configuration for organizing discovered content
+         hub:
+           # Hub mode enables smart categorization
+           # Documents are automatically organized into:
+           # - Getting Started (README, installation guides)
+           # - User Guides (tutorials, how-tos)
+           # - API Reference (API docs, technical references)
+           # - About (changelog, contributing, license)
+
+         # You can still manually define modules alongside auto-discovery
+         modules:
+           # Manual module definitions
+           api_reference:
+             title: "🔧 API Reference"
+             description: "Python API documentation"
+             module: "introligo"  # This will use Sphinx autodoc
+
+           # The hub will add discovered modules as siblings or children
+
+         # Sphinx configuration (optional)
+         sphinx:
+           project: "My Project"
+           author: "Your Name"
+           html_theme: "furo"
+           palette: "celin"
+
+           # Extensions are auto-detected, but you can add custom ones
+           extensions:
+             - "sphinx.ext.intersphinx"
+
+           intersphinx_mapping:
+             python:
+               - "https://docs.python.org/3"
+               - null
+
+
+  - title: "Configuration Overview"
+    content: |
+      The hub example demonstrates several key features:
+
+      **Discovery Configuration:**
+
+      - Enable automatic documentation discovery
+      - Define scan paths for documentation search
+      - Configure what types of files to auto-include
+      - Set exclusion patterns to skip unwanted directories
+
+      **Smart Organization:**
+
+      - Documents are automatically categorized
+      - Combines with manual module definitions
+      - Generates organized Sphinx documentation
+
+      **Customization:**
+
+      - Override default categorization
+      - Add custom modules alongside auto-discovered content
+      - Configure Sphinx settings and themes

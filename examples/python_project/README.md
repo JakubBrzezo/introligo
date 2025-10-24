@@ -122,7 +122,7 @@ python -m doctest string_utils.py -v
 Or use it interactively:
 
 ```python
-python3
+python
 >>> from string_utils import capitalize_words, is_palindrome
 >>> capitalize_words("hello world")
 'Hello World'

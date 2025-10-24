@@ -1,0 +1,132 @@
+# Hub Project Example
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "generic_usage"
+title: "📦 Hub Project Demo"
+description: "Complete example project demonstrating Hub Mode in action"
+overview: |
+  This is a complete example project that demonstrates how Hub Mode discovers
+  and organizes documentation from a typical software project structure.
+
+  **Project Structure:**
+
+  The example project includes:
+
+  - ``README.md`` - Main project documentation
+  - ``CHANGELOG.md`` - Version history
+  - ``CONTRIBUTING.md`` - Contribution guidelines
+  - ``docs/`` - Additional documentation files
+
+  **How Hub Mode Processes This:**
+
+  When you run Introligo with Hub Mode on this project, it will:
+
+  1. Discover all documentation files automatically
+  2. Categorize them into logical sections
+  3. Generate a complete Sphinx documentation site
+  4. Maintain proper cross-references and navigation
+
+markdown_includes:
+  - "../examples/generic_usage/hub_project/README.md"
+  - "../examples/generic_usage/hub_project/CHANGELOG.md"
+  - "../examples/generic_usage/hub_project/CONTRIBUTING.md"
+
+custom_sections:
+  - title: "Configuration File"
+    content: |
+      The hub project includes its own ``introligo_config.yaml`` that demonstrates
+      Hub Mode configuration:
+
+  - title: ""
+    content: |
+      .. code-block:: yaml
+
+         # MyProject Documentation Hub Configuration
+         # This example demonstrates how Introligo automatically discovers and organizes
+         # all documentation in a repository into a coherent Sphinx site.
+
+         index:
+           title: "📚 MyProject Documentation Hub"
+           description: "Complete documentation automatically organized from multiple sources"
+           overview: |
+             Welcome to MyProject! This documentation is automatically generated and organized
+             from various sources throughout the repository:
+
+             - README.md provides project overview and quick start
+             - CHANGELOG.md tracks version history
+             - CONTRIBUTING.md explains how to contribute
+             - LICENSE contains legal information
+             - docs/ folder contains tutorials and guides
+
+             Everything is automatically discovered and categorized!
+
+         # Enable Documentation Hub
+         discovery:
+           enabled: true
+
+           # Scan these directories for documentation
+           scan_paths:
+             - "."          # Repository root (for README, CHANGELOG, etc.)
+             - "docs/"      # Documentation directory
+
+           # Automatically include these document types
+           auto_include:
+             readme: true          # Find README.md
+             changelog: true       # Find CHANGELOG.md
+             contributing: true    # Find CONTRIBUTING.md
+             license: true         # Find LICENSE
+             markdown_docs: "docs/**/*.md"  # All markdown in docs/
+
+           # Exclude these directories from scanning
+           exclude_patterns:
+             - "node_modules"
+             - ".venv"
+             - "venv"
+             - "build"
+             - "_build"
+             - ".git"
+             - "__pycache__"
+
+         # Optional: Sphinx configuration for beautiful output
+         sphinx:
+           project: "MyProject"
+           author: "MyProject Contributors"
+           copyright_year: "2025"
+
+           # Use Furo theme with Celin palette
+           html_theme: "furo"
+           palette: "celin"
+
+           html_title: "MyProject Docs"
+
+           # Extensions are auto-detected based on content!
+           # Add custom ones if needed:
+           extensions:
+             - "sphinx.ext.intersphinx"
+
+           intersphinx_mapping:
+             python:
+               - "https://docs.python.org/3"
+               - null
+
+         # Optional: Manually add modules (mixed with auto-discovered)
+         # Uncomment this to add API documentation
+         # modules:
+         #   api:
+         #     title: "📖 API Reference"
+         #     module: "myproject"
+         #     description: "Complete API documentation"
+
+  - title: "Running the Example"
+    content: |
+      To try this example yourself:
+
+      .. code-block:: bash
+
+         cd examples/hub_project
+         python -m introligo introligo_config.yaml -o /tmp/hub_output -v
+         cd /tmp/hub_output
+         sphinx-build -b html . _build/html
+
+      Then open ``_build/html/index.html`` in your browser to see the generated
+      documentation hub.

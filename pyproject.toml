@@ -32,11 +32,11 @@ keywords = ["documentation", "sphinx", "rst", "yaml", "generator", "doxygen", "b
 dependencies = [
     "PyYAML>=6.0",
     "Jinja2>=3.0",
+    "sphinx>=4.0",
 ]
 
 [project.optional-dependencies]
 docs = [
-    "sphinx>=4.0",
     "furo>=2023.3.27",
 ]
 cpp = [

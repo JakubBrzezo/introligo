@@ -278,7 +278,7 @@ class TestIntroligoErrorCoverage:
 
         import yaml
 
-        from introligo.__main__ import include_constructor
+        from introligo.yaml_loader import include_constructor
 
         # Create a mock loader
         stream = StringIO("test: value")

@@ -318,39 +318,55 @@ class TestMarkdownInclusion:
         assert "Markdown file not found" in str(exc_info.value)
 
     def test_convert_markdown_to_rst_headers(self, sample_yaml_config: Path, temp_dir: Path):
-        """Test markdown to RST header conversion."""
-        output_dir = temp_dir / "output"
-        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+        """Test markdown to RST header conversion with header demotion."""
+        from introligo.markdown_converter import convert_markdown_to_rst
 
+        # Test with header demotion (default behavior)
         markdown = "# H1\n## H2\n### H3\n#### H4"
-        rst = generator._convert_markdown_to_rst(markdown)
+        rst = convert_markdown_to_rst(markdown, demote_headers=True)
 
-        assert "==" in rst  # H1 underline
-        assert "---" in rst or "--" in rst  # H2 underline
-        assert "~~~" in rst or "~~" in rst  # H3 underline
-        assert "^^^" in rst or "^^" in rst  # H4 underline
+        # With demotion: H1 -> H2, H2 -> H3, H3 -> H4, H4 -> H5
+        assert "---" in rst or "--" in rst  # H1 becomes H2 (----)
+        assert "~~~" in rst or "~~" in rst  # H2 becomes H3 (~~~~)
+        assert "^^^" in rst or "^^" in rst  # H3 becomes H4 (^^^^)
+        assert '"""' in rst or '""' in rst  # H4 becomes H5 ("""")
+
+    def test_convert_markdown_to_rst_headers_no_demotion(
+        self, sample_yaml_config: Path, temp_dir: Path
+    ):
+        """Test markdown to RST header conversion without header demotion."""
+        from introligo.markdown_converter import convert_markdown_to_rst
+
+        # Test without header demotion
+        markdown = "# H1\n## H2\n### H3\n#### H4"
+        rst = convert_markdown_to_rst(markdown, demote_headers=False)
+
+        # Without demotion: original levels
+        assert "==" in rst  # H1 stays H1 (====)
+        assert "---" in rst or "--" in rst  # H2 stays H2 (----)
+        assert "~~~" in rst or "~~" in rst  # H3 stays H3 (~~~~)
+        assert "^^^" in rst or "^^" in rst  # H4 stays H4 (^^^^)
 
     def test_convert_markdown_to_rst_code_blocks(self, sample_yaml_config: Path, temp_dir: Path):
         """Test markdown to RST code block conversion."""
-        output_dir = temp_dir / "output"
-        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+        from introligo.markdown_converter import convert_markdown_to_rst
 
         markdown = "```python\nprint('hello')\n```"
-        rst = generator._convert_markdown_to_rst(markdown)
+        rst = convert_markdown_to_rst(markdown)
 
         assert ".. code-block:: python" in rst
         assert "   print('hello')" in rst
 
     def test_convert_markdown_skip_changelog_h1(self, sample_yaml_config: Path, temp_dir: Path):
         """Test skipping first Changelog H1."""
-        output_dir = temp_dir / "output"
-        generator = IntroligoGenerator(sample_yaml_config, output_dir)
+        from introligo.markdown_converter import convert_markdown_to_rst
 
         markdown = "# Changelog\n## Version 1.0"
-        rst = generator._convert_markdown_to_rst(markdown)
+        rst = convert_markdown_to_rst(markdown, doc_type="changelog")
 
-        # Changelog H1 should be skipped
+        # Changelog H1 should be skipped when doc_type is "changelog"
         assert "Changelog\n========" not in rst
+        assert "Changelog\n--------" not in rst  # Also not demoted version
         assert "Version 1.0" in rst
 
 
@@ -795,6 +811,23 @@ modules:
 
         assert "Unsupported file type" in str(exc_info.value)
         assert ".xyz" in str(exc_info.value)
+
+    def test_include_file_license_without_extension(self, temp_dir: Path):
+        """Test that LICENSE files without extension are treated as text files."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text("modules: {}", encoding="utf-8")
+
+        license_file = temp_dir / "LICENSE"
+        license_content = "MIT License\n\nCopyright (c) 2025"
+        license_file.write_text(license_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_file(license_file.name)
+
+        # Should be treated as text file (literal block with ::)
+        assert "::" in result
+        assert "MIT License" in result
+        assert "Copyright (c) 2025" in result
 
     def test_generate_with_file_includes(self, config_with_file_includes: Path, temp_dir: Path):
         """Test generating documentation with file_includes."""

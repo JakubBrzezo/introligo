@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Preview builder for Introligo documentation.
 
 This script provides a complete documentation build and preview pipeline:

@@ -1,0 +1,12 @@
+# Hub Architecture Documentation
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "getting_started"
+title: "🏗️ Hub Architecture"
+description: "Technical architecture of the Documentation Hub feature"
+overview: |
+  Deep dive into the Documentation Hub architecture - how Introligo discovers,
+  organizes, and combines documentation from multiple sources. Learn about smart
+  categorization, backward compatibility, and integration patterns.
+
+markdown_includes: "markdown/getting_started/hub_architecture.md"

@@ -1,435 +1,495 @@
-# Introligo - Documentation Generator
+# Introligo - Documentation Hub
 
 [![Tests](https://github.com/JakubBrzezo/introligo/actions/workflows/tests.yml/badge.svg)](https://github.com/JakubBrzezo/introligo/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/JakubBrzezo/introligo/branch/main/graph/badge.svg)](https://codecov.io/gh/JakubBrzezo/introligo)
 
-YAML to reStructuredText documentation generator for Sphinx with hierarchical page organization and rich content support.
+**Your repository's documentation, unified.** Automatically discover, organize, and combine all your docs—READMEs, Changelogs, Markdown guides, API docs—into one beautiful Sphinx site.
 
-> **Note**: Introligo is one of the open-source components of the Celin Project, available for free use in any project.
+> **Note**: Introligo is an open-source component of the Celin Project, freely available for any project.
 
-## Overview
+## The Problem
 
-Introligo streamlines the documentation process by converting structured YAML configurations into properly formatted reStructuredText files for Sphinx. It supports hierarchical page organization, automatic toctree generation, and rich content features including code examples, API documentation, and custom sections.
+Your documentation is scattered:
+- 📄 README.md in the root
+- 📝 User guides in `docs/`
+- 📋 CHANGELOG.md tracking history
+- 🤝 CONTRIBUTING.md for contributors
+- 📦 Python docstrings in code
+- 🔧 Example READMEs in subdirectories
+
+**Each file is useful, but together they're a mess.**
+
+## The Solution: Introligo Hub
+
+```yaml
+# Create hub_config.yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
+    markdown_docs: "docs/**/*.md"
+```
+
+```bash
+python -m introligo hub_config.yaml -o docs -v
+cd docs && sphinx-build -b html . _build/html
+```
+
+**Result:** Professional Sphinx documentation, automatically organized. ✨
+
+## How It Works
+
+### 1. Auto-Discovery
+Introligo scans your repository and finds all documentation:
+- README files (root and subdirectories)
+- CHANGELOG.md
+- CONTRIBUTING.md
+- LICENSE
+- Markdown guides
+- RST files
+
+### 2. Smart Organization
+Documents are intelligently categorized:
+- **Getting Started** → READMEs, installation guides
+- **User Guides** → Tutorials, how-tos
+- **API Reference** → Code documentation
+- **About** → Changelog, contributing, license
+
+### 3. Beautiful Output
+Everything combines into a professional Sphinx site with:
+- Automatic navigation (toctree)
+- Searchable content
+- Mobile-responsive design
+- Light/dark mode
+- Your choice of theme
+
+## Quick Start (3 Steps)
+
+### Step 1: Install
+
+```bash
+pip install PyYAML jinja2 sphinx furo
+```
+
+### Step 2: Create Configuration
+
+Create `introligo_config.yaml` in your project root:
+
+```yaml
+index:
+  title: "📚 My Project Docs"
+
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
+    contributing: true
+    license: true
+    markdown_docs: "docs/**/*.md"
+
+sphinx:
+  project: "My Project"
+  html_theme: "furo"
+  palette: "celin"  # Beautiful cosmic theme
+```
+
+### Step 3: Generate
+
+```bash
+python -m introligo introligo_config.yaml -o docs_output -v
+cd docs_output
+sphinx-build -b html . _build/html
+python -m http.server 8000 --directory _build/html
+```
+
+Open http://localhost:8000 — your docs are ready! 🎉
 
 ## Features
 
-- 📝 **YAML to RST conversion** - Write documentation in simple YAML, generate complex RST
-- ⚙️ **Sphinx auto-configuration** - Auto-generate `conf.py` from YAML (NEW!)
-- 🎨 **Color palettes** - Built-in themes (Celin, Default) or create custom palettes (NEW!)
-- 🌳 **Hierarchical organization** - Parent-child relationships for logical structure
-- 🔄 **Automatic toctree generation** - Navigation built automatically from structure
-- 📦 **Sphinx autodoc integration** - Seamless API documentation from Python modules
-- 🔬 **Breathe/Doxygen support** - Document C/C++ code with single or multiple files
-- 🎯 **Rich content support** - Features, examples, installation guides, and more
-- 🏷️ **ASCII-safe naming** - Automatic slug generation for filesystem compatibility
-- 📁 **File includes** - Modular configuration with `!include` directive
-- 📝 **Markdown includes** - Include markdown files in your documentation
-- 📐 **LaTeX support** - Include mathematical equations from .tex files
-- 🖼️ **Template customization** - Use Jinja2 templates for custom output formats
-- 🚀 **Dry-run mode** - Preview changes before generating files
+### 🔍 Auto-Discovery
+- Finds README, CHANGELOG, CONTRIBUTING, LICENSE automatically
+- Scans for markdown files by pattern
+- Discovers documentation anywhere in your repo
 
-## Installation
+### 🧠 Smart Categorization
+- Analyzes content to determine correct section
+- Keywords-based classification
+- Location-aware organization
+- Handles multiple READMEs intelligently
 
-```bash
-# Install required packages
-pip install PyYAML jinja2
+### 📚 Multi-Format Support
+- **Markdown** → Converted to RST with smart link handling
+- **RST** → Included natively
+- **LaTeX** → Mathematical formulas
+- **Text** → Literal blocks
+- **Python** → Sphinx autodoc
+- **C/C++** → Doxygen integration
 
-# For building the generated docs
-pip install sphinx sphinx_rtd_theme
+### 🎨 Beautiful Themes
+- Built-in Celin palette (cosmic colors)
+- Built-in Default palette
+- Custom palette support
+- Furo, RTD, Alabaster themes
+- Auto-generated `conf.py`
 
-# For C/C++ documentation support (optional)
-pip install breathe
-sudo apt-get install doxygen  # or brew install doxygen on macOS
+### 🎯 Flexible Configuration
+- Hub Mode (automatic) - Recommended
+- Classic Mode (manual control) - Power users
+- Hybrid (mix both) - Best of both worlds
+
+## Real-World Example
+
+Here's what Introligo finds in a typical project:
+
+```
+my-project/
+├── README.md                  → Getting Started
+├── CHANGELOG.md               → About
+├── CONTRIBUTING.md            → About
+├── LICENSE                    → About
+├── docs/
+│   ├── tutorial.md           → User Guides
+│   ├── user-guide.md         → User Guides
+│   └── advanced.md           → User Guides
+└── src/
+    ├── myproject/            → API Reference (autodoc)
+    └── examples/
+        └── README.md         → User Guides
 ```
 
-## Quick Start
+One command generates complete, organized documentation from all of this.
 
-```bash
-# Generate RST files in docs directory
-python modules/introligo/introligo.py config.yaml -o docs
+## Configuration Guide
 
-# Preview what would be generated (dry run)
-python modules/introligo/introligo.py config.yaml -o docs --dry-run
-
-# Use verbose output for debugging
-python modules/introligo/introligo.py config.yaml -o docs -v
-```
-
-## Basic Configuration
+### Minimal Configuration
 
 ```yaml
-# config.yaml
-index:
-  title: "My Project Documentation"
-  description: "Comprehensive documentation for my project"
-
-generate_index: true
-
-modules:
-  utilities:
-    title: "Utility Scripts"
-    description: "Collection of utility scripts"
-
-  my_tool:
-    parent: "utilities"
-    module: "myproject.tools.my_tool"
-    title: "My Tool"
-    description: "A useful tool for processing data"
-    features:
-      - "Fast processing"
-      - "Easy to use"
-      - "Well documented"
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
 ```
 
-## C/C++ Documentation
+That's it! Introligo finds and organizes your READMEs and changelog.
 
-```yaml
-# Global Doxygen configuration
-doxygen:
-  xml_path: "../output/xml"
-  project_name: "myproject"
-
-modules:
-  my_component:
-    title: "My Component"
-    language: c
-    description: "Component description"
-    doxygen_files:
-      - mycomponent.h
-      - mycomponent.c
-```
-
-## Including Markdown Files
-
-```yaml
-modules:
-  my_module:
-    title: "My Module"
-    description: "Module with markdown documentation"
-    module: "myproject.my_module"
-
-    # Include markdown files (list or single file)
-    markdown_includes:
-      - "docs/user_guide.md"
-      - "README.md"
-```
-
-Paths are resolved relative to the configuration file.
-
-**NEW!** Markdown links are automatically converted to reStructuredText format:
-- External links: `[text](https://url)` → `` `text <https://url>`_ ``
-- Links with anchors: `[Guide](./setup.md#install)` → `:doc:`Guide (Install) <setup>``
-- Images, anchors, and more are supported
-
-**Documentation:**
-- [Quick Reference](docs/MARKDOWN_LINK_QUICK_REFERENCE.md) - Cheat sheet & common patterns
-- [Complete Examples](docs/MARKDOWN_LINK_EXAMPLES.md) - 6 real-world examples
-- [Technical Details](docs/MARKDOWN_LINK_CONVERSION.md) - Full feature documentation
-
-## Sphinx Configuration Auto-Generation
-
-**NEW!** Introligo can automatically generate `conf.py` for Sphinx from your YAML configuration. No more manual Python configuration files!
-
-### Automatic Extension Detection
-
-**NEW!** Introligo automatically detects your project type and adds the appropriate Sphinx extensions:
-
-- **Python projects** → Automatically adds `sphinx.ext.autodoc`, `sphinx.ext.napoleon`, `sphinx.ext.viewcode`
-- **C/C++ projects** → Automatically adds `breathe` extension
-- **LaTeX/Math content** → Automatically adds `sphinx.ext.mathjax`
-
-You no longer need to manually specify common extensions!
-
-### Basic Sphinx Configuration
-
-```yaml
-sphinx:
-  project: "My Project"
-  author: "Your Name"
-  html_theme: "furo"
-  palette: "celin"  # Built-in cosmic color palette
-
-  # Extensions are now OPTIONAL - auto-detected from your modules!
-  # You can still add custom extensions if needed:
-  # extensions:
-  #   - "sphinx.ext.intersphinx"
-  #   - "custom_extension"
-```
-
-When you run Introligo, it automatically generates a complete `conf.py` file with:
-- **Auto-detected extensions** based on project type
-- Project metadata and version management
-- Theme configuration with color palettes
-- Autodoc and Napoleon settings
-- Intersphinx mappings
-- And much more!
-
-### Built-in Color Palettes
-
-Choose from professional color palettes:
-
-- **`celin`** - Cosmic-inspired theme with deep space colors
-- **`default`** - Clean, simple colors for general documentation
-
-Or create your own custom palette!
-
-### Complete Example
+### Recommended Configuration
 
 ```yaml
 index:
-  title: "My Project Documentation"
-  description: "Beautiful documentation"
+  title: "📚 My Project Documentation"
+  description: "Complete documentation hub"
 
-generate_index: true
+discovery:
+  enabled: true
+  scan_paths:
+    - "."
+    - "docs/"
+  auto_include:
+    readme: true
+    changelog: true
+    contributing: true
+    license: true
+    markdown_docs: "docs/**/*.md"
+  exclude_patterns:
+    - "node_modules"
+    - ".venv"
 
 sphinx:
   project: "My Project"
   author: "Your Name"
-
-  # Auto-read version from git tags
-  version_from_git: true
-  fallback_version: "1.0.0"
-
-  # Theme with colors
   html_theme: "furo"
   palette: "celin"
-  html_title: "My Project Docs"
+```
 
-  # Extensions are now AUTO-DETECTED!
-  # Only add custom extensions if needed:
-  extensions:
-    - "sphinx.ext.intersphinx"  # Custom extension
+### Advanced: Mix Auto + Manual
 
-  # Intersphinx (link to other docs)
-  intersphinx_mapping:
-    python:
-      - "https://docs.python.org/3"
-      - null
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
 
-  # Autodoc settings
-  autodoc_default_options:
-    members: true
-    undoc-members: true
+# Manually add API docs and custom sections
+modules:
+  api:
+    title: "📖 API Reference"
+    module: "myproject"  # Python autodoc
+
+  architecture:
+    title: "🏗️ Architecture"
+    file_includes:
+      - "docs/design.md"
+      - "docs/decisions.md"
+```
+
+## Use Cases
+
+### ✅ Open Source Projects
+**Perfect for:** Projects with established docs scattered across README files and markdown guides.
+
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
+    contributing: true
+    license: true
+```
+
+### ✅ Python Libraries
+**Perfect for:** Libraries needing API docs combined with guides.
+
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    markdown_docs: "docs/**/*.md"
 
 modules:
   api:
-    title: "API Reference"
-    module: "myproject"  # Python module detected → autodoc, napoleon, viewcode added!
-    description: "Complete API documentation"
+    module: "mylib"  # Auto-generates API docs
 ```
 
-### What You Get
+### ✅ Documentation Migration
+**Perfect for:** Moving from markdown to Sphinx.
 
-Running `python -m introligo config.yaml -o docs` generates:
-- ✅ All RST files for your documentation
-- ✅ `conf.py` with full Sphinx configuration
-- ✅ Color palette integrated into theme
-- ✅ All extensions properly configured
-- ✅ Ready to build with `sphinx-build`
+```yaml
+discovery:
+  enabled: true
+  scan_paths: ["."]
+  auto_include:
+    markdown_docs: "**/*.md"  # Find everything
+```
 
-No manual `conf.py` editing needed!
+### ✅ Multi-Language Projects
+**Perfect for:** C++/Python projects with Doxygen and Sphinx.
 
-### Learn More
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
 
-See the **Sphinx Configuration Tutorial** in the documentation for:
-- Complete configuration reference
-- Theme customization
-- Creating custom color palettes
-- Advanced features (autodoc, Breathe, math support)
-- Best practices
+doxygen:
+  xml_path: "build/doxygen/xml"
+
+modules:
+  cpp_api:
+    language: cpp
+    doxygen_files: ["mylib.h"]
+  python_api:
+    module: "mylib"
+```
+
+## Classic Mode (For Power Users)
+
+If you need complete control over documentation structure:
+
+```yaml
+# No discovery - manually define everything
+modules:
+  getting_started:
+    title: "Getting Started"
+    file_includes: "README.md"
+
+  user_guide:
+    title: "User Guide"
+    parent: "getting_started"
+    file_includes: "docs/guide.md"
+
+  api:
+    title: "API Reference"
+    module: "myproject"
+```
+
+**When to use Classic Mode:**
+- Complex hierarchical requirements
+- Precise control needed
+- Building docs from scratch
+- Custom organization beyond categories
+
+**Most users should use Hub Mode.**
+
+## Installation
+
+### Basic Installation
+
+```bash
+pip install PyYAML jinja2
+```
+
+### With Sphinx (for building docs)
+
+```bash
+pip install PyYAML jinja2 sphinx furo
+```
+
+### With C/C++ Support
+
+```bash
+pip install PyYAML jinja2 sphinx breathe
+sudo apt-get install doxygen  # or: brew install doxygen
+```
+
+### Development Installation
+
+```bash
+git clone https://github.com/JakubBrzezo/introligo.git
+cd introligo
+pip install -e .[dev,docs]
+```
+
+## Documentation
+
+### Examples
+
+- [Hub Example](examples/hub_project/) - Complete realistic project
+- [Python Example](examples/python_project/) - Python autodoc
+- [C Example](examples/c_project/) - Doxygen integration
+- [LaTeX Example](examples/latex_project/) - Math formulas
+- [RST Example](examples/rst_project/) - RST includes
+
+### Guides
+
+- [Examples Guide](examples/EXAMPLES.md) - All examples explained
+- [Hub Architecture](HUB_ARCHITECTURE.md) - Technical details
+- [Migration Guide](#migrating-to-hub-mode) - From Classic to Hub
+
+## Command Line
+
+```bash
+# Generate documentation
+python -m introligo config.yaml -o output/
+
+# Preview (dry-run)
+python -m introligo config.yaml -o output/ --dry-run
+
+# Verbose output
+python -m introligo config.yaml -o output/ -v
+
+# Custom template
+python -m introligo config.yaml -o output/ -t custom.jinja2
+
+# Strict mode (fail on errors)
+python -m introligo config.yaml -o output/ --strict
+```
+
+## Migrating to Hub Mode
+
+### From Scattered Docs
+
+If you have READMEs and markdown files:
+
+**Before:** Multiple disconnected files
+**After:** One command to unite them
+
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    markdown_docs: "docs/**/*.md"
+```
+
+### From Classic Introligo
+
+If you're using the old YAML approach:
+
+**Before:**
+```yaml
+modules:
+  getting_started:
+    title: "Getting Started"
+    file_includes: "README.md"
+  changelog:
+    title: "Changelog"
+    file_includes: "CHANGELOG.md"
+```
+
+**After:**
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    readme: true
+    changelog: true
+```
+
+Much simpler! And you can still add manual modules.
+
+## FAQ
+
+### Q: Do I have to move my documentation files?
+
+**No!** Introligo finds documentation wherever it is. READMEs, guides, and other files can stay in their current locations.
+
+### Q: What if auto-categorization gets it wrong?
+
+Use manual modules to override:
+
+```yaml
+discovery:
+  enabled: true
+  auto_include:
+    markdown_docs: "docs/**/*.md"
+
+modules:
+  architecture:  # Manually control this
+    title: "Architecture"
+    file_includes: "docs/architecture.md"
+```
+
+### Q: Can I customize the organization?
+
+Yes! Use hybrid mode—auto-discover common files, manually organize complex sections.
+
+### Q: Does it work with existing Sphinx projects?
+
+Yes! Introligo generates RST files that work with any Sphinx setup.
+
+### Q: What about my existing conf.py?
+
+Introligo can auto-generate `conf.py`, but if you have a custom one, just don't enable the `sphinx` section.
 
 ## Requirements
 
 - Python 3.8 or higher
 - PyYAML >= 6.0
 - Jinja2 >= 3.0
-- Sphinx >= 4.0 (for building documentation)
-- Breathe >= 4.0 (optional, for C/C++ documentation)
-- Doxygen (optional, for C/C++ documentation)
+- Sphinx >= 4.0 (for building)
 
-## Development Environment
+**Optional:**
+- Breathe >= 4.0 (C/C++ documentation)
+- Doxygen (C/C++ documentation)
 
-Introligo includes a pre-configured development container (devcontainer) for a consistent development environment across all platforms.
+## Contributing
 
-### Using Devcontainer (Recommended)
-
-The devcontainer provides:
-- Python 3.11 with all dependencies pre-installed
-- VS Code extensions (Python, Ruff, Mypy, etc.)
-- System tools (git, doxygen, graphviz)
-- Automatic project setup
-
-**Quick Start:**
-1. Install Docker and VS Code with Dev Containers extension
-2. Open project in VS Code
-3. Click "Reopen in Container" when prompted
-4. Start developing immediately!
-
-**Documentation:**
-- [Running Code in Devcontainer](docs/devcontainer_usage.md) - Complete guide for using the devcontainer
-- [Setting Up Devcontainer in Your Project](docs/devcontainer_setup.md) - Configure devcontainers for your own projects
-
-### Manual Setup
-
-If you prefer not to use devcontainers:
-
-```bash
-# Install dependencies
-pip install -e .[dev,docs,cpp]
-
-# Install development tools
-pip install pytest pytest-cov ruff mypy
-
-# For C++ documentation support
-sudo apt-get install doxygen graphviz  # Linux
-brew install doxygen graphviz          # macOS
-```
-
-## Documentation
-
-Introligo has comprehensive documentation built with Sphinx and the Furo theme, using the Celin color palette.
-
-### Building the Documentation
-
-**Quick Start - Using preview.py (Recommended):**
-
-```bash
-# Navigate to the docs directory
-cd docs/
-
-# Build and serve documentation (one command)
-python preview.py
-# Opens at http://localhost:8000
-
-# Build only (no server)
-python preview.py --no-serve
-
-# Custom port
-python preview.py --port 8080
-
-# Skip Introligo generation (use existing RST files)
-python preview.py --skip-introligo
-```
-
-**Using Make commands:**
-
-```bash
-# Install documentation dependencies
-make install
-# or manually: pip install -r requirements.txt
-
-# Build HTML documentation
-make html
-
-# Serve documentation locally
-make serve
-# Then open http://localhost:8000 in your browser
-
-# Live rebuild (auto-refresh on changes)
-make livehtml
-```
-
-The generated documentation will be in `docs/_build/html/`.
-
-### Documentation Features
-
-- **Furo Theme** - Modern, responsive Sphinx theme
-- **Celin Color Palette** - Consistent branding with light and dark modes
-- **Logo and Favicon** - Custom branding assets from `_assets/`
-- **Comprehensive Guide** - Installation, usage, configuration, and examples
-- **API Reference** - Auto-generated from source code
-- **Search Functionality** - Full-text search across all documentation
-
-## Claude AI Integration
-
-Introligo integrates seamlessly with Claude AI to automatically generate documentation. Add this prompt to your `.claude/claude.md` file:
-
-````markdown
-# Introligo Documentation Auto-Generation
-
-When creating new Python scripts or modules, automatically generate an Introligo YAML documentation file alongside the code.
-
-## Template
-
-For each new Python file, create a corresponding `_doc.yaml` file:
-
-```yaml
-# Documentation for <module_name>
-# Copyright (c) <year> <Your Name>
-
-parent: "<parent_category>"
-module: "<python.module.path>"
-title: "📝 <Module Title>"
-description: |
-  Brief one-line description
-
-overview: |
-  Detailed overview of the module's purpose and functionality.
-
-features:
-  - "🎯 Feature 1 - Description"
-  - "📦 Feature 2 - Description"
-  - "⚡ Feature 3 - Description"
-
-requirements:
-  - "Python 3.8 or higher"
-  - "Required dependency 1"
-
-installation: |
-  Installation instructions:
-
-  .. code-block:: bash
-
-     pip install <package-name>
-
-usage_examples:
-  - title: "Basic Usage"
-    description: "Simple example"
-    language: "python"
-    code: |
-      from <module> import <Class>
-
-      # Example code
-      obj = <Class>()
-      result = obj.method()
-
-notes: |
-  .. tip::
-
-     Helpful tips for users
-
-see_also:
-  - ":doc:`related_module` - Related documentation"
-  - "https://example.com - External reference"
-
-changelog: |
-  **Version 1.0.0** (<date>)
-    - 🎉 Initial release
-```
-
-## Rules
-
-1. Always generate `_doc.yaml` when creating new Python files
-2. Use exact YAML structure shown above
-3. Fill sections based on code content and docstrings
-4. Use emojis in features and changelog
-5. Include practical usage examples
-6. Set correct parent category and module path
-````
-
-See the [full documentation](docs/_build/html/index.html) for more details on Claude AI integration.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup
+- Running tests
+- Code style
+- Submitting PRs
 
 ## License
 
 Copyright (c) 2025 WT Tech Jakub Brzezowski
 
-Introligo is one of the open-source components of the Celin Project. It is freely available for use in any project, commercial or non-commercial, without restrictions. While the full Celin framework is proprietary, Introligo is released as an independent, open-source tool that can be used standalone.
-
-## Author
-
-Jakub Brzezowski (WT Tech Jakub Brzezowski)
+Introligo is an open-source component of the Celin Project. Free for any use, commercial or non-commercial.
 
 ## Links
 
-- Full documentation: See `introligo_doc.yaml` for comprehensive examples
-- GitHub: https://jakubbrzezo.github.io/introligo
+- **Documentation:** [Full docs](https://jakubbrzezo.github.io/introligo)
+- **Issues:** [GitHub Issues](https://github.com/JakubBrzezo/introligo/issues)
+- **Examples:** [`examples/`](examples/)
+
+---
+
+**Made with ❤️ by WT Tech Jakub Brzezowski**
+
+*Part of the [Celin Project](https://github.com/JakubBrzezo) ecosystem*

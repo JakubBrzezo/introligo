@@ -106,8 +106,8 @@ extensions = [
 {% endfor %}
 ]
 
-templates_path = {{ sphinx.templates_path }}
-exclude_patterns = {{ sphinx.exclude_patterns }}
+templates_path = {{ sphinx.templates_path if sphinx.templates_path is defined else '[]' }}
+exclude_patterns = {{ sphinx.exclude_patterns if sphinx.exclude_patterns is defined else '[]' }}
 {% if sphinx.language %}
 
 language = "{{ sphinx.language }}"
@@ -139,7 +139,7 @@ html_favicon = {{ sphinx.html_favicon }}
 {% if has_theme_options %}
 
 html_theme_options = {
-{% if sphinx.html_theme_options.sidebar_hide_name is defined %}
+{% if sphinx.html_theme_options and sphinx.html_theme_options.sidebar_hide_name is defined %}
     "sidebar_hide_name": {{ 'True' if sphinx.html_theme_options.sidebar_hide_name else 'False' }},
 {% endif %}
 {% if has_light_palette %}
@@ -174,11 +174,13 @@ html_theme_options = {
 {% endfor %}
     },
 {% endif %}
+{% if sphinx.html_theme_options %}
 {% for key, value in sphinx.html_theme_options.items() %}
 {% if key not in ['sidebar_hide_name'] %}
     "{{ key }}": {{ value|tojson }},
 {% endif %}
 {% endfor %}
+{% endif %}
 }
 {% endif %}
 {% if sphinx.autodoc_default_options %}

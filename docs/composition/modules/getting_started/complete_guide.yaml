@@ -1,0 +1,12 @@
+# Complete Getting Started Guide
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "getting_started"
+title: "📖 Complete Getting Started Guide"
+description: "5-minute guide to unified documentation with step-by-step instructions"
+overview: |
+  A comprehensive guide that walks you through setting up Introligo from installation
+  to building your first documentation hub. Includes common patterns, troubleshooting,
+  and tips for success.
+
+markdown_includes: "markdown/getting_started/getting_started.md"

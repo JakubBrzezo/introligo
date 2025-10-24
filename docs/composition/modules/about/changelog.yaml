@@ -1,0 +1,7 @@
+# Changelog
+# Copyright (c) 2025 WT Tech Jakub Brzezowski
+
+parent: "about"
+title: "📋 Changelog"
+description: "Version history and changes"
+markdown_includes: "../../CHANGELOG.md"
