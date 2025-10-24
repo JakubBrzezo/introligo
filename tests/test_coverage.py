@@ -166,7 +166,7 @@ modules:
 
         # This should log a warning but not fail
         node = generator.page_tree[0]
-        with patch("introligo.__main__.logger.warning") as mock_warning:
+        with patch("introligo.generator.logger.warning") as mock_warning:
             generator.generate_rst_content(node, template)
             mock_warning.assert_called()
 
@@ -350,7 +350,7 @@ modules:
             stack.enter_context(
                 patch.object(generator, "generate_rst_content", side_effect=mock_generate)
             )
-            mock_error = stack.enter_context(patch("introligo.__main__.logger.error"))
+            mock_error = stack.enter_context(patch("introligo.generator.logger.error"))
             result = generator.generate_all_nodes(generator.page_tree, template, strict=False)
 
             # Should log error but continue
