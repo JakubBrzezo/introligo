@@ -14,7 +14,7 @@ with open("README.md", encoding="utf-8") as fh:
 
 setup(
     name="introligo",
-    version="1.1.0",
+    # Version is managed by setuptools_scm from git tags (see pyproject.toml)
     author="Jakub Brzezowski",
     author_email="brzezoo@gmail.com",
     description="YAML to reStructuredText documentation generator for Sphinx",
