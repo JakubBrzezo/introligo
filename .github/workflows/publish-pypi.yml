@@ -1,0 +1,134 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for setuptools_scm to work
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build setuptools-scm[toml]
+
+    - name: Verify version from tag
+      run: |
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        echo "Tag version: $TAG_VERSION"
+        python -m setuptools_scm
+        echo "Package version will be: $TAG_VERSION"
+
+    - name: Build package
+      run: python -m build
+
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/introligo
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+    - name: Download distribution packages
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+  create-release:
+    name: Create GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download distribution packages
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG_NAME=${GITHUB_REF#refs/tags/}
+        VERSION=${TAG_NAME#v}
+
+        # Extract changelog section for this version if it exists
+        if [ -f "CHANGELOG.md" ]; then
+          RELEASE_NOTES=$(awk -v ver="$VERSION" '
+            /^## \[?'$VERSION'\]?/ { flag=1; next }
+            /^## / { flag=0 }
+            flag { print }
+          ' CHANGELOG.md)
+        else
+          RELEASE_NOTES="Release $VERSION"
+        fi
+
+        # Create release with notes
+        gh release create "$TAG_NAME" \
+          --title "Release $VERSION" \
+          --notes "$RELEASE_NOTES" \
+          dist/*
+
+  test-install:
+    name: Test PyPI installation
+    needs: publish
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Wait for PyPI propagation
+      run: sleep 60
+
+    - name: Install from PyPI
+      run: |
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        pip install introligo==$TAG_VERSION
+
+    - name: Test installation
+      run: |
+        python -c "import introligo; print(f'Installed version: {introligo.__version__}')"
+        introligo --help

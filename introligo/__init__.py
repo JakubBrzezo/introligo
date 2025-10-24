@@ -11,7 +11,13 @@ Introligo streamlines the documentation process by converting structured YAML
 configurations into properly formatted reStructuredText files for Sphinx.
 """
 
-__version__ = "1.1.0"
+# Try to import version from setuptools_scm generated file, fallback to default
+try:
+    from introligo._version import __version__  # type: ignore[import-not-found]
+except ImportError:
+    # Fallback version when not installed from git (e.g., development mode)
+    __version__ = "0.0.0.dev0"
+
 __author__ = "Jakub Brzezowski"
 __email__ = "brzezoo@gmail.com"
 __license__ = "Apache-2.0"
