@@ -57,7 +57,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install mypy types-PyYAML
-        pip install -e .
+        pip install -e .[dev]  # Installs test dependencies including pytest
 
     - name: Run mypy type checker
       run: |
