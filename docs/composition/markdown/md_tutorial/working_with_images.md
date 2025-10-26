@@ -98,8 +98,8 @@ This image includes more descriptive alt text for better accessibility:
 Always provide meaningful alt text for accessibility:
 
 ```markdown
-Recommended: ![User dashboard showing analytics graphs](../_assets/dashboard.png)
-Not recommended:  ![Image](../_assets/dashboard.png)
+Recommended: ![User dashboard showing analytics graphs](../../../_static/images/dashboard.png)
+Not recommended:  ![Image](../../../_static/images/dashboard.png)
 ```
 
 ### 2. Optimize Image Sizes
@@ -209,8 +209,8 @@ Before adding images to documentation:
 - [ ] Image is optimized for web (reasonable file size)
 - [ ] Filename is descriptive and uses kebab-case
 - [ ] Alt text is meaningful and descriptive
-- [ ] Image is in the `_assets` directory or subdirectory
-- [ ] Relative path is correct from markdown file
+- [ ] Image is in the `_static/images` directory or subdirectory
+- [ ] Relative path is correct from generated RST location
 - [ ] Image format is appropriate (PNG/JPG/SVG)
 - [ ] Image is version controlled (committed to git)
 - [ ] Copyright/license is clear (if not your own image)
@@ -261,6 +261,6 @@ Proper alt text provides multiple benefits:
 
 ## Related Documentation
 
-- [Markdown Best Practices](./best_practices.md) - Writing effective markdown
-- [Basic Usage](./basic_usage.md) - Getting started with markdown includes
+- [Markdown Best Practices →](./best_practices.md) - Writing effective markdown
+- [Basic Usage →](./basic_usage.md) - Getting started with markdown includes
 - [Sphinx Documentation - Images](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#images) - RST image directive reference

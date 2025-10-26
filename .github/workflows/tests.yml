@@ -61,8 +61,7 @@ jobs:
 
     - name: Run mypy type checker
       run: |
-        mypy introligo
-      continue-on-error: true
+        mypy .
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -81,6 +80,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
 
     - name: Install dependencies
       run: |

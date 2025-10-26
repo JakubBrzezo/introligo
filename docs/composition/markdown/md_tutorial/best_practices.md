@@ -127,14 +127,12 @@ Always preview documentation after adding markdown includes to verify proper ren
 
 Before finalizing your documentation:
 
-.. raw:: html
-
-   <input type="checkbox"> All markdown files use consistent formatting<br>
-   <input type="checkbox"> Links are tested and functional<br>
-   <input type="checkbox"> Images display correctly with appropriate alt text<br>
-   <input type="checkbox"> Code examples are syntax-highlighted properly<br>
-   <input type="checkbox"> Tables render correctly in both markdown and RST<br>
-   <input type="checkbox" checked> Documentation builds without errors<br>
-   <input type="checkbox"> Cross-references between documents work<br>
-   <input type="checkbox"> Spelling and grammar have been reviewed<br>
-   <input type="checkbox"> Technical accuracy verified by subject matter expert
+- [ ] All markdown files use consistent formatting
+- [ ] Links are tested and functional
+- [ ] Images display correctly with appropriate alt text
+- [ ] Code examples are syntax-highlighted properly
+- [ ] Tables render correctly in both markdown and RST
+- [x] Documentation builds without errors
+- [ ] Cross-references between documents work
+- [ ] Spelling and grammar have been reviewed
+- [ ] Technical accuracy verified by subject matter expert

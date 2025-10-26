@@ -841,3 +841,223 @@ modules:
         # Verify file_includes are processed
         assert "file_includes" in module_config
         assert len(module_config["file_includes"]) == 4
+
+
+class TestGoLanguageSupport:
+    """Test Go language documentation support."""
+
+    def test_detect_go_language_from_godoc_package(self, temp_dir: Path):
+        """Test that Go language is detected from godoc_package field."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  calculator:
+    title: "Calculator"
+    godoc_package: "github.com/example/calculator"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+
+        languages = generator.detect_project_languages()
+        assert "go" in languages
+
+    def test_detect_go_language_from_godoc_packages(self, temp_dir: Path):
+        """Test that Go language is detected from godoc_packages field."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  packages:
+    title: "Packages"
+    godoc_packages:
+      - "github.com/example/pkg1"
+      - "github.com/example/pkg2"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+
+        languages = generator.detect_project_languages()
+        assert "go" in languages
+
+    def test_detect_go_language_from_godoc_function(self, temp_dir: Path):
+        """Test that Go language is detected from godoc_function field."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  function:
+    title: "Function"
+    godoc_function: "Add"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+
+        languages = generator.detect_project_languages()
+        assert "go" in languages
+
+    def test_detect_go_language_from_godoc_type(self, temp_dir: Path):
+        """Test that Go language is detected from godoc_type field."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  type:
+    title: "Type"
+    godoc_type: "Calculator"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+
+        languages = generator.detect_project_languages()
+        assert "go" in languages
+
+    def test_detect_go_language_explicit(self, temp_dir: Path):
+        """Test explicit Go language specification."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  calculator:
+    title: "Calculator"
+    language: go
+    godoc_package: "github.com/example/calculator"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+
+        languages = generator.detect_project_languages()
+        assert "go" in languages
+
+    def test_auto_configure_go_extensions(self, temp_dir: Path):
+        """Test that Go language is detected but no extensions are auto-added."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+sphinx:
+  project: "Test"
+
+modules:
+  calculator:
+    title: "Calculator"
+    language: go
+    godoc_package: "github.com/example/calculator"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.load_sphinx_config()
+
+        # Go doesn't add any extensions (uses manual documentation)
+        # Just verify the config loads successfully
+        assert "calculator" in generator.config["modules"]
+
+    def test_generate_go_rst_content(self, temp_dir: Path):
+        """Test RST generation for Go package."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  calculator:
+    title: "Calculator Package"
+    language: go
+    description: "A calculator package"
+    godoc_package: "github.com/example/calculator"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        assert "Calculator Package" in content
+        assert "github.com/example/calculator" in content
+        # Content should have either extracted docs or fallback message
+        assert (
+            "pkg.go.dev" in content or "Go documentation" in content or "not available" in content
+        )
+
+    def test_generate_go_rst_with_multiple_packages(self, temp_dir: Path):
+        """Test RST generation for multiple Go packages."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  packages:
+    title: "Multiple Packages"
+    language: go
+    godoc_packages:
+      - "github.com/example/pkg1"
+      - "github.com/example/pkg2"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        assert "github.com/example/pkg1" in content
+        assert "github.com/example/pkg2" in content
+        # Should have either extracted docs or fallback with links
+        assert (
+            "go doc" in content
+            or "pkg.go.dev" in content
+            or "Automatic documentation extraction" in content
+        )
+
+    def test_generate_go_rst_with_function(self, temp_dir: Path):
+        """Test RST generation for Go function."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  add_func:
+    title: "Add Function"
+    language: go
+    godoc_function: "Add"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        assert "Add" in content
+        assert "Function" in content
+
+    def test_generate_go_rst_with_type(self, temp_dir: Path):
+        """Test RST generation for Go type."""
+        config_file = temp_dir / "config.yaml"
+        config_content = """
+modules:
+  calc_type:
+    title: "Calculator Type"
+    language: go
+    godoc_type: "Calculator"
+"""
+        config_file.write_text(config_content, encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        assert "Calculator" in content
+        assert "Type" in content

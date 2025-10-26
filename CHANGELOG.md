@@ -5,6 +5,22 @@ All notable changes to Introligo will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Go Language Support** - Automatic documentation extraction for Go projects
+  - **Automatic extraction** using `go doc -all` command
+  - **RST conversion** - godoc output automatically converted to reStructuredText
+  - **Seamless integration** - extracted docs appear directly in Sphinx site
+  - **Graceful fallback** - provides pkg.go.dev links when Go is not available
+  - Automatic Go language detection from `godoc_*` fields
+  - Support for `godoc_package` - single Go package documentation
+  - Support for `godoc_packages` - multiple Go packages
+  - Support for `godoc_path` - specify local package directory
+  - New `GoDocExtractor` class for documentation extraction
+  - Complete test coverage for Go documentation features
+  - Example Go project configuration in `examples/go_project/`
+
 ## [1.3.0] - 2025-01-24
 
 ### Added

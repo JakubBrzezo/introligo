@@ -214,6 +214,47 @@ modules:
   hub_project: !include modules/examples/hub_project.yaml
 
   # ============================================================================
+  # LANGUAGE SUPPORT
+  # ============================================================================
+
+  language_support:
+    title: "🌐 Language Support"
+    description: "Multi-language documentation support"
+    overview: |
+      Introligo supports automatic API documentation extraction for multiple programming languages.
+      Each language has its own integration approach optimized for the best documentation experience.
+
+  overview_languages:
+    parent: "language_support"
+    title: "Language Support Overview"
+    description: "Comparison of all supported languages"
+    markdown_includes: "markdown/language_support/overview.md"
+
+  python_language:
+    parent: "language_support"
+    title: "Python Language Support"
+    description: "Automatic documentation with Sphinx autodoc"
+    markdown_includes: "markdown/language_support/python_language.md"
+
+  cpp_language:
+    parent: "language_support"
+    title: "C/C++ Language Support"
+    description: "Integration with Doxygen and Breathe"
+    markdown_includes: "markdown/language_support/cpp_language.md"
+
+  go_language:
+    parent: "language_support"
+    title: "Go Language Support"
+    description: "Automatic documentation extraction for Go packages"
+    markdown_includes: "markdown/language_support/go_language.md"
+
+  latex_support:
+    parent: "language_support"
+    title: "LaTeX & Mathematical Formulas"
+    description: "Mathematical content with MathJax"
+    markdown_includes: "markdown/language_support/latex_support.md"
+
+  # ============================================================================
   # API REFERENCE
   # ============================================================================
 

@@ -4,15 +4,13 @@ This section demonstrates the markdown inclusion feature with practical examples
 
 Use this checklist to get started with markdown includes:
 
-.. raw:: html
-
-   <input type="checkbox" checked> Install Introligo and Sphinx<br>
-   <input type="checkbox" checked> Create introligo configuration file<br>
-   <input type="checkbox"> Identify existing markdown files to include<br>
-   <input type="checkbox"> Add <code>markdown_includes</code> to module configuration<br>
-   <input type="checkbox"> Run Introligo to generate RST files<br>
-   <input type="checkbox"> Build documentation with Sphinx<br>
-   <input type="checkbox"> Preview generated documentation
+- [x] Install Introligo and Sphinx
+- [x] Create introligo configuration file
+- [ ] Identify existing markdown files to include
+- [ ] Add `markdown_includes` to module configuration
+- [ ] Run Introligo to generate RST files
+- [ ] Build documentation with Sphinx
+- [ ] Preview generated documentation
 
 ## Including Multiple Markdown Files
 

@@ -124,8 +124,9 @@ Open http://localhost:8000 — your docs are ready! 🎉
 - **RST** → Included natively
 - **LaTeX** → Mathematical formulas
 - **Text** → Literal blocks
-- **Python** → Sphinx autodoc
-- **C/C++** → Doxygen integration
+- **Python** → Sphinx autodoc (automatic API extraction)
+- **C/C++** → Doxygen/Breathe integration (automatic API extraction)
+- **Go** → Automatic extraction via `go doc` (when Go is installed)
 
 ### 🎨 Beautiful Themes
 - Built-in Celin palette (cosmic colors)
@@ -337,6 +338,17 @@ pip install PyYAML jinja2 sphinx breathe
 sudo apt-get install doxygen  # or: brew install doxygen
 ```
 
+### With Go Support
+
+Go documentation is extracted automatically when Go is installed:
+
+```bash
+pip install PyYAML jinja2 sphinx furo
+# Install Go from https://go.dev/dl/ for automatic doc extraction
+```
+
+**Note:** Go documentation is extracted using `go doc`. If Go is not installed, Introligo gracefully falls back to providing links to pkg.go.dev.
+
 ### Development Installation
 
 ```bash
@@ -352,6 +364,7 @@ pip install -e .[dev,docs]
 - [Hub Example](examples/hub_project/) - Complete realistic project
 - [Python Example](examples/python_project/) - Python autodoc
 - [C Example](examples/c_project/) - Doxygen integration
+- [Go Example](examples/go_project/) - Go package documentation
 - [LaTeX Example](examples/latex_project/) - Math formulas
 - [RST Example](examples/rst_project/) - RST includes
 

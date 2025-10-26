@@ -1,4 +1,4 @@
-For additional examples, refer to the [Link Examples](./link_examples.md) page. Also consult [Best Practices](./best_practices.md#markdown-format) for recommendations.
+For additional examples, refer to the [Link Examples →](./link_examples.md) page. Also consult [Best Practices →](./best_practices.md#markdown-format) for recommendations.
 
 ## Supported Link Types
 
@@ -127,7 +127,7 @@ Markdown tables are automatically converted to RST list-table directives:
 
 ### Checklists (Task Lists)
 
-Markdown checklists are converted to RST bullet lists with checkbox indicators:
+Markdown checklists are automatically converted to interactive HTML checkboxes:
 
 **Markdown syntax:**
 ```markdown
@@ -138,28 +138,21 @@ Markdown checklists are converted to RST bullet lists with checkbox indicators:
 
 **Converted to RST:**
 ```rst
-- [ ] Unchecked task item
-- [x] Completed task item
-- [ ] Another pending task
-```
-
-**Note:** RST does not have native checkbox support, so the checkbox syntax is preserved as text within standard bullet lists.
-
-**For visual interactive checkboxes**, use the RST raw HTML directive in your markdown:
-
-```rst
 .. raw:: html
 
-   <input type="checkbox"> Unchecked task<br>
-   <input type="checkbox" checked> Completed task
+   <ul style="list-style-type: none;">
+   <li><input type="checkbox"> Unchecked task item</li>
+   <li><input type="checkbox" checked> Completed task item</li>
+   <li><input type="checkbox"> Another pending task</li>
+   </ul>
 ```
 
-This renders as actual interactive checkboxes in the HTML output:
+**Rendered output:**
 
-.. raw:: html
+This produces actual interactive checkboxes in the HTML output:
 
-   <input type="checkbox"> Unchecked task example<br>
-   <input type="checkbox" checked> Completed task example
+- [ ] Unchecked task example
+- [x] Completed task example
 
 ## Quick Example with Real Links
 
@@ -386,10 +379,10 @@ This table demonstrates all conversion types (using a markdown table that itself
 
 ## Related Documentation
 
-- [Basic Usage](./basic_usage.md) - Learn markdown inclusion basics
-- [Best Practices](./best_practices.md#markdown-format) - Tips for using markdown
-- [Use Cases](./use_cases.md) - When to use markdown includes
-- [Troubleshooting](./troubleshooting.md) - Common issues and solutions
+- [Basic Usage →](./basic_usage.md) - Learn markdown inclusion basics
+- [Best Practices →](./best_practices.md#markdown-format) - Tips for using markdown
+- [Use Cases →](./use_cases.md) - When to use markdown includes
+- [Troubleshooting →](./troubleshooting.md) - Common issues and solutions
 
 External resources:
 - [reStructuredText Primer](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html)

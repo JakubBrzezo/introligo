@@ -1,0 +1,198 @@
+# Introligo configuration for Go Calculator example
+# This demonstrates how to document Go code using Introligo with sphinxcontrib-golangdomain
+
+index:
+  title: "Calculator Library Documentation"
+  description: "Simple calculator library with basic arithmetic operations written in Go"
+
+generate_index: true
+
+# Sphinx configuration
+sphinx:
+  project: "Go Calculator"
+  author: "Example Team"
+  version: "1.0.0"
+  html_theme: "furo"
+
+modules:
+  # Parent category for grouping
+  api_reference:
+    title: "API Reference"
+    description: "Complete API documentation for the calculator library"
+
+  # Calculator module documentation
+  calculator:
+    parent: "api_reference"
+    title: "Calculator Package"
+    language: go
+    description: "Basic arithmetic operations including add, subtract, multiply, and divide"
+
+    # Go package to document
+    godoc_package: "github.com/example/calculator"
+    # Path to the Go package (relative to this config file)
+    godoc_path: "."
+
+    # Manual documentation (used when Go is not installed)
+    # This would normally be extracted automatically by `go doc`
+    godoc_manual_content: |
+      Package calculator provides simple arithmetic operations.
+
+      This package implements basic calculator functionality including
+      addition, subtraction, multiplication, and division operations
+      with appropriate error handling.
+
+      Functions
+      ~~~~~~~~~
+
+      .. code-block:: go
+
+         func Add(a, b int) int
+
+      Add returns the sum of two integers.
+
+      **Parameters:**
+
+      * ``a`` - The first integer
+      * ``b`` - The second integer
+
+      **Returns:** The sum of a and b.
+
+      .. code-block:: go
+
+         func Subtract(a, b int) int
+
+      Subtract returns the difference between two integers.
+
+      **Parameters:**
+
+      * ``a`` - The first integer (minuend)
+      * ``b`` - The second integer (subtrahend)
+
+      **Returns:** The result of a - b.
+
+      .. code-block:: go
+
+         func Multiply(a, b int) int
+
+      Multiply returns the product of two integers.
+
+      **Parameters:**
+
+      * ``a`` - The first integer
+      * ``b`` - The second integer
+
+      **Returns:** The product of a and b.
+
+      .. code-block:: go
+
+         func Divide(a, b int) (int, error)
+
+      Divide returns the quotient of two integers.
+
+      **Parameters:**
+
+      * ``a`` - The dividend
+      * ``b`` - The divisor
+
+      **Returns:** The quotient and an error if division by zero is attempted.
+
+      **Example:**
+
+      .. code-block:: go
+
+         result, err := calculator.Divide(10, 2)
+         if err != nil {
+             log.Fatal(err)
+         }
+         fmt.Printf("Result: %d\n", result)
+
+    overview: |
+      The Calculator package provides simple arithmetic operations for integer values.
+      All functions are implemented with proper error handling, particularly for
+      division by zero cases.
+
+    features:
+      - "Addition and subtraction operations"
+      - "Multiplication and division with zero-check"
+      - "Simple integer-based API"
+      - "Proper error handling for edge cases"
+
+    usage_examples:
+      - title: "Basic Usage"
+        description: "Example of using calculator functions in Go"
+        language: "go"
+        code: |
+          package main
+
+          import (
+              "fmt"
+              "log"
+              "github.com/example/calculator"
+          )
+
+          func main() {
+              // Addition
+              result := calculator.Add(5, 3)
+              fmt.Printf("5 + 3 = %d\n", result)
+
+              // Multiplication
+              result = calculator.Multiply(4, 7)
+              fmt.Printf("4 * 7 = %d\n", result)
+
+              // Division with error handling
+              result, err := calculator.Divide(10, 2)
+              if err != nil {
+                  log.Fatal(err)
+              }
+              fmt.Printf("10 / 2 = %d\n", result)
+
+              // Division by zero handling
+              _, err = calculator.Divide(10, 0)
+              if err != nil {
+                  fmt.Printf("Error: %v\n", err)
+              }
+          }
+
+      - title: "Error Handling"
+        description: "Proper error handling for division operations"
+        language: "go"
+        code: |
+          package main
+
+          import (
+              "fmt"
+              "github.com/example/calculator"
+          )
+
+          func safeDivide(a, b int) {
+              result, err := calculator.Divide(a, b)
+              if err != nil {
+                  fmt.Printf("Cannot divide %d by %d: %v\n", a, b, err)
+                  return
+              }
+              fmt.Printf("%d / %d = %d\n", a, b, result)
+          }
+
+          func main() {
+              safeDivide(10, 2)  // Works fine
+              safeDivide(10, 0)  // Handles error gracefully
+          }
+
+    installation: |
+      To use the calculator package in your Go project:
+
+      .. code-block:: bash
+
+         go get github.com/example/calculator
+
+    requirements:
+      - "Go 1.21 or higher"
+
+    notes: |
+      This is a simple example package demonstrating Go documentation with Introligo.
+      The package uses standard Go documentation conventions with godoc-style comments.
+
+    best_practices:
+      - "Always check for errors when calling Divide()"
+      - "Use meaningful variable names for clarity"
+      - "Handle edge cases appropriately"

@@ -168,6 +168,68 @@ def convert_markdown_table_to_rst(lines: list, start_index: int) -> tuple:
     return (rst_lines, i)
 
 
+def convert_checkbox_list_to_html(lines: list, start_index: int) -> tuple:
+    """Convert markdown checkbox list to HTML raw directive with checkboxes.
+
+    Converts markdown task lists like:
+    - [ ] Unchecked item
+    - [x] Checked item
+
+    To RST raw HTML directive with actual checkbox inputs.
+
+    Args:
+        lines: List of all lines in the document
+        start_index: Index where the checkbox list starts
+
+    Returns:
+        Tuple of (rst_lines, end_index) where rst_lines is the converted list
+        and end_index is the index after the list ends
+    """
+    checkbox_lines = []
+    i = start_index
+
+    # Collect all consecutive checkbox list items
+    while i < len(lines):
+        line = lines[i].strip()
+        # Match checkbox list items: - [ ] or - [x] or - [X]
+        if re.match(r"^-\s+\[[xX ]\]\s+", line):
+            checkbox_lines.append(lines[i])
+            i += 1
+        else:
+            # Stop when we hit a non-checkbox line
+            break
+
+    if not checkbox_lines:
+        return ([], start_index)
+
+    # Build RST raw HTML directive
+    rst_lines = ["", ".. raw:: html", ""]
+    rst_lines.append('   <ul style="list-style-type: none;">')
+
+    for line in checkbox_lines:
+        # Extract checkbox state and text
+        match = re.match(r"^-\s+\[([xX ])\]\s+(.+)$", line.strip())
+        if match:
+            state = match.group(1)
+            text = match.group(2)
+
+            # Escape backticks in text by converting them to <code> tags
+            text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+
+            # Create checkbox HTML
+            if state.lower() == "x":
+                checkbox_html = '<input type="checkbox" checked>'
+            else:
+                checkbox_html = '<input type="checkbox">'
+
+            rst_lines.append(f"   <li>{checkbox_html} {text}</li>")
+
+    rst_lines.append("   </ul>")
+    rst_lines.append("")
+
+    return (rst_lines, i)
+
+
 def convert_markdown_to_rst(
     markdown: str, doc_type: Optional[str] = None, demote_headers: bool = True
 ) -> str:
@@ -229,6 +291,15 @@ def convert_markdown_to_rst(
             rst_table, new_index = convert_markdown_table_to_rst(lines, i)
             if rst_table:
                 result.extend(rst_table)
+                i = new_index
+                continue
+
+        # Handle checkbox lists (before link conversion)
+        if re.match(r"^-\s+\[[xX ]\]\s+", line.strip()) and not in_code_block:
+            # This is a checkbox list!
+            rst_checkbox, new_index = convert_checkbox_list_to_html(lines, i)
+            if rst_checkbox:
+                result.extend(rst_checkbox)
                 i = new_index
                 continue
 

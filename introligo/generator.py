@@ -12,6 +12,7 @@ import yaml
 from jinja2 import Environment, Template
 
 from .errors import IntroligoError
+from .godoc_extractor import GoDocExtractor
 from .markdown_converter import (
     convert_markdown_links_to_rst,
     convert_markdown_table_to_rst,
@@ -289,7 +290,10 @@ Subpages
     doxygen_file or doxygen_files or doxygen_class or
     doxygen_function or doxygen_namespace
 ) -%}
-{% if module or has_dox -%}
+{% set has_godoc = (
+    godoc_package or godoc_packages or godoc_function or godoc_type
+) -%}
+{% if module or has_dox or has_godoc -%}
 {% if not api_reference %}
 API Documentation
 -----------------
@@ -328,6 +332,27 @@ API Documentation
 {% elif module %}
 .. doxygenfile:: {{ module }}
    :project: {{ global_doxygen_project }}
+{% endif %}
+{% elif language == 'go' %}
+{% if godoc_extracted_content %}
+{{ godoc_extracted_content }}
+{% else %}
+.. note::
+
+   Go documentation extraction was not available. The package may not be installed
+   or Go may not be available on the build system.
+
+{% if godoc_package %}
+   **Package:** ``{{ godoc_package }}``
+
+   View full documentation at: https://pkg.go.dev/{{ godoc_package }}
+{% elif godoc_packages %}
+   **Packages:**
+
+{% for package in godoc_packages %}
+   * ``{{ package }}`` - https://pkg.go.dev/{{ package }}
+{% endfor %}
+{% endif %}
 {% endif %}
 {% endif %}
 {% endif %}
@@ -1169,6 +1194,55 @@ Related Tools
             except IntroligoError as e:
                 logger.warning(f"{e}")
 
+        # Handle godoc_packages (list) or godoc_package (single string)
+        godoc_package = config.get("godoc_package", "")
+        godoc_packages = config.get("godoc_packages", [])
+
+        # If godoc_package is set but godoc_packages is not, convert to list
+        if godoc_package and not godoc_packages:
+            godoc_packages = [godoc_package]
+
+        # Extract Go documentation if Go language is specified
+        godoc_extracted_content = ""
+
+        # Check if manual documentation is provided
+        manual_godoc = config.get("godoc_manual_content")
+
+        if config.get("language") == "go" and (godoc_package or godoc_packages):
+            if manual_godoc:
+                # Use manually provided documentation
+                godoc_extracted_content = manual_godoc
+                logger.info("Using manually provided Go documentation")
+            else:
+                # Try automatic extraction
+                # Determine package path (relative to config file)
+                godoc_path = config.get("godoc_path")
+                if godoc_path:
+                    godoc_path_obj = Path(godoc_path)
+                    if not godoc_path_obj.is_absolute():
+                        godoc_path_obj = self.config_file.parent / godoc_path
+                else:
+                    # Try to use config file's parent directory
+                    godoc_path_obj = self.config_file.parent
+
+                extractor = GoDocExtractor(package_path=godoc_path_obj)
+
+                if godoc_packages:
+                    # Extract for multiple packages
+                    results = extractor.extract_multiple_packages(godoc_packages)
+                    content_parts = []
+                    for pkg_name, success, content in results:
+                        if success:
+                            content_parts.append(f"Package: ``{pkg_name}``\n")
+                            content_parts.append("~" * (len(pkg_name) + 11) + "\n\n")
+                        content_parts.append(content)
+                        content_parts.append("\n\n")
+                    godoc_extracted_content = "".join(content_parts)
+                elif godoc_package:
+                    # Extract for single package
+                    success, content = extractor.extract_and_convert(godoc_package)
+                    godoc_extracted_content = content
+
         context = {
             "title": node.title,
             "module": config.get("module", ""),
@@ -1179,6 +1253,11 @@ Related Tools
             "doxygen_function": config.get("doxygen_function", ""),
             "doxygen_namespace": config.get("doxygen_namespace", ""),
             "global_doxygen_project": self.doxygen_config.get("project_name", "default"),
+            "godoc_package": godoc_package,
+            "godoc_packages": godoc_packages,
+            "godoc_function": config.get("godoc_function", ""),
+            "godoc_type": config.get("godoc_type", ""),
+            "godoc_extracted_content": godoc_extracted_content,
             "description": config.get("description", ""),
             "overview": config.get("overview", ""),
             "features": config.get("features", []),
@@ -1539,6 +1618,17 @@ breathe_default_project = "{project_name}"
                 ):
                     # Default to C if no language specified for Doxygen content
                     languages.add("c")
+                # Check if this module has Go-specific fields
+                if any(
+                    key in module_config
+                    for key in [
+                        "godoc_package",
+                        "godoc_packages",
+                        "godoc_function",
+                        "godoc_type",
+                    ]
+                ):
+                    languages.add("go")
 
         for module_config in modules.values():
             scan_module(module_config)
@@ -1577,6 +1667,12 @@ breathe_default_project = "{project_name}"
         if ("c" in languages or "cpp" in languages) and "breathe" not in extensions:
             extensions.append("breathe")
             logger.info("  Auto-added C/C++ extension: breathe")
+
+        # Note: Go documentation uses simple code blocks
+        # sphinxcontrib.golangdomain is outdated and incompatible with Sphinx 4.0+
+        # For Go, we use manual documentation with code-block directives
+        if "go" in languages:
+            logger.info("  Go language detected - using code-block documentation")
 
         # Auto-add LaTeX/Math extensions if latex_includes are found
         has_latex = any(
