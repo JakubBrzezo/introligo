@@ -669,3 +669,231 @@ def test_hub_generate_modules_empty_discovered_docs(tmp_path):
     modules = hub.generate_hub_modules()
 
     assert modules == {}
+
+
+def test_hub_changelog_with_exclude_pattern(tmp_path):
+    """Test that excluded CHANGELOG files are skipped."""
+    # Create changelog in excluded directory
+    (tmp_path / "node_modules").mkdir()
+    (tmp_path / "node_modules" / "CHANGELOG.md").write_text("# Changes")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"changelog": True},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Should not find changelog in excluded directory
+    assert all("node_modules" not in str(doc["path"]) for doc in discovered)
+
+
+def test_hub_contributing_nonexistent_scan_path(tmp_path):
+    """Test CONTRIBUTING discovery with nonexistent scan path."""
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["nonexistent"],
+            "auto_include": {"contributing": True},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Should handle gracefully
+    assert discovered == []
+
+
+def test_hub_contributing_with_exclude_pattern(tmp_path):
+    """Test that excluded CONTRIBUTING files are skipped."""
+    # Create contributing in excluded directory
+    (tmp_path / "_build").mkdir()
+    (tmp_path / "_build" / "CONTRIBUTING.md").write_text("# Contribute")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"contributing": True},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Should not find contributing in excluded directory
+    assert all("_build" not in str(doc["path"]) for doc in discovered)
+
+
+def test_hub_license_nonexistent_scan_path(tmp_path):
+    """Test LICENSE discovery with nonexistent scan path."""
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["does_not_exist"],
+            "auto_include": {"license": True},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Should handle gracefully
+    assert discovered == []
+
+
+def test_hub_license_with_exclude_pattern(tmp_path):
+    """Test that excluded LICENSE files are skipped."""
+    # Create license in excluded directory
+    (tmp_path / "vendor").mkdir()
+    (tmp_path / "vendor" / "LICENSE").write_text("MIT License")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"license": True},
+            "exclude_patterns": ["vendor"],
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Should not find license in excluded directory
+    assert all("vendor" not in str(doc["path"]) for doc in discovered)
+
+
+def test_hub_pattern_discovery_with_excluded_file(tmp_path):
+    """Test that pattern discovery respects exclude patterns."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "guide.md").write_text("# Guide")
+    (tmp_path / "docs" / "excluded.md").write_text("# Excluded")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"markdown_docs": "docs/*.md"},
+            "exclude_patterns": ["excluded.md"],
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Should only find guide.md, not excluded.md
+    assert len(discovered) == 1
+    assert "excluded" not in str(discovered[0]["path"])
+
+
+def test_hub_categorize_readme_default_getting_started(tmp_path):
+    """Test that README in root gets 'getting_started' category by default."""
+    readme = tmp_path / "README.md"
+    readme.write_text("# Project")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"readme": True},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # Root README should be categorized as getting_started
+    root_readme = [
+        d
+        for d in discovered
+        if d["path"].name == "README.md" and d["relative_path"] == Path("README.md")
+    ]
+    assert len(root_readme) > 0
+    assert root_readme[0]["category"] == "getting_started"
+
+
+def test_hub_categorize_readme_in_other_directory(tmp_path):
+    """Test that README in arbitrary directory defaults to getting_started."""
+    (tmp_path / "src").mkdir()
+    readme = tmp_path / "src" / "README.md"
+    readme.write_text("# Source README")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"readme": True},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    discovered = hub.discover_documentation()
+
+    # src README should default to getting_started
+    src_readme = [d for d in discovered if "src" in str(d["relative_path"])]
+    assert len(src_readme) > 0
+    assert src_readme[0]["category"] == "getting_started"
+
+
+def test_hub_categorize_by_content_default_guides(tmp_path):
+    """Test that documents with no matching keywords default to 'guides'."""
+    doc = tmp_path / "random.md"
+    doc.write_text(
+        dedent("""
+        # Random Document
+
+        This is just some random content without any special keywords.
+        Just a plain document with regular text.
+        """)
+    )
+
+    config_file = tmp_path / "config.yaml"
+    config = {"discovery": {"enabled": True}}
+
+    hub = DocumentationHub(config_file, config)
+    category = hub._categorize_by_content(doc)
+
+    # Should default to guides
+    assert category == "guides"
+
+
+def test_hub_generate_modules_multiple_docs_same_category(tmp_path):
+    """Test that multiple docs in the same category are grouped correctly."""
+    # Create multiple API docs
+    (tmp_path / "api1.md").write_text("# API Reference\n\nClasses and functions.")
+    (tmp_path / "api2.md").write_text("# API Documentation\n\nMethod reference.")
+
+    config_file = tmp_path / "config.yaml"
+    config = {
+        "discovery": {
+            "enabled": True,
+            "scan_paths": ["."],
+            "auto_include": {"markdown_docs": "api*.md"},
+        },
+    }
+
+    hub = DocumentationHub(config_file, config)
+    hub.discover_documentation()
+    modules = hub.generate_hub_modules()
+
+    # Should have hub_api module as parent
+    assert "hub_api" in modules
+    # Should have two child modules for the two docs
+    api_children = [k for k in modules if k.startswith("hub_api_")]
+    assert len(api_children) == 2
+    # Both should have the hub_api as parent
+    assert all(modules[child].get("parent") == "hub_api" for child in api_children)
