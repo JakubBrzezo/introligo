@@ -182,6 +182,13 @@ modules:
     description: "Master autodoc, Breathe, and more"
     markdown_includes: "markdown/sphinx_tutorial/04_advanced.md"
 
+  # Theme Motifs Tutorial
+  theme_motifs:
+    parent: "user_guide"
+    title: "🎨 Theme Motifs"
+    description: "Explore and preview different color palettes"
+    markdown_includes: "markdown/getting_started/theme_motifs.md"
+
   # Devcontainer Tutorial
   devcontainer_tutorial:
     parent: "user_guide"

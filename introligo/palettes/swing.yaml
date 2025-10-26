@@ -1,0 +1,88 @@
+# Swing Color Palette for Sphinx Furo Theme
+# Jazzy and sophisticated color scheme inspired by the swing era
+
+name: "Swing"
+description: "Jazzy and sophisticated color scheme inspired by the swing era and big band music"
+
+# Color palette definitions
+colors:
+  Champagne:
+    '1': '#FFF7E6'
+    '2': '#FFE3B3'
+    '3': '#FFC766'
+    '4': '#E0A22E'
+    '5': '#A66F0D'
+  Midnight Blue:
+    '1': '#E3E8F9'
+    '2': '#B0C1F0'
+    '3': '#7489E0'
+    '4': '#3B4DBF'
+    '5': '#1C276B'
+  Cherry:
+    '1': '#FFE2E6'
+    '2': '#FFB5C0'
+    '3': '#FF6F86'
+    '4': '#D43752'
+    '5': '#8B1A30'
+  Mint:
+    '1': '#E6FFF6'
+    '2': '#B3F2DC'
+    '3': '#7AE5C0'
+    '4': '#36B894'
+    '5': '#1E7A63'
+  Gold:
+    '1': '#FFF3C6'
+    '2': '#FFE27D'
+    '3': '#FFCD33'
+    '4': '#E0A800'
+    '5': '#8C6B00'
+  Shadow:
+    '1': '#EAEAEA'
+    '2': '#CCCCCC'
+    '3': '#999999'
+    '4': '#666666'
+    '5': '#333333'
+  Plum:
+    '1': '#F8E6FA'
+    '2': '#E3B6ED'
+    '3': '#C577D8'
+    '4': '#923FA9'
+    '5': '#5A2370'
+  Linen:
+    '1': '#FFF9F3'
+    '2': '#F5E3C9'
+    '3': '#E0C38A'
+    '4': '#B3924D'
+    '5': '#6E5824'
+  Skylight:
+    '1': '#E6F7FF'
+    '2': '#B3E5FF'
+    '3': '#80D4FF'
+    '4': '#33B0FF'
+    '5': '#007ACC'
+light_mode:
+  --color-background-primary: '{Champagne.1}'
+  --color-background-secondary: '{Champagne.2}'
+  --color-foreground-primary: '{Skylight.5}'
+  --color-foreground-secondary: '{Skylight.4}'
+  --color-brand-primary: '{Midnight Blue.4}'
+  --color-brand-content: '{Midnight Blue.5}'
+  --color-api-background: '{Cherry.1}'
+  --color-api-border: '{Cherry.3}'
+  --color-link: '{Midnight Blue.4}'
+  --color-link--hover: '{Midnight Blue.5}'
+  --color-sidebar-background: '{Champagne.2}'
+  --color-sidebar-foreground: '{Skylight.4}'
+dark_mode:
+  --color-background-primary: '{Skylight.5}'
+  --color-background-secondary: '{Skylight.4}'
+  --color-foreground-primary: '{Champagne.1}'
+  --color-foreground-secondary: '{Champagne.2}'
+  --color-brand-primary: '{Midnight Blue.3}'
+  --color-brand-content: '{Midnight Blue.2}'
+  --color-api-background: '{Cherry.5}'
+  --color-api-border: '{Cherry.3}'
+  --color-link: '{Midnight Blue.3}'
+  --color-link--hover: '{Midnight Blue.2}'
+  --color-sidebar-background: '{Skylight.4}'
+  --color-sidebar-foreground: '{Champagne.2}'

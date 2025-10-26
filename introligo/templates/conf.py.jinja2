@@ -149,7 +149,7 @@ html_theme_options = {
 {% if palette_raw_colors %}
         # Color palette definitions
 {% for color_name, color_value in palette_raw_colors.items() %}
-        "--{{ color_name|replace('_', '-') }}": "{{ color_value }}",
+        "{{ color_name|replace('_', '-')|replace(' ', '-') }}": "{{ color_value }}",
 {% endfor %}
 {% endif %}
         # Theme variable mappings
@@ -165,7 +165,7 @@ html_theme_options = {
 {% if palette_raw_colors %}
         # Color palette definitions
 {% for color_name, color_value in palette_raw_colors.items() %}
-        "--{{ color_name|replace('_', '-') }}": "{{ color_value }}",
+        "{{ color_name|replace('_', '-')|replace(' ', '-') }}": "{{ color_value }}",
 {% endfor %}
 {% endif %}
         # Theme variable mappings
@@ -177,7 +177,7 @@ html_theme_options = {
 {% if sphinx.html_theme_options %}
 {% for key, value in sphinx.html_theme_options.items() %}
 {% if key not in ['sidebar_hide_name'] %}
-    "{{ key }}": {{ value|tojson }},
+    "{{ key }}": {{ 'True' if value is sameas true else ('False' if value is sameas false else (value|tojson)) }},
 {% endif %}
 {% endfor %}
 {% endif %}

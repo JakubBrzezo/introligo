@@ -142,6 +142,68 @@ def list_examples() -> list[str]:
     return sorted(examples)
 
 
+def list_motifs() -> list[str]:
+    """List all available theme motifs (palette examples) in the examples directory.
+
+    Returns:
+        A list of motif names (YAML files with theme configurations)
+
+    Note:
+        Looks for introligo_with_*_theme.yaml files in the examples/ directory.
+    """
+    if not EXAMPLES_DIR.exists():
+        return []
+
+    motifs = []
+    for item in EXAMPLES_DIR.glob("introligo_with_*_theme.yaml"):
+        # Extract theme name from filename: introligo_with_<theme>_theme.yaml -> <theme>
+        theme_name = item.stem.replace("introligo_with_", "").replace("_theme", "")
+        motifs.append(theme_name)
+
+    # Also include other standalone palette configs
+    for item in EXAMPLES_DIR.glob("introligo_with_*.yaml"):
+        if "_theme.yaml" not in item.name:
+            theme_name = item.stem.replace("introligo_with_", "")
+            if theme_name not in motifs:
+                motifs.append(theme_name)
+
+    return sorted(motifs)
+
+
+def get_motif_config(motif_name: str) -> Optional[Path]:
+    """Get the path to a theme motif's Introligo configuration file.
+
+    Args:
+        motif_name: Name of the theme motif (e.g., 'steampunk', 'swing', 'cycling')
+
+    Returns:
+        Path to the motif's YAML configuration file if it exists, None otherwise
+
+    Note:
+        Prints error messages if the motif is not found.
+        Tries multiple filename patterns to find the config.
+    """
+    # Try different filename patterns
+    patterns = [
+        f"introligo_with_{motif_name}_theme.yaml",
+        f"introligo_with_{motif_name.replace('-', '_')}_theme.yaml",
+        f"introligo_with_{motif_name}.yaml",
+    ]
+
+    for pattern in patterns:
+        config_file = EXAMPLES_DIR / pattern
+        if config_file.exists():
+            return config_file
+
+    print(f"⛔ Motif '{motif_name}' not found in {EXAMPLES_DIR}")
+    available = list_motifs()
+    if available:
+        print(f"   Available motifs: {', '.join(available)}")
+    else:
+        print("   No motifs found. Check the examples/ directory.")
+    return None
+
+
 def get_example_config(example_name: str) -> Optional[Path]:
     """Get the path to an example's Introligo configuration file.
 
@@ -717,6 +779,8 @@ Examples:
   %(prog)s --watch                 # Watch for changes and auto-rebuild
   %(prog)s --example python_project # Run example by name
   %(prog)s --list-examples         # List all available examples
+  %(prog)s --motive steampunk      # Preview steampunk theme motif
+  %(prog)s --list-motifs           # List all available theme motifs
         """,
     )
 
@@ -760,6 +824,21 @@ Examples:
         help="List all available examples in the examples/ directory",
     )
 
+    parser.add_argument(
+        "--motive",
+        type=str,
+        help=(
+            "Preview a specific theme motif "
+            "(e.g., steampunk, swing, cycling, rose-explosion, fantasy-world)"
+        ),
+    )
+
+    parser.add_argument(
+        "--list-motifs",
+        action="store_true",
+        help="List all available theme motifs (palette examples)",
+    )
+
     args = parser.parse_args()
 
     try:
@@ -783,6 +862,46 @@ Examples:
                 print("📚 No examples found in examples/ directory")
             sys.exit(0)
 
+        # Handle --list-motifs
+        if args.list_motifs:
+            motifs = list_motifs()
+            if motifs:
+                print("🎨 Available theme motifs:")
+                motif_descriptions = {
+                    "steampunk": "Industrial Victorian-era with brass and copper tones",
+                    "swing": "Jazz-age elegance with champagne and midnight blue",
+                    "cycling": "Sport-inspired with vibrant lime and sky blue",
+                    "rose_explosion": "Bold pink and rose passionate tones",
+                    "fantasy_world": "Magical and ethereal mystical colors",
+                    "furo_celin": "Cosmic-inspired original Celin palette",
+                    "custom_palette": "Example of custom palette configuration",
+                }
+                for motif in motifs:
+                    desc = motif_descriptions.get(motif, "Theme configuration")
+                    print(f"  • {motif:<20} - {desc}")
+                print(f"\n💡 Preview a motif with: {sys.argv[0]} --motive <name>")
+            else:
+                print("🎨 No motifs found in examples/ directory")
+            sys.exit(0)
+
+        # Handle --motive
+        if args.motive:
+            motif_config = get_motif_config(args.motive)
+            if not motif_config:
+                sys.exit(1)
+
+            # Override config with motif config
+            args.config = motif_config
+
+            # Use a temporary directory for motif preview
+            motif_preview_dir = DOCS_DIR / "_motif_preview"
+            motif_preview_dir.mkdir(exist_ok=True)
+
+            print(f"🎨 Previewing theme motif: {args.motive}")
+            print(f"📄 Config: {motif_config}")
+            print(f"📁 Preview directory: {motif_preview_dir}")
+            print("-" * 50)
+
         # Handle --example
         if args.example:
             example_config = get_example_config(args.example)
@@ -804,7 +923,12 @@ Examples:
         setup_signal_handlers()
 
         # Determine output directory
-        if args.example:
+        if args.motive:
+            # Use motif preview directory
+            output_dir = motif_preview_dir
+            build_dir = output_dir / "_build"
+            html_dir = build_dir / "html"
+        elif args.example:
             output_dir = example_docs_dir
             build_dir = output_dir / "_build"
             html_dir = build_dir / "html"

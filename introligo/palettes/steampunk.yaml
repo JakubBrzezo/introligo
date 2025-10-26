@@ -1,0 +1,88 @@
+# Steampunk Color Palette for Sphinx Furo Theme
+# Victorian-era inspired color scheme with brass, copper, and industrial tones
+
+name: "Steampunk"
+description: "Victorian-era inspired color scheme with brass, copper, and industrial tones"
+
+# Color palette definitions
+colors:
+  Brass:
+    '1': '#F2E2B9'
+    '2': '#E4C57F'
+    '3': '#C89E45'
+    '4': '#A67C2D'
+    '5': '#70551A'
+  Copper:
+    '1': '#FFD7C0'
+    '2': '#F2A986'
+    '3': '#D47450'
+    '4': '#A34C2A'
+    '5': '#6B2D16'
+  Iron:
+    '1': '#E0E0E0'
+    '2': '#B7B7B7'
+    '3': '#8C8C8C'
+    '4': '#555555'
+    '5': '#2C2C2C'
+  Steam:
+    '1': '#F3F4F6'
+    '2': '#D4D7DA'
+    '3': '#A6ACB1'
+    '4': '#6E767C'
+    '5': '#42484D'
+  Leather:
+    '1': '#F1D2B1'
+    '2': '#D9A97E'
+    '3': '#B37A47'
+    '4': '#8C5220'
+    '5': '#5E3413'
+  Rust:
+    '1': '#F4C2A1'
+    '2': '#E08C58'
+    '3': '#C24F18'
+    '4': '#8E320C'
+    '5': '#541C06'
+  Gear:
+    '1': '#E6DCCF'
+    '2': '#C5B6A1'
+    '3': '#9C8C75'
+    '4': '#6C5E49'
+    '5': '#3C3324'
+  Smoke:
+    '1': '#ECECEC'
+    '2': '#CFCFCF'
+    '3': '#9E9E9E'
+    '4': '#5F5F5F'
+    '5': '#2D2D2D'
+  Night Oil:
+    '1': '#E5E3E1'
+    '2': '#BDB8B3'
+    '3': '#8E8680'
+    '4': '#5C544E'
+    '5': '#2F2A26'
+light_mode:
+  --color-background-primary: '{Brass.1}'
+  --color-background-secondary: '{Brass.2}'
+  --color-foreground-primary: '{Night Oil.5}'
+  --color-foreground-secondary: '{Night Oil.4}'
+  --color-brand-primary: '{Copper.4}'
+  --color-brand-content: '{Copper.5}'
+  --color-api-background: '{Iron.1}'
+  --color-api-border: '{Iron.3}'
+  --color-link: '{Copper.4}'
+  --color-link--hover: '{Copper.5}'
+  --color-sidebar-background: '{Brass.2}'
+  --color-sidebar-foreground: '{Night Oil.4}'
+dark_mode:
+  --color-background-primary: '{Night Oil.5}'
+  --color-background-secondary: '{Night Oil.4}'
+  --color-foreground-primary: '{Brass.1}'
+  --color-foreground-secondary: '{Brass.2}'
+  --color-brand-primary: '{Copper.3}'
+  --color-brand-content: '{Copper.2}'
+  --color-api-background: '{Iron.5}'
+  --color-api-border: '{Iron.3}'
+  --color-link: '{Copper.3}'
+  --color-link--hover: '{Copper.2}'
+  --color-sidebar-background: '{Night Oil.4}'
+  --color-sidebar-foreground: '{Brass.2}'

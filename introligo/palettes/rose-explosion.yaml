@@ -1,0 +1,88 @@
+# Rose Explosion Color Palette for Sphinx Furo Theme
+# Vibrant and romantic color scheme with pink, magenta, and rose tones
+
+name: "Rose Explosion"
+description: "Vibrant and romantic color scheme with pink, magenta, and rose tones"
+
+# Color palette definitions
+colors:
+  Blush:
+    '1': '#FFE6EE'
+    '2': '#FFB3CC'
+    '3': '#FF80AA'
+    '4': '#E64D79'
+    '5': '#991F4D'
+  Magenta:
+    '1': '#FFE6FF'
+    '2': '#F7B3FF'
+    '3': '#E080FF'
+    '4': '#B833E0'
+    '5': '#6B1C8A'
+  Scarlet:
+    '1': '#FFE6E6'
+    '2': '#FFA3A3'
+    '3': '#FF6666'
+    '4': '#E03131'
+    '5': '#8A0E0E'
+  Orchid:
+    '1': '#F6E6FF'
+    '2': '#E0B3FF'
+    '3': '#C080FF'
+    '4': '#8C33E0'
+    '5': '#531C8A'
+  Peach:
+    '1': '#FFF0E6'
+    '2': '#FFD1B3'
+    '3': '#FFA666'
+    '4': '#E66B1A'
+    '5': '#8A3B0D'
+  Rosewood:
+    '1': '#F2E0E0'
+    '2': '#D9A6A6'
+    '3': '#B36B6B'
+    '4': '#8C3F3F'
+    '5': '#592626'
+  Wine:
+    '1': '#F5E6E9'
+    '2': '#D9A3B0'
+    '3': '#B35C75'
+    '4': '#8A2947'
+    '5': '#5A182D'
+  Fuchsia:
+    '1': '#FFE6FA'
+    '2': '#FFB3F2'
+    '3': '#FF80EB'
+    '4': '#E04DCC'
+    '5': '#8A1C80'
+  Shadow Pink:
+    '1': '#F4EAF0'
+    '2': '#D9B8CB'
+    '3': '#B67DA3'
+    '4': '#7D4C6B'
+    '5': '#4A2C40'
+light_mode:
+  --color-background-primary: '{Blush.1}'
+  --color-background-secondary: '{Blush.2}'
+  --color-foreground-primary: '{Shadow Pink.5}'
+  --color-foreground-secondary: '{Shadow Pink.4}'
+  --color-brand-primary: '{Magenta.4}'
+  --color-brand-content: '{Magenta.5}'
+  --color-api-background: '{Scarlet.1}'
+  --color-api-border: '{Scarlet.3}'
+  --color-link: '{Magenta.4}'
+  --color-link--hover: '{Magenta.5}'
+  --color-sidebar-background: '{Blush.2}'
+  --color-sidebar-foreground: '{Shadow Pink.4}'
+dark_mode:
+  --color-background-primary: '{Shadow Pink.5}'
+  --color-background-secondary: '{Shadow Pink.4}'
+  --color-foreground-primary: '{Blush.1}'
+  --color-foreground-secondary: '{Blush.2}'
+  --color-brand-primary: '{Magenta.3}'
+  --color-brand-content: '{Magenta.2}'
+  --color-api-background: '{Scarlet.5}'
+  --color-api-border: '{Scarlet.3}'
+  --color-link: '{Magenta.3}'
+  --color-link--hover: '{Magenta.2}'
+  --color-sidebar-background: '{Shadow Pink.4}'
+  --color-sidebar-foreground: '{Blush.2}'

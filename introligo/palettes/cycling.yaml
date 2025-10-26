@@ -1,0 +1,88 @@
+# Cycling Color Palette for Sphinx Furo Theme
+# Fresh and energetic color scheme inspired by cycling themes
+
+name: "Cycling"
+description: "Fresh and energetic color scheme inspired by cycling and outdoor activities"
+
+# Color palette definitions
+colors:
+  Asphalt:
+    '1': '#E5E5E5'
+    '2': '#BFBFBF'
+    '3': '#8C8C8C'
+    '4': '#4D4D4D'
+    '5': '#262626'
+  Lime:
+    '1': '#F3FDE6'
+    '2': '#D6F8A8'
+    '3': '#B2EB50'
+    '4': '#89C81F'
+    '5': '#558A0F'
+  Sky:
+    '1': '#E8F7FF'
+    '2': '#BDE7FF'
+    '3': '#80D0FF'
+    '4': '#4AABFF'
+    '5': '#1C70B8'
+  Chain:
+    '1': '#F1F1F1'
+    '2': '#D4D4D4'
+    '3': '#A1A1A1'
+    '4': '#6B6B6B'
+    '5': '#393939'
+  Energy Orange:
+    '1': '#FFE7D6'
+    '2': '#FFB899'
+    '3': '#FF7A47'
+    '4': '#D94900'
+    '5': '#993100'
+  Forest:
+    '1': '#E8F2E7'
+    '2': '#B9D6B6'
+    '3': '#7CB878'
+    '4': '#4A8C45'
+    '5': '#2C5C2A'
+  Gravel:
+    '1': '#EEEAE6'
+    '2': '#D4C8B9'
+    '3': '#B89F8C'
+    '4': '#8A6D58'
+    '5': '#594739'
+  Ocean:
+    '1': '#E0F4F9'
+    '2': '#B3E3F2'
+    '3': '#74C8E6'
+    '4': '#359FC9'
+    '5': '#146A8A'
+  Reflector:
+    '1': '#FFFCE6'
+    '2': '#FFF5B3'
+    '3': '#FFEA66'
+    '4': '#FFD700'
+    '5': '#B38E00'
+light_mode:
+  --color-background-primary: '{Asphalt.1}'
+  --color-background-secondary: '{Asphalt.2}'
+  --color-foreground-primary: '{Reflector.5}'
+  --color-foreground-secondary: '{Reflector.4}'
+  --color-brand-primary: '{Lime.4}'
+  --color-brand-content: '{Lime.5}'
+  --color-api-background: '{Sky.1}'
+  --color-api-border: '{Sky.3}'
+  --color-link: '{Lime.4}'
+  --color-link--hover: '{Lime.5}'
+  --color-sidebar-background: '{Asphalt.2}'
+  --color-sidebar-foreground: '{Reflector.4}'
+dark_mode:
+  --color-background-primary: '{Reflector.5}'
+  --color-background-secondary: '{Reflector.4}'
+  --color-foreground-primary: '{Asphalt.1}'
+  --color-foreground-secondary: '{Asphalt.2}'
+  --color-brand-primary: '{Lime.3}'
+  --color-brand-content: '{Lime.2}'
+  --color-api-background: '{Sky.5}'
+  --color-api-border: '{Sky.3}'
+  --color-link: '{Lime.3}'
+  --color-link--hover: '{Lime.2}'
+  --color-sidebar-background: '{Reflector.4}'
+  --color-sidebar-foreground: '{Asphalt.2}'

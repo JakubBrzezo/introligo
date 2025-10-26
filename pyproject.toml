@@ -72,7 +72,7 @@ target-version = ['py38']
 [tool.ruff]
 line-length = 100
 target-version = "py38"
-extend-exclude = ["__pycache__", "*.pyc", ".git", "docs/_build"]
+extend-exclude = ["__pycache__", "*.pyc", ".git", "docs/_build", "docs/_motif_preview"]
 
 [tool.ruff.lint]
 select = [
@@ -103,7 +103,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
-exclude = ["examples/", "docs/_build/"]
+exclude = ["examples/", "docs/_build/", "docs/_motif_preview/"]
 
 [[tool.mypy.overrides]]
 module = "yaml"

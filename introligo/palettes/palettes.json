@@ -1,0 +1,327 @@
+{
+  "steampunk": {
+    "Brass": [
+      "#F2E2B9",
+      "#E4C57F",
+      "#C89E45",
+      "#A67C2D",
+      "#70551A"
+    ],
+    "Copper": [
+      "#FFD7C0",
+      "#F2A986",
+      "#D47450",
+      "#A34C2A",
+      "#6B2D16"
+    ],
+    "Iron": [
+      "#E0E0E0",
+      "#B7B7B7",
+      "#8C8C8C",
+      "#555555",
+      "#2C2C2C"
+    ],
+    "Steam": [
+      "#F3F4F6",
+      "#D4D7DA",
+      "#A6ACB1",
+      "#6E767C",
+      "#42484D"
+    ],
+    "Leather": [
+      "#F1D2B1",
+      "#D9A97E",
+      "#B37A47",
+      "#8C5220",
+      "#5E3413"
+    ],
+    "Rust": [
+      "#F4C2A1",
+      "#E08C58",
+      "#C24F18",
+      "#8E320C",
+      "#541C06"
+    ],
+    "Gear": [
+      "#E6DCCF",
+      "#C5B6A1",
+      "#9C8C75",
+      "#6C5E49",
+      "#3C3324"
+    ],
+    "Smoke": [
+      "#ECECEC",
+      "#CFCFCF",
+      "#9E9E9E",
+      "#5F5F5F",
+      "#2D2D2D"
+    ],
+    "Night Oil": [
+      "#E5E3E1",
+      "#BDB8B3",
+      "#8E8680",
+      "#5C544E",
+      "#2F2A26"
+    ]
+  },
+  "swing": {
+    "Champagne": [
+      "#FFF7E6",
+      "#FFE3B3",
+      "#FFC766",
+      "#E0A22E",
+      "#A66F0D"
+    ],
+    "Midnight Blue": [
+      "#E3E8F9",
+      "#B0C1F0",
+      "#7489E0",
+      "#3B4DBF",
+      "#1C276B"
+    ],
+    "Cherry": [
+      "#FFE2E6",
+      "#FFB5C0",
+      "#FF6F86",
+      "#D43752",
+      "#8B1A30"
+    ],
+    "Mint": [
+      "#E6FFF6",
+      "#B3F2DC",
+      "#7AE5C0",
+      "#36B894",
+      "#1E7A63"
+    ],
+    "Gold": [
+      "#FFF3C6",
+      "#FFE27D",
+      "#FFCD33",
+      "#E0A800",
+      "#8C6B00"
+    ],
+    "Shadow": [
+      "#EAEAEA",
+      "#CCCCCC",
+      "#999999",
+      "#666666",
+      "#333333"
+    ],
+    "Plum": [
+      "#F8E6FA",
+      "#E3B6ED",
+      "#C577D8",
+      "#923FA9",
+      "#5A2370"
+    ],
+    "Linen": [
+      "#FFF9F3",
+      "#F5E3C9",
+      "#E0C38A",
+      "#B3924D",
+      "#6E5824"
+    ],
+    "Skylight": [
+      "#E6F7FF",
+      "#B3E5FF",
+      "#80D4FF",
+      "#33B0FF",
+      "#007ACC"
+    ]
+  },
+  "cycling": {
+    "Asphalt": [
+      "#E5E5E5",
+      "#BFBFBF",
+      "#8C8C8C",
+      "#4D4D4D",
+      "#262626"
+    ],
+    "Lime": [
+      "#F3FDE6",
+      "#D6F8A8",
+      "#B2EB50",
+      "#89C81F",
+      "#558A0F"
+    ],
+    "Sky": [
+      "#E8F7FF",
+      "#BDE7FF",
+      "#80D0FF",
+      "#4AABFF",
+      "#1C70B8"
+    ],
+    "Chain": [
+      "#F1F1F1",
+      "#D4D4D4",
+      "#A1A1A1",
+      "#6B6B6B",
+      "#393939"
+    ],
+    "Energy Orange": [
+      "#FFE7D6",
+      "#FFB899",
+      "#FF7A47",
+      "#D94900",
+      "#993100"
+    ],
+    "Forest": [
+      "#E8F2E7",
+      "#B9D6B6",
+      "#7CB878",
+      "#4A8C45",
+      "#2C5C2A"
+    ],
+    "Gravel": [
+      "#EEEAE6",
+      "#D4C8B9",
+      "#B89F8C",
+      "#8A6D58",
+      "#594739"
+    ],
+    "Ocean": [
+      "#E0F4F9",
+      "#B3E3F2",
+      "#74C8E6",
+      "#359FC9",
+      "#146A8A"
+    ],
+    "Reflector": [
+      "#FFFCE6",
+      "#FFF5B3",
+      "#FFEA66",
+      "#FFD700",
+      "#B38E00"
+    ]
+  },
+  "rose-explosion": {
+    "Blush": [
+      "#FFE6EE",
+      "#FFB3CC",
+      "#FF80AA",
+      "#E64D79",
+      "#991F4D"
+    ],
+    "Magenta": [
+      "#FFE6FF",
+      "#F7B3FF",
+      "#E080FF",
+      "#B833E0",
+      "#6B1C8A"
+    ],
+    "Scarlet": [
+      "#FFE6E6",
+      "#FFA3A3",
+      "#FF6666",
+      "#E03131",
+      "#8A0E0E"
+    ],
+    "Orchid": [
+      "#F6E6FF",
+      "#E0B3FF",
+      "#C080FF",
+      "#8C33E0",
+      "#531C8A"
+    ],
+    "Peach": [
+      "#FFF0E6",
+      "#FFD1B3",
+      "#FFA666",
+      "#E66B1A",
+      "#8A3B0D"
+    ],
+    "Rosewood": [
+      "#F2E0E0",
+      "#D9A6A6",
+      "#B36B6B",
+      "#8C3F3F",
+      "#592626"
+    ],
+    "Wine": [
+      "#F5E6E9",
+      "#D9A3B0",
+      "#B35C75",
+      "#8A2947",
+      "#5A182D"
+    ],
+    "Fuchsia": [
+      "#FFE6FA",
+      "#FFB3F2",
+      "#FF80EB",
+      "#E04DCC",
+      "#8A1C80"
+    ],
+    "Shadow Pink": [
+      "#F4EAF0",
+      "#D9B8CB",
+      "#B67DA3",
+      "#7D4C6B",
+      "#4A2C40"
+    ]
+  },
+  "fantasy-world": {
+    "Crystal Blue": [
+      "#E8F7FF",
+      "#B9E3FF",
+      "#84CCFF",
+      "#4AA6E6",
+      "#1A6BA3"
+    ],
+    "Fairy Pink": [
+      "#FFE6FA",
+      "#FBB3F0",
+      "#F280E6",
+      "#D24DB8",
+      "#8A1C73"
+    ],
+    "Emerald": [
+      "#E6FFF5",
+      "#B3F7DA",
+      "#80E6BF",
+      "#4DB893",
+      "#1F7A5C"
+    ],
+    "Moonlight": [
+      "#F4F4FF",
+      "#D9DAFF",
+      "#B3B5FF",
+      "#8086E6",
+      "#3D43A3"
+    ],
+    "Sandstone": [
+      "#FFF9E6",
+      "#FFEAB3",
+      "#FFD666",
+      "#E0B52E",
+      "#8C6D0D"
+    ],
+    "Violet Mist": [
+      "#F2E6FF",
+      "#D9B3FF",
+      "#B580FF",
+      "#8A4DD9",
+      "#51268A"
+    ],
+    "Lagoon": [
+      "#E6FFF9",
+      "#B3FFF0",
+      "#80FFE6",
+      "#33E0C2",
+      "#14997E"
+    ],
+    "Dawn": [
+      "#FFF1E6",
+      "#FFD4B3",
+      "#FFB480",
+      "#E6824D",
+      "#A34C1F"
+    ],
+    "Starlight": [
+      "#FDFDFE",
+      "#E6E9FA",
+      "#BFC6F2",
+      "#8A97E0",
+      "#4C5DB8"
+    ]
+  }
+}

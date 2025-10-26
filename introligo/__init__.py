@@ -13,7 +13,7 @@ configurations into properly formatted reStructuredText files for Sphinx.
 
 # Try to import version from setuptools_scm generated file, fallback to default
 try:
-    from introligo._version import __version__
+    from introligo._version import __version__  # type: ignore
 except ImportError:
     # Fallback version when not installed from git (e.g., development mode)
     __version__ = "0.0.0.dev0"

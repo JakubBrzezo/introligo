@@ -1,0 +1,88 @@
+# Fantasy World Color Palette for Sphinx Furo Theme
+# Magical and enchanting color scheme inspired by fantasy worlds
+
+name: "Fantasy World"
+description: "Magical and enchanting color scheme inspired by fantasy worlds and mythical realms"
+
+# Color palette definitions
+colors:
+  Crystal Blue:
+    '1': '#E8F7FF'
+    '2': '#B9E3FF'
+    '3': '#84CCFF'
+    '4': '#4AA6E6'
+    '5': '#1A6BA3'
+  Fairy Pink:
+    '1': '#FFE6FA'
+    '2': '#FBB3F0'
+    '3': '#F280E6'
+    '4': '#D24DB8'
+    '5': '#8A1C73'
+  Emerald:
+    '1': '#E6FFF5'
+    '2': '#B3F7DA'
+    '3': '#80E6BF'
+    '4': '#4DB893'
+    '5': '#1F7A5C'
+  Moonlight:
+    '1': '#F4F4FF'
+    '2': '#D9DAFF'
+    '3': '#B3B5FF'
+    '4': '#8086E6'
+    '5': '#3D43A3'
+  Sandstone:
+    '1': '#FFF9E6'
+    '2': '#FFEAB3'
+    '3': '#FFD666'
+    '4': '#E0B52E'
+    '5': '#8C6D0D'
+  Violet Mist:
+    '1': '#F2E6FF'
+    '2': '#D9B3FF'
+    '3': '#B580FF'
+    '4': '#8A4DD9'
+    '5': '#51268A'
+  Lagoon:
+    '1': '#E6FFF9'
+    '2': '#B3FFF0'
+    '3': '#80FFE6'
+    '4': '#33E0C2'
+    '5': '#14997E'
+  Dawn:
+    '1': '#FFF1E6'
+    '2': '#FFD4B3'
+    '3': '#FFB480'
+    '4': '#E6824D'
+    '5': '#A34C1F'
+  Starlight:
+    '1': '#FDFDFE'
+    '2': '#E6E9FA'
+    '3': '#BFC6F2'
+    '4': '#8A97E0'
+    '5': '#4C5DB8'
+light_mode:
+  --color-background-primary: '{Crystal Blue.1}'
+  --color-background-secondary: '{Crystal Blue.2}'
+  --color-foreground-primary: '{Starlight.5}'
+  --color-foreground-secondary: '{Starlight.4}'
+  --color-brand-primary: '{Fairy Pink.4}'
+  --color-brand-content: '{Fairy Pink.5}'
+  --color-api-background: '{Emerald.1}'
+  --color-api-border: '{Emerald.3}'
+  --color-link: '{Fairy Pink.4}'
+  --color-link--hover: '{Fairy Pink.5}'
+  --color-sidebar-background: '{Crystal Blue.2}'
+  --color-sidebar-foreground: '{Starlight.4}'
+dark_mode:
+  --color-background-primary: '{Starlight.5}'
+  --color-background-secondary: '{Starlight.4}'
+  --color-foreground-primary: '{Crystal Blue.1}'
+  --color-foreground-secondary: '{Crystal Blue.2}'
+  --color-brand-primary: '{Fairy Pink.3}'
+  --color-brand-content: '{Fairy Pink.2}'
+  --color-api-background: '{Emerald.5}'
+  --color-api-border: '{Emerald.3}'
+  --color-link: '{Fairy Pink.3}'
+  --color-link--hover: '{Fairy Pink.2}'
+  --color-sidebar-background: '{Starlight.4}'
+  --color-sidebar-foreground: '{Crystal Blue.2}'

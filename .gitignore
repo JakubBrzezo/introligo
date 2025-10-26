@@ -207,6 +207,7 @@ htmlcov/
 conf.py
 */conf.py
 **/conf.py
+**/_motif_preview
 
 # Auto-generated version file by setuptools_scm
 introligo/_version.py

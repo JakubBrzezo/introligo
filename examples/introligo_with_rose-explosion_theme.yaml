@@ -1,0 +1,40 @@
+index:
+  title: Rose Explosion Theme Documentation
+  description: Example documentation using the Rose Explosion color palette
+generate_index: true
+sphinx:
+  project: Rose Explosion Example
+  author: Introligo
+  copyright_year: '2025'
+  version_from_git: true
+  fallback_version: 1.0.0
+  project_root: .
+  add_project_to_path: true
+  extensions:
+  - sphinx.ext.autodoc
+  - sphinx.ext.napoleon
+  - sphinx.ext.viewcode
+  templates_path:
+  - _templates
+  exclude_patterns:
+  - _build
+  - Thumbs.db
+  - .DS_Store
+  language: en
+  html_theme: furo
+  html_static_path:
+  - _static
+  html_title: Rose Explosion Documentation
+  palette: rose-explosion
+  html_theme_options:
+    sidebar_hide_name: false
+modules:
+  getting_started:
+    title: Getting Started
+    description: Introduction to Rose Explosion themed documentation
+    overview: 'Welcome! This example demonstrates the Rose Explosion color palette.
+
+      The palette features beautiful colors designed for readability and aesthetics.'
+  features:
+    title: Features
+    description: Key features of this theme

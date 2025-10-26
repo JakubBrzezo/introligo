@@ -1253,9 +1253,13 @@ breathe_default_project = "{project_name}"
 
         Returns:
             Dictionary with all color references resolved to actual hex values.
+            Note: Variable names starting with '--' will have the prefix removed since
+            Furo adds it automatically when generating CSS.
         """
         resolved = {}
         for key, value in theme_mapping.items():
+            # Strip '--' prefix from variable names since Furo adds it automatically
+            clean_key = key.lstrip("-") if key.startswith("--") else key
             if isinstance(value, str) and value.startswith("{") and value.endswith("}"):
                 # Extract reference like {cosmic_dawn.3}
                 ref = value[1:-1]  # Remove braces
@@ -1272,24 +1276,24 @@ breathe_default_project = "{project_name}"
                             ),
                         )
                         if color_value:
-                            resolved[key] = color_value
+                            resolved[clean_key] = color_value
                         else:
                             logger.warning(
                                 f"Color reference not found: {ref} "
                                 f"(available shades: {list(palette_colors[color_group].keys())})"
                             )
-                            resolved[key] = value
+                            resolved[clean_key] = value
                     else:
                         logger.warning(
                             f"Color group not found: {color_group} "
                             f"(available groups: {list(palette_colors.keys())})"
                         )
-                        resolved[key] = value
+                        resolved[clean_key] = value
                 else:
                     logger.warning(f"Invalid color reference format: {value}")
-                    resolved[key] = value
+                    resolved[clean_key] = value
             else:
-                resolved[key] = value
+                resolved[clean_key] = value
 
         return resolved
 
