@@ -109,6 +109,10 @@ exclude = ["examples/", "docs/_build/", "docs/_motif_preview/"]
 module = "yaml"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "introligo._version"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
