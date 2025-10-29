@@ -1,0 +1,157 @@
+# Introligo configuration for Java Calculator example
+# This demonstrates how to document Java code using Introligo
+
+index:
+  title: "Java Calculator Library Documentation"
+  description: "Simple calculator library with basic arithmetic operations written in Java"
+
+generate_index: true
+
+# Sphinx configuration
+sphinx:
+  project: "Java Calculator"
+  author: "Example Team"
+  version: "1.0.0"
+  html_theme: "furo"
+
+modules:
+  # Parent category for grouping
+  api_reference:
+    title: "API Reference"
+    description: "Complete API documentation for the calculator library"
+
+  # Calculator package documentation
+  calculator:
+    parent: "api_reference"
+    title: "Calculator Package"
+    language: java
+    description: "Basic arithmetic operations including add, subtract, multiply, and divide"
+
+    # Java package to document
+    java_package: "com.example.calculator"
+    # Path to the Java source files (relative to this config file)
+    java_source_path: "."
+
+    overview: |
+      The Calculator package provides a comprehensive set of mathematical
+      operations for performing basic and advanced arithmetic calculations.
+
+      **Key Features:**
+
+      * Basic arithmetic operations (addition, subtraction, multiplication, division)
+      * Advanced mathematical functions (power, factorial, GCD)
+      * Proper error handling for edge cases
+      * Well-documented public API
+
+    installation: |
+      To use this library in your Java project, add the following to your
+      project's classpath:
+
+      .. code-block:: bash
+
+         javac com/example/calculator/*.java
+
+    usage_examples:
+      - title: "Basic Arithmetic"
+        language: "java"
+        code: |
+          Calculator calc = new Calculator();
+
+          // Addition
+          int sum = calc.add(5, 3);
+          System.out.println("5 + 3 = " + sum);
+
+          // Subtraction
+          int diff = calc.subtract(10, 4);
+          System.out.println("10 - 4 = " + diff);
+
+          // Multiplication
+          int product = calc.multiply(6, 7);
+          System.out.println("6 * 7 = " + product);
+
+          // Division
+          try {
+              int quotient = calc.divide(20, 5);
+              System.out.println("20 / 5 = " + quotient);
+          } catch (ArithmeticException e) {
+              System.err.println("Error: " + e.getMessage());
+          }
+
+      - title: "Advanced Math Operations"
+        language: "java"
+        code: |
+          // Power calculation
+          int result = MathUtils.power(2, 10);
+          System.out.println("2^10 = " + result);
+
+          // Factorial
+          long fact = MathUtils.factorial(5);
+          System.out.println("5! = " + fact);
+
+          // Prime check
+          boolean isPrime = MathUtils.isPrime(17);
+          System.out.println("Is 17 prime? " + isPrime);
+
+          // Greatest Common Divisor
+          int gcd = MathUtils.gcd(48, 18);
+          System.out.println("GCD(48, 18) = " + gcd);
+
+      - title: "Error Handling"
+        language: "java"
+        code: |
+          Calculator calc = new Calculator();
+
+          // Division by zero handling
+          try {
+              int result = calc.divide(10, 0);
+          } catch (ArithmeticException e) {
+              System.err.println("Cannot divide by zero!");
+          }
+
+          // Negative exponent handling
+          try {
+              int result = MathUtils.power(2, -1);
+          } catch (IllegalArgumentException e) {
+              System.err.println("Exponent must be non-negative!");
+          }
+
+    notes: |
+      **Implementation Notes:**
+
+      * All methods in Calculator class are instance methods
+      * MathUtils class contains only static utility methods
+      * Error handling is implemented using standard Java exceptions
+      * No external dependencies required
+
+  # Alternative example: documenting specific Java source files
+  utils:
+    parent: "api_reference"
+    title: "Math Utils"
+    language: java
+    description: "Advanced mathematical utility functions"
+
+    # Specify individual Java files instead of a package
+    java_source_files:
+      - "com/example/calculator/MathUtils.java"
+    java_source_path: "."
+
+    overview: |
+      The MathUtils class provides static utility methods for advanced
+      mathematical operations that extend beyond basic arithmetic.
+
+palette:
+  name: "furo_celin"
+  base_palette: "furo"
+  light_scheme: "celin_light"
+  dark_scheme: "celin_dark"
+  colors:
+    light:
+      background: "#ffffff"
+      foreground: "#333333"
+      primary: "#2196F3"
+      accent: "#FF9800"
+    dark:
+      background: "#1e1e1e"
+      foreground: "#e0e0e0"
+      primary: "#64B5F6"
+      accent: "#FFB74D"

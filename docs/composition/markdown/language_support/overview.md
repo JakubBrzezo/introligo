@@ -46,6 +46,20 @@ Introligo supports automatic API documentation extraction for multiple programmi
 
 [Go Documentation Guide →](go_language_support.md)
 
+### Java
+
+**Extraction Tool:** Source parser + Javadoc converter
+**Complexity:** ★★☆☆☆ (Easy)
+**Features:** ★★★★☆ (Very Good)
+
+- Automatic extraction from Java source files
+- Full Javadoc tag support (@param, @return, @throws)
+- No external tools required
+- Package and file-level documentation
+- Maven/Gradle project support
+
+[Java Documentation Guide →](java_language_support.md)
+
 ### LaTeX / Mathematics
 
 **Extraction Tool:** MathJax
@@ -67,6 +81,7 @@ Introligo supports automatic API documentation extraction for multiple programmi
 | **Python** | Minimal | ✅ Yes | No | Fast |
 | **C/C++** | Moderate | ✅ Yes | Doxygen | Slow |
 | **Go** | Minimal | ✅ Yes* | Go (optional) | Fast |
+| **Java** | Minimal | ✅ Yes | No | Fast |
 | **LaTeX** | Minimal | Manual | No | Fast |
 
 *Go extraction requires Go to be installed; gracefully falls back to manual docs
@@ -75,22 +90,22 @@ Introligo supports automatic API documentation extraction for multiple programmi
 
 ### Documentation Quality
 
-| Feature | Python | C/C++ | Go | LaTeX |
-|---------|--------|-------|-----|-------|
-| Function Docs | ✅ | ✅ | ✅ | N/A |
-| Class Docs | ✅ | ✅ | ⚠️ | N/A |
-| Type Info | ✅ | ✅ | ✅ | N/A |
-| Examples | ✅ | ✅ | ✅ | ✅ |
-| Cross-refs | ✅ | ✅ | ⚠️ | ✅ |
-| Diagrams | ❌ | ✅ | ❌ | ⚠️ |
+| Feature | Python | C/C++ | Go | Java | LaTeX |
+|---------|--------|-------|-----|------|-------|
+| Function Docs | ✅ | ✅ | ✅ | ✅ | N/A |
+| Class Docs | ✅ | ✅ | ⚠️ | ✅ | N/A |
+| Type Info | ✅ | ✅ | ✅ | ✅ | N/A |
+| Examples | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cross-refs | ✅ | ✅ | ⚠️ | ⚠️ | ✅ |
+| Diagrams | ❌ | ✅ | ❌ | ❌ | ⚠️ |
 
 ### Configuration Complexity
 
-| Aspect | Python | C/C++ | Go | LaTeX |
-|--------|--------|-------|-----|-------|
-| Initial Setup | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ |
-| Learning Curve | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
-| Maintenance | ⭐ | ⭐⭐⭐ | ⭐ | ⭐ |
+| Aspect | Python | C/C++ | Go | Java | LaTeX |
+|--------|--------|-------|-----|------|-------|
+| Initial Setup | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ |
+| Learning Curve | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ |
+| Maintenance | ⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ |
 
 ### Integration Method
 
@@ -120,6 +135,15 @@ modules:
     language: go
     godoc_package: "github.com/user/pkg"
     godoc_path: "."
+```
+
+**Java:**
+```yaml
+modules:
+  my_package:
+    language: java
+    java_package: "com.example.mypackage"
+    java_source_path: "src/main/java"
 ```
 
 **LaTeX:**
@@ -156,6 +180,15 @@ modules:
 - You need fallback for environments without Go
 - You want simple, clean documentation
 
+### For Java Projects
+
+✅ **Use Java support** if:
+- You have Java source files with Javadoc comments
+- You want automatic extraction without external tools
+- You need Maven/Gradle project documentation
+- You want full Javadoc tag support (@param, @return, @throws)
+- You can provide source files to the documentation build
+
 ### For Mathematical Content
 
 ✅ **Use LaTeX support** if:
@@ -187,6 +220,13 @@ modules:
     language: go
     godoc_package: "github.com/org/services"
 
+  # Java Backend
+  java_backend:
+    title: "Java Backend"
+    language: java
+    java_package: "com.myproject.backend"
+    java_source_path: "backend/src/main/java"
+
   # Mathematical Models
   math_models:
     title: "Mathematical Models"
@@ -203,6 +243,8 @@ Introligo automatically configures Sphinx extensions based on detected languages
 **Detected C/C++ doxygen** → Adds `breathe`
 
 **Detected Go godoc** → Logs detection (no extension needed)
+
+**Detected Java package** → Logs detection (no extension needed)
 
 **Detected LaTeX includes** → Adds `sphinx.ext.mathjax`
 
@@ -303,6 +345,13 @@ modules:
     module: "services.python"
     title: "Python Service"
 
+  java_service:
+    parent: "services"
+    language: java
+    java_package: "com.org.javaservice"
+    java_source_path: "java-service/src/main/java"
+    title: "Java Service"
+
   go_service:
     parent: "services"
     language: go
@@ -342,6 +391,19 @@ godoc_manual_content: |
   Package documentation here...
 ```
 
+### Java Source Not Found
+
+**Solution:** Verify paths and package structure:
+```bash
+ls src/main/java/com/example/pkg/*.java  # Should exist
+```
+
+Or use manual docs:
+```yaml
+java_manual_content: |
+  Package documentation here...
+```
+
 ### Math Not Rendering
 
 **Solution:** Check MathJax extension:
@@ -357,6 +419,7 @@ sphinx:
 - [Python Docstring Conventions (PEP 257)](https://www.python.org/dev/peps/pep-0257/)
 - [Doxygen Manual](https://www.doxygen.nl/manual/)
 - [Go Documentation](https://go.dev/doc/comment)
+- [Javadoc Guide](https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html)
 - [LaTeX Mathematics](https://en.wikibooks.org/wiki/LaTeX/Mathematics)
 
 ## Summary
@@ -366,6 +429,7 @@ Introligo provides comprehensive multi-language documentation support:
 ✅ **Python** - Zero-config autodoc integration
 ✅ **C/C++** - Industry-standard Doxygen + Breathe
 ✅ **Go** - Automatic go doc extraction
+✅ **Java** - Javadoc source file parsing with full tag support
 ✅ **LaTeX** - Beautiful mathematical formulas
 
 Choose the language support that fits your project, or use them all together for multi-language documentation!

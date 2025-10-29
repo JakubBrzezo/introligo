@@ -13,6 +13,7 @@ from jinja2 import Environment, Template
 
 from .errors import IntroligoError
 from .godoc_extractor import GoDocExtractor
+from .javadoc_extractor import JavaDocExtractor
 from .markdown_converter import (
     convert_markdown_to_rst,
 )
@@ -291,7 +292,10 @@ Subpages
 {% set has_godoc = (
     godoc_package or godoc_packages or godoc_function or godoc_type
 ) -%}
-{% if module or has_dox or has_godoc -%}
+{% set has_javadoc = (
+    java_package or java_packages or java_source_files or javadoc_path
+) -%}
+{% if module or has_dox or has_godoc or has_javadoc -%}
 {% if not api_reference %}
 API Documentation
 -----------------
@@ -350,6 +354,54 @@ API Documentation
 {% for package in godoc_packages %}
    * ``{{ package }}`` - https://pkg.go.dev/{{ package }}
 {% endfor %}
+{% endif %}
+{% endif %}
+{% elif language == 'java' %}
+{% if javadoc_extracted_content %}
+{{ javadoc_extracted_content }}
+{% else %}
+.. note::
+
+   Java documentation extraction was not available. This can happen if:
+
+   - The source files are not accessible
+   - Java/javadoc is not installed on the system
+
+{% if java_package %}
+   **Package:** ``{{ java_package }}``
+
+   To generate documentation:
+
+   .. code-block:: bash
+
+      javadoc -d docs {{ java_package }}
+
+{% elif java_packages %}
+   **Packages:**
+
+{% for package in java_packages %}
+   * ``{{ package }}``
+{% endfor %}
+
+   To generate documentation:
+
+   .. code-block:: bash
+
+      javadoc -d docs {{ java_packages|join(' ') }}
+
+{% elif java_source_files %}
+   **Source Files:**
+
+{% for file in java_source_files %}
+   * ``{{ file }}``
+{% endfor %}
+
+   To generate documentation:
+
+   .. code-block:: bash
+
+      javadoc -d docs {{ java_source_files|join(' ') }}
+
 {% endif %}
 {% endif %}
 {% endif %}
@@ -969,6 +1021,72 @@ Related Tools
                     success, content = extractor.extract_and_convert(godoc_package)
                     godoc_extracted_content = content
 
+        # Handle Java documentation extraction
+        java_source_files = config.get("java_source_files", [])
+        java_package = config.get("java_package", "")
+        java_packages = config.get("java_packages", [])
+        javadoc_path = config.get("javadoc_path", "")
+
+        # Extract Java documentation if Java language is specified
+        javadoc_extracted_content = ""
+
+        # Check if manual documentation is provided
+        manual_javadoc = config.get("java_manual_content")
+
+        if config.get("language") == "java":
+            if manual_javadoc:
+                # Use manually provided documentation
+                javadoc_extracted_content = manual_javadoc
+                logger.info("Using manually provided Java documentation")
+            else:
+                # Try automatic extraction
+                # Determine source path (relative to config file)
+                java_source_path = config.get("java_source_path")
+                if java_source_path:
+                    java_source_path_obj = Path(java_source_path)
+                    if not java_source_path_obj.is_absolute():
+                        java_source_path_obj = self.config_file.parent / java_source_path
+                else:
+                    # Try to use config file's parent directory
+                    java_source_path_obj = self.config_file.parent
+
+                java_extractor = JavaDocExtractor(source_path=java_source_path_obj)
+
+                if java_packages:
+                    # Extract for multiple packages
+                    content_parts = []
+                    for pkg_name in java_packages:
+                        # Convert package name to directory path (com.example -> com/example)
+                        pkg_path = java_source_path_obj / pkg_name.replace(".", "/")
+                        success, content = java_extractor.extract_package(pkg_path, pkg_name)
+                        if success:
+                            content_parts.append(content)
+                            content_parts.append("\n\n")
+                    javadoc_extracted_content = "".join(content_parts)
+                elif java_package:
+                    # Extract for single package
+                    pkg_path = java_source_path_obj / java_package.replace(".", "/")
+                    success, content = java_extractor.extract_package(pkg_path, java_package)
+                    javadoc_extracted_content = content
+                elif java_source_files:
+                    # Extract from specific source files
+                    java_file_paths = []
+                    for file_path in java_source_files:
+                        file_path_obj = Path(file_path)
+                        if not file_path_obj.is_absolute():
+                            file_path_obj = self.config_file.parent / file_path
+                        java_file_paths.append(file_path_obj)
+
+                    results = java_extractor.extract_multiple_files(java_file_paths)
+                    content_parts = []
+                    for filename, success, content in results:
+                        if success:
+                            content_parts.append(f"{filename}\n")
+                            content_parts.append("~" * len(filename) + "\n\n")
+                        content_parts.append(content)
+                        content_parts.append("\n\n")
+                    javadoc_extracted_content = "".join(content_parts)
+
         context = {
             "title": node.title,
             "module": config.get("module", ""),
@@ -984,6 +1102,11 @@ Related Tools
             "godoc_function": config.get("godoc_function", ""),
             "godoc_type": config.get("godoc_type", ""),
             "godoc_extracted_content": godoc_extracted_content,
+            "java_source_files": java_source_files,
+            "java_package": java_package,
+            "java_packages": java_packages,
+            "javadoc_path": javadoc_path,
+            "javadoc_extracted_content": javadoc_extracted_content,
             "description": config.get("description", ""),
             "overview": config.get("overview", ""),
             "features": config.get("features", []),
@@ -1359,6 +1482,17 @@ breathe_default_project = "{project_name}"
                     ]
                 ):
                     languages.add("go")
+                # Check if this module has Java-specific fields
+                if any(
+                    key in module_config
+                    for key in [
+                        "java_source_files",
+                        "java_package",
+                        "java_packages",
+                        "javadoc_path",
+                    ]
+                ):
+                    languages.add("java")
 
         for module_config in modules.values():
             scan_module(module_config)
@@ -1403,6 +1537,11 @@ breathe_default_project = "{project_name}"
         # For Go, we use manual documentation with code-block directives
         if "go" in languages:
             logger.info("  Go language detected - using code-block documentation")
+
+        # Note: Java documentation uses simple code blocks
+        # Similar to Go, we extract Java documentation and format with code-block directives
+        if "java" in languages:
+            logger.info("  Java language detected - using code-block documentation")
 
         # Auto-add LaTeX/Math extensions if latex_includes are found
         has_latex = any(

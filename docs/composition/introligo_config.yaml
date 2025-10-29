@@ -261,6 +261,12 @@ modules:
     description: "Mathematical content with MathJax"
     markdown_includes: "markdown/language_support/latex_support.md"
 
+  java_support:
+    parent: "language_support"
+    title: "Java Language Support"
+    description: "Automatic documentation extraction for Java packages"
+    markdown_includes: "markdown/language_support/java_language.md"
+
   # ============================================================================
   # API REFERENCE
   # ============================================================================
