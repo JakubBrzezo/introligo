@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-01-30
+
 ### Added
+- **Rust Language Support** - Automatic documentation extraction for Rust projects
+  - Integration with Rust's cargo doc system
+  - Automatic detection and inclusion of Rust documentation
+- **Java Language Support** - Automatic documentation generation for Java projects
+  - JavaDoc integration for comprehensive Java project documentation
+  - Seamless conversion to Sphinx-compatible formats
 - **Go Language Support** - Automatic documentation extraction for Go projects
   - **Automatic extraction** using `go doc -all` command
   - **RST conversion** - godoc output automatically converted to reStructuredText
@@ -20,6 +28,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New `GoDocExtractor` class for documentation extraction
   - Complete test coverage for Go documentation features
   - Example Go project configuration in `examples/go_project/`
+- **Theme Examples** - Additional example configurations with multiple themes
+  - Demonstrations of various Sphinx themes and their configurations
+  - Enhanced examples for better user guidance
+- **Enhanced Testing** - Improved test coverage
+  - New test for hub mode functionality
+  - Additional test cases for better code coverage
+
+### Changed
+- **Code Cleanup** - Removed unused code from generator.py for better maintainability
+- **Markdown Integration** - Minor fixes in markdown integration for improved reliability
+
+### Fixed
+- **MyPy Compliance** - Fixed MyPy type checking issues
+- **Workflow Fixes** - Resolved issues in GitHub Actions workflows
 
 ## [1.3.0] - 2025-01-24
 
@@ -309,6 +331,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.4.0]: https://github.com/JakubBrzezo/introligo/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/JakubBrzezo/introligo/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/JakubBrzezo/introligo/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/JakubBrzezo/introligo/compare/v1.0.0...v1.1.0
