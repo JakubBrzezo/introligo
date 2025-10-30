@@ -267,6 +267,12 @@ modules:
     description: "Automatic documentation extraction for Java packages"
     markdown_includes: "markdown/language_support/java_language.md"
 
+  rust_support:
+    parent: "language_support"
+    title: "Rust Language Support"
+    description: "Automatic documentation extraction for Rust packages"
+    markdown_includes: "markdown/language_support/rust_language.md"
+
   # ============================================================================
   # API REFERENCE
   # ============================================================================

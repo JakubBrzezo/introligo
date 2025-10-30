@@ -1,0 +1,231 @@
+# Introligo configuration for Rust Calculator example
+# This demonstrates how to document Rust code using Introligo
+
+index:
+  title: "Calculator Crate Documentation"
+  description: "Simple calculator library with basic arithmetic operations written in Rust"
+
+generate_index: true
+
+# Sphinx configuration
+sphinx:
+  project: "Rust Calculator"
+  author: "Example Team"
+  version: "0.1.0"
+  html_theme: "furo"
+
+modules:
+  # Parent category for grouping
+  api_reference:
+    title: "API Reference"
+    description: "Complete API documentation for the calculator crate"
+
+  # Calculator module documentation
+  calculator:
+    parent: "api_reference"
+    title: "Calculator Crate"
+    language: rust
+    description: "Basic arithmetic operations including add, subtract, multiply, and divide"
+
+    # Rust crate to document
+    rustdoc_crate: "calculator"
+    # Path to the crate (relative to this config file)
+    rustdoc_path: "."
+
+    # Manual documentation (used when Cargo is not installed)
+    # This would normally be extracted automatically by `cargo doc`
+    rustdoc_manual_content: |
+      Crate calculator provides simple arithmetic operations.
+
+      This crate implements basic calculator functionality including
+      addition, subtraction, multiplication, and division operations
+      with appropriate error handling.
+
+      Functions
+      ~~~~~~~~~
+
+      .. code-block:: rust
+
+         pub fn add(a: i32, b: i32) -> i32
+
+      Adds two integers and returns the sum.
+
+      **Parameters:**
+
+      * ``a`` - The first integer
+      * ``b`` - The second integer
+
+      **Returns:** The sum of a and b.
+
+      .. code-block:: rust
+
+         pub fn subtract(a: i32, b: i32) -> i32
+
+      Subtracts the second integer from the first.
+
+      **Parameters:**
+
+      * ``a`` - The minuend
+      * ``b`` - The subtrahend
+
+      **Returns:** The result of a - b.
+
+      .. code-block:: rust
+
+         pub fn multiply(a: i32, b: i32) -> i32
+
+      Multiplies two integers and returns the product.
+
+      **Parameters:**
+
+      * ``a`` - The first integer
+      * ``b`` - The second integer
+
+      **Returns:** The product of a and b.
+
+      .. code-block:: rust
+
+         pub fn divide(a: i32, b: i32) -> Result<i32, CalcError>
+
+      Divides the first integer by the second.
+
+      **Parameters:**
+
+      * ``a`` - The dividend
+      * ``b`` - The divisor
+
+      **Returns:** A Result containing the quotient or a DivisionByZero error.
+
+      **Example:**
+
+      .. code-block:: rust
+
+         match divide(10, 2) {
+             Ok(result) => assert_eq!(result, 5),
+             Err(e) => panic!("Error: {}", e),
+         }
+
+    overview: |
+      The Calculator crate provides simple arithmetic operations for integer values.
+      All functions are implemented with proper error handling, particularly for
+      division by zero cases.
+
+      The crate also provides a stateful `Calculator` struct that allows chaining
+      operations and maintaining a current value.
+
+    features:
+      - "Addition and subtraction operations"
+      - "Multiplication and division with zero-check"
+      - "Simple integer-based API"
+      - "Proper error handling for edge cases"
+      - "Stateful calculator struct for chaining operations"
+
+    usage_examples:
+      - title: "Basic Usage"
+        description: "Example of using calculator functions in Rust"
+        language: "rust"
+        code: |
+          use calculator::{add, subtract, multiply, divide};
+
+          fn main() {
+              // Addition
+              let result = add(5, 3);
+              println!("5 + 3 = {}", result);
+
+              // Multiplication
+              let result = multiply(4, 7);
+              println!("4 * 7 = {}", result);
+
+              // Division with error handling
+              match divide(10, 2) {
+                  Ok(result) => println!("10 / 2 = {}", result),
+                  Err(e) => eprintln!("Error: {}", e),
+              }
+
+              // Division by zero handling
+              match divide(10, 0) {
+                  Ok(_) => println!("This shouldn't happen"),
+                  Err(e) => println!("Caught error: {}", e),
+              }
+          }
+
+      - title: "Using the Calculator Struct"
+        description: "Example of using the stateful Calculator struct"
+        language: "rust"
+        code: |
+          use calculator::Calculator;
+
+          fn main() {
+              let mut calc = Calculator::new();
+
+              calc.add(10);
+              println!("After adding 10: {}", calc.value());
+
+              calc.multiply(2);
+              println!("After multiplying by 2: {}", calc.value());
+
+              calc.subtract(5);
+              println!("After subtracting 5: {}", calc.value());
+
+              match calc.divide(3) {
+                  Ok(_) => println!("After dividing by 3: {}", calc.value()),
+                  Err(e) => eprintln!("Error: {}", e),
+              }
+
+              calc.reset();
+              println!("After reset: {}", calc.value());
+          }
+
+      - title: "Error Handling"
+        description: "Proper error handling for division operations"
+        language: "rust"
+        code: |
+          use calculator::{divide, CalcError};
+
+          fn safe_divide(a: i32, b: i32) {
+              match divide(a, b) {
+                  Ok(result) => println!("{} / {} = {}", a, b, result),
+                  Err(CalcError::DivisionByZero) => {
+                      eprintln!("Cannot divide {} by {}: division by zero", a, b);
+                  }
+              }
+          }
+
+          fn main() {
+              safe_divide(10, 2);  // Works fine
+              safe_divide(10, 0);  // Handles error gracefully
+          }
+
+    installation: |
+      To use the calculator crate in your Rust project:
+
+      .. code-block:: bash
+
+         cargo add calculator
+
+      Or add it manually to your ``Cargo.toml``:
+
+      .. code-block:: toml
+
+         [dependencies]
+         calculator = "0.1.0"
+
+    requirements:
+      - "Rust 1.56 or higher (2021 edition)"
+
+    notes: |
+      This is a simple example crate demonstrating Rust documentation with Introligo.
+      The crate uses standard Rust documentation conventions with rustdoc-style comments.
+
+      All public functions and types are documented with:
+
+      - Summary descriptions
+      - Detailed parameter and return type information
+      - Usage examples
+      - Error handling information where applicable
+
+    best_practices:
+      - "Always check for errors when calling divide() or Calculator::divide()"
+      - "Use meaningful variable names for clarity"
+      - "Handle edge cases appropriately"
+      - "Consider using the Calculator struct for stateful operations"

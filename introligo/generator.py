@@ -18,6 +18,7 @@ from .markdown_converter import (
     convert_markdown_to_rst,
 )
 from .page_node import PageNode
+from .rustdoc_extractor import RustDocExtractor
 from .utils import count_display_width
 from .yaml_loader import IncludeLoader
 
@@ -295,7 +296,10 @@ Subpages
 {% set has_javadoc = (
     java_package or java_packages or java_source_files or javadoc_path
 ) -%}
-{% if module or has_dox or has_godoc or has_javadoc -%}
+{% set has_rustdoc = (
+    rustdoc_crate or rustdoc_path
+) -%}
+{% if module or has_dox or has_godoc or has_javadoc or has_rustdoc -%}
 {% if not api_reference %}
 API Documentation
 -----------------
@@ -401,6 +405,40 @@ API Documentation
    .. code-block:: bash
 
       javadoc -d docs {{ java_source_files|join(' ') }}
+
+{% endif %}
+{% endif %}
+{% elif language == 'rust' %}
+{% if rustdoc_extracted_content %}
+{{ rustdoc_extracted_content }}
+{% else %}
+.. note::
+
+   Rust documentation extraction was not available. This can happen if:
+
+   - Cargo is not installed on the system
+   - The crate path is not accessible
+   - The crate has build errors
+
+{% if rustdoc_crate %}
+   **Crate:** ``{{ rustdoc_crate }}``
+
+   To generate documentation:
+
+   .. code-block:: bash
+
+      cargo doc --open
+
+   Or view at: https://docs.rs/{{ rustdoc_crate }}
+
+{% elif rustdoc_path %}
+   **Crate Path:** ``{{ rustdoc_path }}``
+
+   To generate documentation:
+
+   .. code-block:: bash
+
+      cd {{ rustdoc_path }} && cargo doc --open
 
 {% endif %}
 {% endif %}
@@ -1087,6 +1125,36 @@ Related Tools
                         content_parts.append("\n\n")
                     javadoc_extracted_content = "".join(content_parts)
 
+        # Handle Rust documentation extraction
+        rustdoc_crate = config.get("rustdoc_crate", "")
+        rustdoc_path = config.get("rustdoc_path", "")
+
+        # Extract Rust documentation if Rust language is specified
+        rustdoc_extracted_content = ""
+
+        # Check if manual documentation is provided
+        manual_rustdoc = config.get("rustdoc_manual_content")
+
+        if config.get("language") == "rust":
+            if manual_rustdoc:
+                # Use manually provided documentation
+                rustdoc_extracted_content = manual_rustdoc
+                logger.info("Using manually provided Rust documentation")
+            else:
+                # Try automatic extraction
+                # Determine crate path (relative to config file)
+                if rustdoc_path:
+                    rustdoc_path_obj = Path(rustdoc_path)
+                    if not rustdoc_path_obj.is_absolute():
+                        rustdoc_path_obj = self.config_file.parent / rustdoc_path
+                else:
+                    # Try to use config file's parent directory
+                    rustdoc_path_obj = self.config_file.parent
+
+                rust_extractor = RustDocExtractor(crate_path=rustdoc_path_obj)
+                success, content = rust_extractor.extract_and_convert(rustdoc_crate)
+                rustdoc_extracted_content = content
+
         context = {
             "title": node.title,
             "module": config.get("module", ""),
@@ -1107,6 +1175,9 @@ Related Tools
             "java_packages": java_packages,
             "javadoc_path": javadoc_path,
             "javadoc_extracted_content": javadoc_extracted_content,
+            "rustdoc_crate": rustdoc_crate,
+            "rustdoc_path": rustdoc_path,
+            "rustdoc_extracted_content": rustdoc_extracted_content,
             "description": config.get("description", ""),
             "overview": config.get("overview", ""),
             "features": config.get("features", []),
@@ -1493,6 +1564,15 @@ breathe_default_project = "{project_name}"
                     ]
                 ):
                     languages.add("java")
+                # Check if this module has Rust-specific fields
+                if any(
+                    key in module_config
+                    for key in [
+                        "rustdoc_crate",
+                        "rustdoc_path",
+                    ]
+                ):
+                    languages.add("rust")
 
         for module_config in modules.values():
             scan_module(module_config)
@@ -1542,6 +1622,12 @@ breathe_default_project = "{project_name}"
         # Similar to Go, we extract Java documentation and format with code-block directives
         if "java" in languages:
             logger.info("  Java language detected - using code-block documentation")
+
+        # Note: Rust documentation uses simple code blocks
+        # Similar to Go and Java, we extract Rust documentation and format
+        # with code-block directives
+        if "rust" in languages:
+            logger.info("  Rust language detected - using code-block documentation")
 
         # Auto-add LaTeX/Math extensions if latex_includes are found
         has_latex = any(

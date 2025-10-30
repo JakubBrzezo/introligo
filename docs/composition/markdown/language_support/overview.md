@@ -60,6 +60,20 @@ Introligo supports automatic API documentation extraction for multiple programmi
 
 [Java Documentation Guide →](java_language_support.md)
 
+### Rust
+
+**Extraction Tool:** cargo doc + source parser
+**Complexity:** ★★☆☆☆ (Easy)
+**Features:** ★★★★☆ (Very Good)
+
+- Automatic extraction via `cargo doc`
+- RST conversion from doc comments
+- Graceful fallback without Cargo
+- Manual documentation option
+- Multi-crate support
+
+[Rust Documentation Guide →](rust_language_support.md)
+
 ### LaTeX / Mathematics
 
 **Extraction Tool:** MathJax
@@ -82,30 +96,32 @@ Introligo supports automatic API documentation extraction for multiple programmi
 | **C/C++** | Moderate | ✅ Yes | Doxygen | Slow |
 | **Go** | Minimal | ✅ Yes* | Go (optional) | Fast |
 | **Java** | Minimal | ✅ Yes | No | Fast |
+| **Rust** | Minimal | ✅ Yes* | Cargo (optional) | Moderate |
 | **LaTeX** | Minimal | Manual | No | Fast |
 
 *Go extraction requires Go to be installed; gracefully falls back to manual docs
+*Rust extraction requires Cargo to be installed; gracefully falls back to manual docs
 
 ## Features by Language
 
 ### Documentation Quality
 
-| Feature | Python | C/C++ | Go | Java | LaTeX |
-|---------|--------|-------|-----|------|-------|
-| Function Docs | ✅ | ✅ | ✅ | ✅ | N/A |
-| Class Docs | ✅ | ✅ | ⚠️ | ✅ | N/A |
-| Type Info | ✅ | ✅ | ✅ | ✅ | N/A |
-| Examples | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Cross-refs | ✅ | ✅ | ⚠️ | ⚠️ | ✅ |
-| Diagrams | ❌ | ✅ | ❌ | ❌ | ⚠️ |
+| Feature | Python | C/C++ | Go | Java | Rust | LaTeX |
+|---------|--------|-------|-----|------|------|-------|
+| Function Docs | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| Class Docs | ✅ | ✅ | ⚠️ | ✅ | ✅ | N/A |
+| Type Info | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| Examples | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cross-refs | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
+| Diagrams | ❌ | ✅ | ❌ | ❌ | ❌ | ⚠️ |
 
 ### Configuration Complexity
 
-| Aspect | Python | C/C++ | Go | Java | LaTeX |
-|--------|--------|-------|-----|------|-------|
-| Initial Setup | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ |
-| Learning Curve | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ |
-| Maintenance | ⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ |
+| Aspect | Python | C/C++ | Go | Java | Rust | LaTeX |
+|--------|--------|-------|-----|------|------|-------|
+| Initial Setup | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ |
+| Learning Curve | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ |
+| Maintenance | ⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐ |
 
 ### Integration Method
 
@@ -144,6 +160,15 @@ modules:
     language: java
     java_package: "com.example.mypackage"
     java_source_path: "src/main/java"
+```
+
+**Rust:**
+```yaml
+modules:
+  my_crate:
+    language: rust
+    rustdoc_crate: "my_crate"
+    rustdoc_path: "."
 ```
 
 **LaTeX:**
@@ -430,6 +455,7 @@ Introligo provides comprehensive multi-language documentation support:
 ✅ **C/C++** - Industry-standard Doxygen + Breathe
 ✅ **Go** - Automatic go doc extraction
 ✅ **Java** - Javadoc source file parsing with full tag support
+✅ **Rust** - Automatic cargo doc extraction with RST conversion
 ✅ **LaTeX** - Beautiful mathematical formulas
 
 Choose the language support that fits your project, or use them all together for multi-language documentation!
