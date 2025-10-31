@@ -75,3 +75,153 @@ def count_display_width(text: str) -> int:
     # Add extra character for each emoji (emojis display wider)
     # Use +1 per emoji for better results
     return len(text) + emoji_count
+
+
+def convert_plantuml_to_rst(content: str, title: str = "", use_directive: bool = True) -> str:
+    """Convert PlantUML content to reStructuredText with uml directive or code block.
+
+    Args:
+        content: PlantUML diagram content.
+        title: Optional title for the diagram section.
+        use_directive: If True, use uml directive. If False, use code block.
+
+    Returns:
+        RST-formatted content with PlantUML uml directive or code block.
+    """
+    rst = []
+    if title:
+        rst.append(f"{title}\n{'~' * count_display_width(title)}\n")
+
+    if use_directive:
+        rst.append(".. uml::\n")
+        for line in content.split("\n"):
+            rst.append(f"   {line}")
+    else:
+        # Fallback to code block when extension not available
+        rst.append(".. code-block:: plantuml\n")
+        for line in content.split("\n"):
+            rst.append(f"   {line}")
+
+    return "\n".join(rst)
+
+
+def convert_mermaid_to_rst(content: str, title: str = "", use_directive: bool = True) -> str:
+    """Convert Mermaid content to reStructuredText with mermaid directive or code block.
+
+    Args:
+        content: Mermaid diagram content.
+        title: Optional title for the diagram section.
+        use_directive: If True, use mermaid directive. If False, use code block.
+
+    Returns:
+        RST-formatted content with Mermaid directive or code block.
+    """
+    rst = []
+    if title:
+        rst.append(f"{title}\n{'~' * count_display_width(title)}\n")
+
+    if use_directive:
+        rst.append(".. mermaid::\n")
+        for line in content.split("\n"):
+            rst.append(f"   {line}")
+    else:
+        # Fallback to code block when extension not available
+        rst.append(".. code-block:: mermaid\n")
+        for line in content.split("\n"):
+            rst.append(f"   {line}")
+
+    return "\n".join(rst)
+
+
+def convert_graphviz_to_rst(content: str, title: str = "") -> str:
+    """Convert Graphviz DOT content to reStructuredText with graphviz directive.
+
+    Args:
+        content: Graphviz DOT diagram content.
+        title: Optional title for the diagram section.
+
+    Returns:
+        RST-formatted content with Graphviz directive.
+    """
+    rst = []
+    if title:
+        rst.append(f"{title}\n{'~' * count_display_width(title)}\n")
+
+    rst.append(".. graphviz::\n")
+    for line in content.split("\n"):
+        rst.append(f"   {line}")
+
+    return "\n".join(rst)
+
+
+def convert_svg_to_rst(svg_path: str, title: str = "", alt_text: str = "") -> str:
+    """Convert SVG file reference to reStructuredText image directive.
+
+    Args:
+        svg_path: Path to the SVG file.
+        title: Optional title for the diagram section.
+        alt_text: Optional alt text for the image.
+
+    Returns:
+        RST-formatted content with image directive.
+    """
+    rst = []
+    if title:
+        rst.append(f"{title}\n{'~' * count_display_width(title)}\n")
+
+    rst.append(f".. image:: {svg_path}")
+    if alt_text:
+        rst.append(f"   :alt: {alt_text}")
+    rst.append("   :align: center")
+
+    return "\n".join(rst)
+
+
+def process_rst_directives(
+    content: str, has_plantuml: bool = True, has_mermaid: bool = True
+) -> str:
+    """Process RST content and convert unsupported directives to code blocks.
+
+    This function scans RST content for uml and mermaid directives and converts
+    them to code blocks when the corresponding extensions are not available.
+
+    Args:
+        content: The RST content to process.
+        has_plantuml: Whether sphinxcontrib-plantuml extension is available.
+        has_mermaid: Whether sphinxcontrib-mermaid extension is available.
+
+    Returns:
+        Processed RST content with converted directives.
+    """
+    if has_plantuml and has_mermaid:
+        # No need to process if all extensions are available
+        return content
+
+    lines = content.split("\n")
+    processed_lines = []
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        # Check for uml directive
+        if not has_plantuml and stripped == ".. uml::":
+            # Replace with code-block directive
+            indent = len(line) - len(line.lstrip())
+            processed_lines.append(" " * indent + ".. code-block:: plantuml")
+            i += 1
+            continue
+
+        # Check for mermaid directive
+        if not has_mermaid and stripped == ".. mermaid::":
+            # Replace with code-block directive
+            indent = len(line) - len(line.lstrip())
+            processed_lines.append(" " * indent + ".. code-block:: mermaid")
+            i += 1
+            continue
+
+        processed_lines.append(line)
+        i += 1
+
+    return "\n".join(processed_lines)

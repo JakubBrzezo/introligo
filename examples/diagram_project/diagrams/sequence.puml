@@ -1,0 +1,14 @@
+@startuml
+actor User
+participant "API Gateway" as API
+participant "Auth Service" as Auth
+participant "Database" as DB
+
+User -> API: Login Request
+API -> Auth: Validate Credentials
+Auth -> DB: Query User
+DB --> Auth: User Data
+Auth --> API: Auth Token
+API --> User: Login Success
+
+@enduml

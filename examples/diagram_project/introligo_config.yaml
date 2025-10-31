@@ -1,0 +1,125 @@
+# Introligo Configuration for Diagram Examples
+# This example demonstrates how to include various diagram types in your documentation
+
+sphinx:
+  project: "Diagram Examples"
+  author: "Your Name"
+  release: "1.0.0"
+  html_theme: "furo"
+
+  # Extensions will be auto-detected based on diagram files used
+  # But you can also manually specify them:
+  # extensions:
+  #   - sphinx.ext.graphviz
+  #   - sphinxcontrib.plantuml
+  #   - sphinxcontrib.mermaid
+
+  # Optional: Configure diagram rendering settings
+  # graphviz_settings:
+  #   graphviz_output_format: "svg"
+
+  # plantuml_settings:
+  #   plantuml: "java -jar /path/to/plantuml.jar"
+  #   plantuml_output_format: "svg"
+
+index:
+  title: "Diagram Examples Documentation"
+  description: "Examples of using different diagram types with Introligo"
+  overview: |
+    This documentation demonstrates how to include various types of diagrams in your
+    Sphinx documentation using Introligo. Supported diagram formats include:
+
+    - **PlantUML** - For UML diagrams (sequence, class, activity, etc.)
+    - **Mermaid** - For flowcharts, sequence diagrams, and more
+    - **Graphviz** - For directed graphs and architecture diagrams
+    - **SVG** - For static vector graphics
+
+modules:
+  authentication_flow:
+    title: "Authentication Flow"
+    description: "Sequence diagram showing the authentication process"
+    overview: |
+      This page demonstrates a PlantUML sequence diagram showing how users
+      authenticate with the system.
+
+    diagram_includes:
+      - path: "diagrams/sequence.puml"
+        title: "Login Sequence Diagram"
+
+  data_processing:
+    title: "Data Processing Pipeline"
+    description: "Flowchart showing data processing logic"
+    overview: |
+      This page demonstrates a Mermaid flowchart showing the data validation
+      and processing pipeline.
+
+    diagram_includes:
+      - path: "diagrams/flowchart.mmd"
+        title: "Processing Flowchart"
+
+  system_architecture:
+    title: "System Architecture"
+    description: "High-level architecture diagram"
+    overview: |
+      This page demonstrates a Graphviz diagram showing the system architecture
+      with load balancer, API servers, cache, and database.
+
+    diagram_includes:
+      - path: "diagrams/architecture.dot"
+        title: "System Architecture"
+
+  domain_model:
+    title: "Domain Model"
+    description: "Class diagram showing the domain model"
+    overview: |
+      This page demonstrates a PlantUML class diagram showing the relationships
+      between User, Post, and Comment entities.
+
+    diagram_includes:
+      - path: "diagrams/class_diagram.puml"
+        title: "Domain Model Class Diagram"
+
+  all_diagrams:
+    title: "All Diagrams Combined"
+    description: "Page showing all diagram types together"
+    overview: |
+      This page demonstrates how to include multiple diagrams of different types
+      on a single documentation page.
+
+    diagram_includes:
+      - path: "diagrams/sequence.puml"
+        title: "Authentication Flow"
+      - path: "diagrams/flowchart.mmd"
+        title: "Data Processing"
+      - path: "diagrams/architecture.dot"
+        title: "System Architecture"
+      - path: "diagrams/class_diagram.puml"
+        title: "Domain Model"
+
+  inline_diagrams:
+    title: "Inline Diagram Examples"
+    description: "Examples of diagrams defined inline in the configuration"
+    overview: |
+      You can also define diagrams inline in your YAML configuration using the
+      `content` field instead of `diagram_includes`. This is useful for simple diagrams.
+
+    custom_sections:
+      - title: "Inline Graphviz Example"
+        content: |
+          .. graphviz::
+
+             digraph Simple {
+                A -> B -> C;
+                A -> C;
+             }
+
+      - title: "Inline PlantUML Example"
+        content: |
+          .. uml::
+
+             @startuml
+             Alice -> Bob: Hello
+             Bob --> Alice: Hi!
+             @enduml
+
+generate_index: true

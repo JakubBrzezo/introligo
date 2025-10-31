@@ -1,0 +1,8 @@
+graph TD
+    A[Start] --> B{Is Valid?}
+    B -->|Yes| C[Process Data]
+    B -->|No| D[Show Error]
+    C --> E[Save to Database]
+    E --> F[Send Confirmation]
+    F --> G[End]
+    D --> G

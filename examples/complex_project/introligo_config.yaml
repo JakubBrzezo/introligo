@@ -1,0 +1,388 @@
+# Smart Door Driver Documentation Hub Configuration
+# This example demonstrates a comprehensive C++ project documentation using Introligo
+# with automatic discovery, Doxygen integration, and the Steampunk theme
+
+# Sphinx Configuration
+sphinx:
+  project: "Smart Door Driver"
+  author: "Smart Systems Inc."
+  release: "1.0.0"
+  html_theme: "furo"
+  palette: "steampunk"  # Victorian-era inspired color scheme
+  html_title: "Smart Door Driver"
+
+  html_theme_options:
+    sidebar_hide_name: false
+
+# Global Doxygen configuration for C++ code documentation
+doxygen:
+  xml_path: "output/xml"  # Relative to config file directory
+  project_name: "smartdoor"
+
+# Index page configuration
+index:
+  title: "Smart Door Driver Documentation"
+  description: "Comprehensive documentation for the Smart Door control system with servo lock and linear actuator"
+  overview: |
+    Welcome to the Smart Door Driver documentation. This system provides automated
+    door control using a coordinated servo-based locking mechanism and linear actuator
+    (contractron).
+
+    Key Features
+    ------------
+
+    - **Servo Lock Control**: Precise angle control for locking/unlocking
+    - **Linear Actuator**: Contractron for physical door movement
+    - **Safety Systems**: Comprehensive state tracking and safety checks
+    - **Error Handling**: Robust error detection and recovery
+    - **Emergency Stop**: Immediate shutdown capability
+
+    Quick Navigation
+    ----------------
+
+    - **Getting Started**: See the overview section for basic usage
+    - **API Reference**: Detailed C++ class documentation
+    - **Architecture**: Class diagrams and system design
+    - **Algorithms**: Workflow diagrams for operations
+    - **Project Info**: README, changelog, contributing guide, and license
+
+# Enable Documentation Hub
+discovery:
+  enabled: true
+
+  # Scan these directories for documentation
+  scan_paths:
+    - "."  # Repository root (for CHANGELOG, CONTRIBUTING, LICENSE)
+
+  # Automatically include these document types
+  auto_include:
+    readme: false         # Manually included below for better formatting
+    changelog: true       # Find CHANGELOG.md
+    contributing: true    # Find CONTRIBUTING.md
+    license: true         # Find LICENSE
+
+  # Exclude these directories from scanning
+  exclude_patterns:
+    - "node_modules"
+    - ".venv"
+    - "venv"
+    - "build"
+    - "_build"
+    - ".git"
+    - "__pycache__"
+    - "output"
+    - "docs"
+
+generate_index: true
+
+modules:
+  # Manually include README for better formatting
+  getting_started:
+    title: "Getting Started"
+    description: "Project overview, features, and quick start guide"
+    file_includes:
+      - "README.md"
+  # Architecture and design section
+  architecture:
+    title: "Architecture"
+    description: "System architecture and component relationships"
+
+  # Class diagram showing the structure
+  class_structure:
+    parent: "architecture"
+    title: "Class Structure"
+    description: "UML class diagram showing relationships between components"
+    overview: |
+      The Smart Door Driver uses three main classes working together:
+
+      - **SmartDoor**: Main controller orchestrating the system
+      - **Servo**: Controls the locking mechanism
+      - **Contractor**: Manages the linear actuator for door movement
+
+      The diagram below shows the detailed structure and relationships.
+
+    diagram_includes:
+      - path: "diagrams/class_diagram.puml"
+        title: "Smart Door System Class Diagram"
+
+  # Algorithm workflows
+  algorithms:
+    title: "Algorithms"
+    description: "Workflow diagrams for system operations"
+
+  initialization_algorithm:
+    parent: "algorithms"
+    title: "Initialization Algorithm"
+    description: "System startup and calibration sequence"
+    overview: |
+      The initialization algorithm ensures all components are properly calibrated
+      and ready for operation. It performs the following steps:
+
+      1. Calibrate the servo to home position
+      2. Initialize and home the contractor
+      3. Lock the door in default secure state
+      4. Verify all systems are ready
+
+      The flowchart below shows the complete initialization process with error handling.
+
+    diagram_includes:
+      - path: "diagrams/initialization.mmd"
+        title: "System Initialization Flowchart"
+
+  open_algorithm:
+    parent: "algorithms"
+    title: "Door Opening Algorithm"
+    description: "Sequence for safely opening the door"
+    overview: |
+      The door opening algorithm coordinates the servo and contractor to safely
+      open the door. The sequence is:
+
+      1. Verify system is ready and safe to operate
+      2. Unlock the door (servo to 90 degrees)
+      3. Extend the contractor to push door open
+      4. Update state to OPEN
+
+      Safety checks are performed at each step, with automatic error handling
+      and retry logic.
+
+    diagram_includes:
+      - path: "diagrams/open_algorithm.mmd"
+        title: "Door Opening Flowchart"
+
+  close_algorithm:
+    parent: "algorithms"
+    title: "Door Closing Algorithm"
+    description: "Sequence for safely closing and locking the door"
+    overview: |
+      The door closing algorithm ensures the door is properly closed and locked.
+      The sequence is:
+
+      1. Verify system is ready and safe to operate
+      2. Retract the contractor to close the door
+      3. Lock the door (servo to 0 degrees)
+      4. Update state to CLOSED_LOCKED
+
+      This ensures the door is always secured after closing.
+
+    diagram_includes:
+      - path: "diagrams/close_algorithm.mmd"
+        title: "Door Closing Flowchart"
+
+  # C++ API Reference
+  api_reference:
+    title: "API Reference"
+    description: "Complete C++ class and method documentation"
+
+  # SmartDoor class documentation
+  smartdoor_class:
+    parent: "api_reference"
+    title: "SmartDoor Class"
+    language: cpp
+    description: "Main controller class for the smart door system"
+
+    doxygen_files:
+      - src/SmartDoor.h
+      - src/SmartDoor.cpp
+
+    overview: |
+      The SmartDoor class is the main controller that orchestrates the servo lock
+      and contractor actuator. It provides high-level methods for opening and closing
+      the door, along with comprehensive safety checks and state management.
+
+    features:
+      - "Coordinated control of servo and contractor"
+      - "State machine implementation with 6 states"
+      - "Safety checks and interlocks"
+      - "Error handling with retry logic"
+      - "Emergency stop functionality"
+      - "Status reporting and diagnostics"
+
+    usage_examples:
+      - title: "Basic Usage Example"
+        description: "Example showing how to create and use a SmartDoor instance"
+        language: "cpp"
+        code: |
+          #include "SmartDoor.h"
+          #include <iostream>
+
+          int main() {
+              // Create smart door for main entrance
+              SmartDoor door("MainEntrance");
+
+              // Initialize the system
+              if (!door.initialize()) {
+                  std::cerr << "Initialization failed!" << std::endl;
+                  return 1;
+              }
+
+              // Open the door
+              if (door.open()) {
+                  std::cout << "Door opened: " << door.getStateString() << std::endl;
+              }
+
+              // Get detailed status
+              std::cout << door.getStatusReport() << std::endl;
+
+              // Close the door
+              door.close();
+
+              return 0;
+          }
+
+      - title: "Error Handling Example"
+        description: "Example showing error handling and state checking"
+        language: "cpp"
+        code: |
+          SmartDoor door("SecureRoom");
+
+          if (!door.initialize()) {
+              std::cerr << "Failed to initialize" << std::endl;
+              return -1;
+          }
+
+          // Attempt to open with error checking
+          if (!door.open()) {
+              std::cerr << "Failed to open door" << std::endl;
+              std::cerr << "State: " << door.getStateString() << std::endl;
+
+              // Try to recover
+              if (door.reset()) {
+                  std::cout << "System reset successful" << std::endl;
+              }
+          }
+
+      - title: "Emergency Stop Example"
+        description: "Example showing emergency stop functionality"
+        language: "cpp"
+        code: |
+          SmartDoor door("Emergency_Exit");
+          door.initialize();
+
+          // Start opening
+          door.open();
+
+          // Simulate emergency condition
+          bool emergency_detected = true;
+          if (emergency_detected) {
+              door.emergencyStop();
+              std::cout << "Emergency stop activated!" << std::endl;
+              std::cout << "Current state: " << door.getStateString() << std::endl;
+          }
+
+  # Servo class documentation
+  servo_class:
+    parent: "api_reference"
+    title: "Servo Class"
+    language: cpp
+    description: "Servo motor controller for the locking mechanism"
+
+    doxygen_files:
+      - src/Servo.h
+      - src/Servo.cpp
+
+    overview: |
+      The Servo class controls the servo motor that operates the door's locking
+      mechanism. It supports angle control from 0 to 180 degrees, with 0 degrees
+      representing the locked position and 90 degrees representing the unlocked position.
+
+    features:
+      - "Angle control (0-180 degrees)"
+      - "Calibration and homing"
+      - "Position feedback"
+      - "Safety limits and validation"
+      - "Reset to default position"
+
+    usage_examples:
+      - title: "Servo Basic Usage"
+        description: "Example of using the Servo class"
+        language: "cpp"
+        code: |
+          #include "Servo.h"
+
+          // Create servo instance
+          Servo lockServo("DoorLock");
+
+          // Calibrate the servo
+          lockServo.calibrate();
+
+          // Lock position (0 degrees)
+          lockServo.setAngle(0);
+
+          // Unlock position (90 degrees)
+          lockServo.setAngle(90);
+
+          // Check current angle
+          int angle = lockServo.getAngle();
+          std::cout << "Current angle: " << angle << std::endl;
+
+  # Contractor class documentation
+  contractor_class:
+    parent: "api_reference"
+    title: "Contractor Class"
+    language: cpp
+    description: "Linear actuator (contractron) controller for door movement"
+
+    doxygen_files:
+      - src/Contractor.h
+      - src/Contractor.cpp
+
+    overview: |
+      The Contractor class controls a linear actuator (contractron) that physically
+      moves the door. It can extend to push the door open and retract to close it.
+      The class implements a state machine to track the actuator's position and movement.
+
+    features:
+      - "Extension and retraction control"
+      - "Position tracking (0-100%)"
+      - "Adjustable speed (1-10)"
+      - "State machine implementation"
+      - "Emergency stop capability"
+      - "Initialization and homing"
+
+    usage_examples:
+      - title: "Contractor Basic Usage"
+        description: "Example of using the Contractor class"
+        language: "cpp"
+        code: |
+          #include "Contractor.h"
+
+          // Create contractor with 200mm max extension
+          Contractor actuator("DoorActuator", 200);
+
+          // Initialize (home to retracted position)
+          actuator.initialize();
+
+          // Set speed (1-10, where 10 is fastest)
+          actuator.setSpeed(7);
+
+          // Extend to open door
+          actuator.extend();
+
+          // Check position
+          int pos = actuator.getPosition();
+          std::cout << "Position: " << pos << "%" << std::endl;
+
+          // Check state
+          std::cout << "State: " << actuator.getStateString() << std::endl;
+
+          // Retract to close door
+          actuator.retract();
+
+      - title: "Contractor State Monitoring"
+        description: "Example showing state monitoring"
+        language: "cpp"
+        code: |
+          Contractor actuator("Monitor", 250);
+          actuator.initialize();
+
+          // Start extension
+          actuator.extend();
+
+          // Monitor state during operation
+          while (actuator.getState() == Contractor::EXTENDING) {
+              std::cout << "Extending... Position: "
+                        << actuator.getPosition() << "%" << std::endl;
+              // In real implementation, add delay
+          }
+
+          std::cout << "Final state: " << actuator.getStateString() << std::endl;

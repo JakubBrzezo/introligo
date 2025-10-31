@@ -210,6 +210,13 @@ modules:
     description: "Configure devcontainers for your own projects"
     markdown_includes: "markdown/devcontainer_tutorial/devcontainer_setup.md"
 
+  # Diagram Support Tutorial
+  diagram_support:
+    parent: "user_guide"
+    title: "📊 Diagram Support"
+    description: "Visual documentation with PlantUML, Mermaid, and Graphviz"
+    markdown_includes: "markdown/diagrams/diagram_tutorial.md"
+
   # ============================================================================
   # EXAMPLES
   # ============================================================================

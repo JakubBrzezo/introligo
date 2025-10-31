@@ -1,0 +1,48 @@
+graph TD
+    Start([Door Close Request]) --> CheckInit{System<br/>Initialized?}
+    CheckInit -->|No| Error1[Return Error:<br/>Not Initialized]
+    CheckInit -->|Yes| CheckState{Current<br/>State?}
+
+    CheckState -->|CLOSED_LOCKED| AlreadyClosed[Already Closed<br/>and Locked:<br/>Return Success]
+    CheckState -->|ERROR| Error2[Return Error:<br/>System in Error State]
+    CheckState -->|Valid State| CheckSafe{Safe to<br/>Operate?}
+
+    CheckSafe -->|No| Error3[Return Error:<br/>Not Safe to Operate]
+
+    CheckSafe -->|Yes| SetClosing[Set State:<br/>CLOSING]
+    SetClosing --> Retract[Retract Contractor:<br/>Pull Door Closed]
+
+    Retract --> RetractOk{Retract<br/>Success?}
+    RetractOk -->|No| ErrorRetract[Set State:<br/>ERROR_STATE]
+    ErrorRetract --> Error4[Return Error]
+
+    RetractOk -->|Yes| SetUnlocked[Set State:<br/>CLOSED_UNLOCKED]
+    SetUnlocked --> Lock[Lock Door:<br/>Servo to 0°]
+
+    Lock --> LockOk{Lock<br/>Success?}
+    LockOk -->|No| ErrorLock[Set State:<br/>ERROR_STATE]
+    ErrorLock --> Error5[Return Error]
+
+    LockOk -->|Yes| SetLocked[Set State:<br/>CLOSED_LOCKED]
+    SetLocked --> Success([Return Success:<br/>Door Closed and Locked])
+
+    Error1 --> End([End])
+    Error2 --> End
+    Error3 --> End
+    Error4 --> End
+    Error5 --> End
+    AlreadyClosed --> End
+    Success --> End
+
+    style Start fill:#90EE90
+    style Success fill:#90EE90
+    style Error1 fill:#FFB6C1
+    style Error2 fill:#FFB6C1
+    style Error3 fill:#FFB6C1
+    style Error4 fill:#FFB6C1
+    style Error5 fill:#FFB6C1
+    style ErrorRetract fill:#FF6B6B
+    style ErrorLock fill:#FF6B6B
+    style End fill:#D3D3D3
+    style Retract fill:#87CEEB
+    style Lock fill:#87CEEB

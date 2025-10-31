@@ -1,0 +1,110 @@
+@startuml
+title Smart Door System - Class Diagram
+
+class SmartDoor {
+    - lockServo: Servo*
+    - doorActuator: Contractor*
+    - currentState: DoorState
+    - isSystemReady: bool
+    - doorId: string
+    - openAttempts: int
+    - MAX_ATTEMPTS: const int = 3
+
+    - lockDoor(): bool
+    - unlockDoor(): bool
+    - isSafeToOperate(): bool
+
+    + SmartDoor(id: string)
+    + ~SmartDoor()
+    + initialize(): bool
+    + open(): bool
+    + close(): bool
+    + emergencyStop(): void
+    + getState(): DoorState
+    + getStateString(): string
+    + getDoorId(): string
+    + isReady(): bool
+    + getStatusReport(): string
+    + reset(): bool
+}
+
+enum DoorState {
+    CLOSED_LOCKED
+    CLOSED_UNLOCKED
+    OPENING
+    OPEN
+    CLOSING
+    ERROR_STATE
+}
+
+class Servo {
+    - currentAngle: int
+    - minAngle: int
+    - maxAngle: int
+    - isCalibrated: bool
+    - name: string
+
+    + Servo(servoName: string)
+    + ~Servo()
+    + calibrate(): bool
+    + setAngle(angle: int): bool
+    + getAngle(): int
+    + isCalibratedStatus(): bool
+    + reset(): void
+    + getName(): string
+}
+
+class Contractor {
+    - currentState: State
+    - currentPosition: int
+    - maxExtension: int
+    - isInitialized: bool
+    - name: string
+    - speed: int
+
+    + Contractor(name: string, maxExt: int)
+    + ~Contractor()
+    + initialize(): bool
+    + extend(): bool
+    + retract(): bool
+    + stop(): void
+    + getState(): State
+    + getPosition(): int
+    + setSpeed(speed: int): bool
+    + isReady(): bool
+    + getStateString(): string
+    + getName(): string
+}
+
+enum ContractorState {
+    RETRACTED
+    EXTENDING
+    EXTENDED
+    RETRACTING
+    ERROR
+}
+
+SmartDoor "1" *-- "1" Servo : controls >
+SmartDoor "1" *-- "1" Contractor : controls >
+SmartDoor ..> DoorState : uses
+Contractor ..> ContractorState : uses
+
+note right of SmartDoor
+    Main controller that coordinates
+    the servo lock and linear actuator
+    to provide complete door control
+end note
+
+note right of Servo
+    Controls the locking mechanism
+    by rotating between 0-180 degrees
+    (0 = locked, 90 = unlocked)
+end note
+
+note right of Contractor
+    Linear actuator (contractron)
+    that physically moves the door
+    by extending and retracting
+end note
+
+@enduml

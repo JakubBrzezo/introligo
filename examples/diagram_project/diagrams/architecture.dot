@@ -1,0 +1,19 @@
+digraph Architecture {
+    rankdir=LR;
+    node [shape=box, style=filled, fillcolor=lightblue];
+
+    Client [label="Client\nApplication"];
+    LB [label="Load\nBalancer", fillcolor=lightgreen];
+    API1 [label="API Server 1"];
+    API2 [label="API Server 2"];
+    Cache [label="Redis\nCache", fillcolor=lightyellow];
+    DB [label="PostgreSQL\nDatabase", fillcolor=lightcoral];
+
+    Client -> LB;
+    LB -> API1;
+    LB -> API2;
+    API1 -> Cache;
+    API2 -> Cache;
+    API1 -> DB;
+    API2 -> DB;
+}

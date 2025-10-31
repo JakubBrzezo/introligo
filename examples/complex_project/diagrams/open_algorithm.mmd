@@ -1,0 +1,54 @@
+graph TD
+    Start([Door Open Request]) --> CheckInit{System<br/>Initialized?}
+    CheckInit -->|No| Error1[Return Error:<br/>Not Initialized]
+    CheckInit -->|Yes| CheckState{Current<br/>State?}
+
+    CheckState -->|OPEN| AlreadyOpen[Already Open:<br/>Return Success]
+    CheckState -->|ERROR| Error2[Return Error:<br/>System in Error State]
+    CheckState -->|Valid State| CheckSafe{Safe to<br/>Operate?}
+
+    CheckSafe -->|No| IncAttempts[Increment<br/>Open Attempts]
+    IncAttempts --> CheckMax{Attempts >=<br/>MAX_ATTEMPTS?}
+    CheckMax -->|Yes| SetError[Set State:<br/>ERROR_STATE]
+    CheckMax -->|No| Error3[Return Error:<br/>Not Safe]
+    SetError --> Error3
+
+    CheckSafe -->|Yes| SetOpening[Set State:<br/>OPENING]
+    SetOpening --> Unlock[Unlock Door:<br/>Servo to 90°]
+
+    Unlock --> UnlockOk{Unlock<br/>Success?}
+    UnlockOk -->|No| ErrorUnlock[Set State:<br/>ERROR_STATE]
+    ErrorUnlock --> Error4[Return Error]
+
+    UnlockOk -->|Yes| SetUnlocked[Set State:<br/>CLOSED_UNLOCKED]
+    SetUnlocked --> Extend[Extend Contractor:<br/>Push Door Open]
+
+    Extend --> ExtendOk{Extend<br/>Success?}
+    ExtendOk -->|No| ErrorExtend[Set State:<br/>ERROR_STATE]
+    ErrorExtend --> Error5[Return Error]
+
+    ExtendOk -->|Yes| SetOpen[Set State:<br/>OPEN]
+    SetOpen --> ResetAttempts[Reset Open<br/>Attempts Counter]
+    ResetAttempts --> Success([Return Success:<br/>Door Opened])
+
+    Error1 --> End([End])
+    Error2 --> End
+    Error3 --> End
+    Error4 --> End
+    Error5 --> End
+    AlreadyOpen --> End
+    Success --> End
+
+    style Start fill:#90EE90
+    style Success fill:#90EE90
+    style Error1 fill:#FFB6C1
+    style Error2 fill:#FFB6C1
+    style Error3 fill:#FFB6C1
+    style Error4 fill:#FFB6C1
+    style Error5 fill:#FFB6C1
+    style SetError fill:#FF6B6B
+    style ErrorUnlock fill:#FF6B6B
+    style ErrorExtend fill:#FF6B6B
+    style End fill:#D3D3D3
+    style Unlock fill:#87CEEB
+    style Extend fill:#87CEEB

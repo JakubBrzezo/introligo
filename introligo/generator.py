@@ -19,7 +19,14 @@ from .markdown_converter import (
 )
 from .page_node import PageNode
 from .rustdoc_extractor import RustDocExtractor
-from .utils import count_display_width
+from .utils import (
+    convert_graphviz_to_rst,
+    convert_mermaid_to_rst,
+    convert_plantuml_to_rst,
+    convert_svg_to_rst,
+    count_display_width,
+    process_rst_directives,
+)
 from .yaml_loader import IncludeLoader
 
 # Support both direct execution and package import
@@ -63,6 +70,8 @@ class IntroligoGenerator:
         self.sphinx_config: Dict[str, Any] = {}
         self.palette_data: Dict[str, Any] = {}
         self.hub: Optional[DocumentationHub] = None
+        self.has_plantuml_extension: bool = False
+        self.has_mermaid_extension: bool = False
 
     def load_config(self) -> None:
         """Load configuration with support for !include directives.
@@ -646,6 +655,13 @@ Related Tools
 {% endfor %}
 {% endif %}
 
+{% if diagram_includes %}
+{% for diagram_content in diagram_includes %}
+
+{{ diagram_content }}
+{% endfor %}
+{% endif %}
+
 {% if file_includes %}
 {% for file_content in file_includes %}
 
@@ -842,6 +858,123 @@ Related Tools
         except Exception as e:
             raise IntroligoError(f"Error reading text file {txt_path_obj}: {e}") from e
 
+    def include_plantuml_file(self, plantuml_path: str, title: str = "") -> str:
+        """Include a PlantUML file and convert it to RST with uml directive.
+
+        Args:
+            plantuml_path: Path to the PlantUML file (relative to config file).
+            title: Optional title for the diagram.
+
+        Returns:
+            The content of the PlantUML file wrapped in RST uml directive.
+
+        Raises:
+            IntroligoError: If the PlantUML file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        puml_path_obj = Path(plantuml_path)
+        if not puml_path_obj.is_absolute():
+            puml_path_obj = self.config_file.parent / plantuml_path
+
+        if not puml_path_obj.exists():
+            raise IntroligoError(f"PlantUML file not found: {puml_path_obj}")
+
+        try:
+            content = puml_path_obj.read_text(encoding="utf-8")
+            rst_content = convert_plantuml_to_rst(content, title, self.has_plantuml_extension)
+            logger.info(f"  📊 Included PlantUML: {puml_path_obj}")
+            return rst_content
+        except Exception as e:
+            raise IntroligoError(f"Error reading PlantUML file {puml_path_obj}: {e}") from e
+
+    def include_mermaid_file(self, mermaid_path: str, title: str = "") -> str:
+        """Include a Mermaid file and convert it to RST with mermaid directive.
+
+        Args:
+            mermaid_path: Path to the Mermaid file (relative to config file).
+            title: Optional title for the diagram.
+
+        Returns:
+            The content of the Mermaid file wrapped in RST mermaid directive.
+
+        Raises:
+            IntroligoError: If the Mermaid file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        mmd_path_obj = Path(mermaid_path)
+        if not mmd_path_obj.is_absolute():
+            mmd_path_obj = self.config_file.parent / mermaid_path
+
+        if not mmd_path_obj.exists():
+            raise IntroligoError(f"Mermaid file not found: {mmd_path_obj}")
+
+        try:
+            content = mmd_path_obj.read_text(encoding="utf-8")
+            rst_content = convert_mermaid_to_rst(content, title, self.has_mermaid_extension)
+            logger.info(f"  📊 Included Mermaid: {mmd_path_obj}")
+            return rst_content
+        except Exception as e:
+            raise IntroligoError(f"Error reading Mermaid file {mmd_path_obj}: {e}") from e
+
+    def include_graphviz_file(self, graphviz_path: str, title: str = "") -> str:
+        """Include a Graphviz DOT file and convert it to RST with graphviz directive.
+
+        Args:
+            graphviz_path: Path to the Graphviz file (relative to config file).
+            title: Optional title for the diagram.
+
+        Returns:
+            The content of the Graphviz file wrapped in RST graphviz directive.
+
+        Raises:
+            IntroligoError: If the Graphviz file cannot be read.
+        """
+        # Resolve path relative to the config file's directory
+        dot_path_obj = Path(graphviz_path)
+        if not dot_path_obj.is_absolute():
+            dot_path_obj = self.config_file.parent / graphviz_path
+
+        if not dot_path_obj.exists():
+            raise IntroligoError(f"Graphviz file not found: {dot_path_obj}")
+
+        try:
+            content = dot_path_obj.read_text(encoding="utf-8")
+            rst_content = convert_graphviz_to_rst(content, title)
+            logger.info(f"  📊 Included Graphviz: {dot_path_obj}")
+            return rst_content
+        except Exception as e:
+            raise IntroligoError(f"Error reading Graphviz file {dot_path_obj}: {e}") from e
+
+    def include_svg_file(self, svg_path: str, title: str = "", alt_text: str = "") -> str:
+        """Include an SVG file as an image in RST.
+
+        Args:
+            svg_path: Path to the SVG file (relative to config file).
+            title: Optional title for the diagram.
+            alt_text: Optional alt text for the image.
+
+        Returns:
+            RST image directive for the SVG file.
+
+        Raises:
+            IntroligoError: If the SVG file cannot be found.
+        """
+        # Resolve path relative to the config file's directory
+        svg_path_obj = Path(svg_path)
+        if not svg_path_obj.is_absolute():
+            svg_path_obj = self.config_file.parent / svg_path
+
+        if not svg_path_obj.exists():
+            raise IntroligoError(f"SVG file not found: {svg_path_obj}")
+
+        try:
+            # For SVG, we just reference the path, not read the content
+            rst_content = convert_svg_to_rst(svg_path, title, alt_text)
+            logger.info(f"  📊 Included SVG: {svg_path_obj}")
+            return rst_content
+        except Exception as e:
+            raise IntroligoError(f"Error processing SVG file {svg_path_obj}: {e}") from e
+
     def include_file(self, file_path: str) -> str:
         """Include a file with auto-detection based on file extension.
 
@@ -850,6 +983,10 @@ Related Tools
         - .md: converted to RST
         - .tex: wrapped in math directive
         - .txt: wrapped in literal block
+        - .puml, .plantuml: PlantUML diagram
+        - .mmd, .mermaid: Mermaid diagram
+        - .dot, .gv: Graphviz diagram
+        - .svg: SVG image
 
         Args:
             file_path: Path to the file (relative to config file).
@@ -882,10 +1019,19 @@ Related Tools
             return self.include_latex_file(file_path)
         elif suffix == ".txt" or is_text_file:
             return self.include_txt_file(file_path)
+        elif suffix in [".puml", ".plantuml"]:
+            return self.include_plantuml_file(file_path)
+        elif suffix in [".mmd", ".mermaid"]:
+            return self.include_mermaid_file(file_path)
+        elif suffix in [".dot", ".gv"]:
+            return self.include_graphviz_file(file_path)
+        elif suffix == ".svg":
+            return self.include_svg_file(file_path)
         else:
             raise IntroligoError(
                 f"Unsupported file type '{suffix}' for file: {path_obj}. "
-                f"Supported types: .rst, .md, .tex, .txt"
+                f"Supported types: .rst, .md, .tex, .txt, .puml, .plantuml, "
+                f".mmd, .mermaid, .dot, .gv, .svg"
             )
 
     def _convert_latex_to_rst(self, latex: str) -> str:
@@ -1007,6 +1153,41 @@ Related Tools
             try:
                 content = self.include_file(file_path)
                 file_content.append(content)
+            except IntroligoError as e:
+                logger.warning(f"{e}")
+
+        # Process diagram includes (PlantUML, Mermaid, Graphviz, SVG)
+        diagram_includes = config.get("diagram_includes", [])
+        if isinstance(diagram_includes, str):
+            diagram_includes = [diagram_includes]
+
+        diagram_content = []
+        for diagram_spec in diagram_includes:
+            try:
+                if isinstance(diagram_spec, dict):
+                    # Detailed diagram specification with path and optional title
+                    diagram_path = diagram_spec.get("path", "")
+                    diagram_title = diagram_spec.get("title", "")
+                    if diagram_path:
+                        # Extract file extension to determine diagram type
+                        suffix = Path(diagram_path).suffix.lower()
+                        if suffix in [".puml", ".plantuml"]:
+                            content = self.include_plantuml_file(diagram_path, diagram_title)
+                        elif suffix in [".mmd", ".mermaid"]:
+                            content = self.include_mermaid_file(diagram_path, diagram_title)
+                        elif suffix in [".dot", ".gv"]:
+                            content = self.include_graphviz_file(diagram_path, diagram_title)
+                        elif suffix == ".svg":
+                            alt_text = diagram_spec.get("alt_text", "")
+                            content = self.include_svg_file(diagram_path, diagram_title, alt_text)
+                        else:
+                            # Fallback to generic include
+                            content = self.include_file(diagram_path)
+                        diagram_content.append(content)
+                elif isinstance(diagram_spec, str):
+                    # Simple path string
+                    content = self.include_file(diagram_spec)
+                    diagram_content.append(content)
             except IntroligoError as e:
                 logger.warning(f"{e}")
 
@@ -1155,6 +1336,21 @@ Related Tools
                 success, content = rust_extractor.extract_and_convert(rustdoc_crate)
                 rustdoc_extracted_content = content
 
+        # Process custom_sections to convert unsupported directives
+        custom_sections = config.get("custom_sections", [])
+        processed_custom_sections = []
+        for section in custom_sections:
+            if isinstance(section, dict) and "content" in section:
+                processed_section = section.copy()
+                processed_section["content"] = process_rst_directives(
+                    section["content"],
+                    self.has_plantuml_extension,
+                    self.has_mermaid_extension,
+                )
+                processed_custom_sections.append(processed_section)
+            else:
+                processed_custom_sections.append(section)
+
         context = {
             "title": node.title,
             "module": config.get("module", ""),
@@ -1200,11 +1396,12 @@ Related Tools
             "python_api": self.process_usage_examples(config.get("python_api")),
             "examples": self.process_usage_examples(config.get("examples")),
             "related_tools": config.get("related_tools", []),
-            "custom_sections": config.get("custom_sections", []),
+            "custom_sections": processed_custom_sections,
             "markdown_includes": markdown_content,
             "latex_includes": latex_content,
             "rst_includes": rst_content,
             "file_includes": file_content,
+            "diagram_includes": diagram_content,
         }
 
         # Clean up empty values, but keep language field
@@ -1641,6 +1838,97 @@ breathe_default_project = "{project_name}"
                 if ext not in extensions:
                     extensions.append(ext)
                     logger.info(f"  Auto-added math extension: {ext}")
+
+        # Auto-add diagram extensions if diagram_includes or file_includes
+        # with diagram files are found
+        def has_diagram_files(include_list):
+            """Check if include list contains diagram files."""
+            if not include_list:
+                return False, False, False
+
+            has_plantuml = False
+            has_mermaid = False
+            has_graphviz = False
+
+            items = include_list if isinstance(include_list, list) else [include_list]
+            for item in items:
+                if isinstance(item, str):
+                    path = item
+                elif isinstance(item, dict):
+                    path = item.get("path", "")
+                else:
+                    path = ""
+                if path:
+                    suffix = Path(path).suffix.lower()
+                    if suffix in [".puml", ".plantuml"]:
+                        has_plantuml = True
+                    elif suffix in [".mmd", ".mermaid"]:
+                        has_mermaid = True
+                    elif suffix in [".dot", ".gv"]:
+                        has_graphviz = True
+
+            return has_plantuml, has_mermaid, has_graphviz
+
+        has_plantuml_global = False
+        has_mermaid_global = False
+        has_graphviz_global = False
+
+        for module_config in self.config.get("modules", {}).values():
+            if isinstance(module_config, dict):
+                # Check diagram_includes
+                if "diagram_includes" in module_config:
+                    p, m, g = has_diagram_files(module_config["diagram_includes"])
+                    has_plantuml_global = has_plantuml_global or p
+                    has_mermaid_global = has_mermaid_global or m
+                    has_graphviz_global = has_graphviz_global or g
+
+                # Check file_includes for diagram files
+                if "file_includes" in module_config:
+                    p, m, g = has_diagram_files(module_config["file_includes"])
+                    has_plantuml_global = has_plantuml_global or p
+                    has_mermaid_global = has_mermaid_global or m
+                    has_graphviz_global = has_graphviz_global or g
+
+        # Helper function to check if a package is available
+        def is_package_available(package_name: str) -> bool:
+            """Check if a Python package is available for import."""
+            try:
+                __import__(package_name.replace("-", "_"))
+                return True
+            except ImportError:
+                return False
+
+        # Add diagram extensions as needed (only if packages are available)
+        if has_graphviz_global and "sphinx.ext.graphviz" not in extensions:
+            # sphinx.ext.graphviz is built-in to Sphinx, always available
+            extensions.append("sphinx.ext.graphviz")
+            logger.info("  Auto-added diagram extension: sphinx.ext.graphviz")
+
+        if has_plantuml_global and "sphinxcontrib.plantuml" not in extensions:
+            if is_package_available("sphinxcontrib.plantuml"):
+                extensions.append("sphinxcontrib.plantuml")
+                self.has_plantuml_extension = True
+                logger.info("  Auto-added diagram extension: sphinxcontrib.plantuml")
+            else:
+                self.has_plantuml_extension = False
+                logger.warning(
+                    "  PlantUML diagrams detected but sphinxcontrib-plantuml not installed"
+                )
+                logger.warning("  Install with: pip install sphinxcontrib-plantuml")
+                logger.warning("  Diagrams will be shown as code blocks")
+
+        if has_mermaid_global and "sphinxcontrib.mermaid" not in extensions:
+            if is_package_available("sphinxcontrib.mermaid"):
+                extensions.append("sphinxcontrib.mermaid")
+                self.has_mermaid_extension = True
+                logger.info("  Auto-added diagram extension: sphinxcontrib.mermaid")
+            else:
+                self.has_mermaid_extension = False
+                logger.warning(
+                    "  Mermaid diagrams detected but sphinxcontrib-mermaid not installed"
+                )
+                logger.warning("  Install with: pip install sphinxcontrib-mermaid")
+                logger.warning("  Diagrams will be shown as code blocks")
 
         # Update the sphinx config with auto-detected extensions
         self.sphinx_config["extensions"] = extensions

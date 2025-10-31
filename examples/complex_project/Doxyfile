@@ -1,0 +1,24 @@
+# Doxyfile for Smart Door Driver Example
+
+# Project information
+PROJECT_NAME           = "Smart Door Driver"
+PROJECT_BRIEF          = "C++ driver for smart door with servo lock and linear actuator"
+OUTPUT_DIRECTORY       = output
+
+# Input files
+INPUT                  = src/Servo.h src/Servo.cpp src/Contractor.h src/Contractor.cpp src/SmartDoor.h src/SmartDoor.cpp
+RECURSIVE              = NO
+
+# Output formats
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+
+# Documentation extraction
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+# Other settings
+QUIET                  = NO
+WARNINGS               = YES

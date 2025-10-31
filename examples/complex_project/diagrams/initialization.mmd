@@ -1,0 +1,44 @@
+graph TD
+    Start([Initialize System]) --> CreateComponents[Create SmartDoor<br/>with Servo and Contractor]
+    CreateComponents --> InitStart[Start Initialization]
+
+    InitStart --> CalibrateServo[Calibrate Servo:<br/>Move to Home Position]
+    CalibrateServo --> ServoOk{Calibration<br/>Success?}
+
+    ServoOk -->|No| ErrorServo[Set State:<br/>ERROR_STATE]
+    ErrorServo --> Fail1[Return Error:<br/>Servo Calibration Failed]
+
+    ServoOk -->|Yes| InitContractor[Initialize Contractor:<br/>Home to Retracted]
+    InitContractor --> ContractorOk{Initialization<br/>Success?}
+
+    ContractorOk -->|No| ErrorContractor[Set State:<br/>ERROR_STATE]
+    ErrorContractor --> Fail2[Return Error:<br/>Contractor Init Failed]
+
+    ContractorOk -->|Yes| LockInitial[Lock Door:<br/>Servo to 0°]
+    LockInitial --> LockOk{Lock<br/>Success?}
+
+    LockOk -->|No| ErrorLock[Set State:<br/>ERROR_STATE]
+    ErrorLock --> Fail3[Return Error:<br/>Initial Lock Failed]
+
+    LockOk -->|Yes| SetReady[Set System Ready:<br/>isSystemReady = true]
+    SetReady --> SetState[Set State:<br/>CLOSED_LOCKED]
+    SetState --> ResetCounter[Reset Open<br/>Attempts Counter]
+    ResetCounter --> Success([Return Success:<br/>System Ready])
+
+    Fail1 --> End([End])
+    Fail2 --> End
+    Fail3 --> End
+    Success --> End
+
+    style Start fill:#90EE90
+    style Success fill:#90EE90
+    style Fail1 fill:#FFB6C1
+    style Fail2 fill:#FFB6C1
+    style Fail3 fill:#FFB6C1
+    style ErrorServo fill:#FF6B6B
+    style ErrorContractor fill:#FF6B6B
+    style ErrorLock fill:#FF6B6B
+    style End fill:#D3D3D3
+    style CalibrateServo fill:#87CEEB
+    style InitContractor fill:#87CEEB
+    style LockInitial fill:#87CEEB

@@ -1,0 +1,33 @@
+@startuml
+class User {
+    - id: int
+    - username: string
+    - email: string
+    + login()
+    + logout()
+    + updateProfile()
+}
+
+class Post {
+    - id: int
+    - title: string
+    - content: string
+    - created_at: datetime
+    + create()
+    + update()
+    + delete()
+}
+
+class Comment {
+    - id: int
+    - content: string
+    - created_at: datetime
+    + add()
+    + edit()
+    + remove()
+}
+
+User "1" -- "*" Post : creates
+Post "1" -- "*" Comment : has
+
+@enduml

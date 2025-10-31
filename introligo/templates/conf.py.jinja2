@@ -19,14 +19,6 @@ import sys
 from datetime import datetime
 {%- endif %}
 from pathlib import Path
-{% if has_breathe %}
-
-# Import Breathe configuration if available
-try:
-    from generated.breathe_config import *  # noqa: F403
-except ImportError:
-    pass
-{% endif %}
 
 {% if sphinx.version_from_git %}
 
@@ -80,6 +72,18 @@ PROJECT_ROOT = DOCS_DIR.parent
 {% endif %}
 {% if sphinx.add_project_to_path %}
 sys.path.insert(0, str(PROJECT_ROOT))
+{% endif %}
+{% if has_breathe %}
+
+# Import Breathe configuration if available
+# Add DOCS_DIR to sys.path to ensure import works from any working directory
+if str(DOCS_DIR) not in sys.path:
+    sys.path.insert(0, str(DOCS_DIR))
+
+try:
+    from generated.breathe_config import *  # noqa: F403
+except ImportError:
+    pass
 {% endif %}
 
 # -- Project information -------------------------------------------------------
@@ -203,6 +207,27 @@ autodoc_default_options = {
 
 # -- Breathe configuration for Doxygen integration ---------------------------
 {% for key, value in sphinx.breathe_settings.items() %}
+{{ key }} = {{ value|tojson }}
+{% endfor %}
+{% endif %}
+{% if sphinx.graphviz_settings %}
+
+# -- Graphviz configuration for diagram rendering ----------------------------
+{% for key, value in sphinx.graphviz_settings.items() %}
+{{ key }} = {{ value|tojson }}
+{% endfor %}
+{% endif %}
+{% if sphinx.plantuml_settings %}
+
+# -- PlantUML configuration for UML diagram rendering ------------------------
+{% for key, value in sphinx.plantuml_settings.items() %}
+{{ key }} = {{ value|tojson }}
+{% endfor %}
+{% endif %}
+{% if sphinx.mermaid_settings %}
+
+# -- Mermaid configuration for diagram rendering -----------------------------
+{% for key, value in sphinx.mermaid_settings.items() %}
 {{ key }} = {{ value|tojson }}
 {% endfor %}
 {% endif %}
