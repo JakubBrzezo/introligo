@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 
 
-
 # -- Paths --------------------------------------------------------------------
 DOCS_DIR = Path(__file__).resolve().parent
 
@@ -22,6 +21,7 @@ PROJECT_ROOT = DOCS_DIR.parent
 
 
 sys.path.insert(0, str(PROJECT_ROOT))
+
 
 
 # -- Project information -------------------------------------------------------
@@ -123,6 +123,9 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 napoleon_attr_annotations = True
+
+
+
 
 
 

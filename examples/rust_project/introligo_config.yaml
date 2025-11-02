@@ -27,83 +27,10 @@ modules:
     language: rust
     description: "Basic arithmetic operations including add, subtract, multiply, and divide"
 
-    # Rust crate to document
+    # Rust crate to document - extracted automatically from cargo doc
     rustdoc_crate: "calculator"
     # Path to the crate (relative to this config file)
     rustdoc_path: "."
-
-    # Manual documentation (used when Cargo is not installed)
-    # This would normally be extracted automatically by `cargo doc`
-    rustdoc_manual_content: |
-      Crate calculator provides simple arithmetic operations.
-
-      This crate implements basic calculator functionality including
-      addition, subtraction, multiplication, and division operations
-      with appropriate error handling.
-
-      Functions
-      ~~~~~~~~~
-
-      .. code-block:: rust
-
-         pub fn add(a: i32, b: i32) -> i32
-
-      Adds two integers and returns the sum.
-
-      **Parameters:**
-
-      * ``a`` - The first integer
-      * ``b`` - The second integer
-
-      **Returns:** The sum of a and b.
-
-      .. code-block:: rust
-
-         pub fn subtract(a: i32, b: i32) -> i32
-
-      Subtracts the second integer from the first.
-
-      **Parameters:**
-
-      * ``a`` - The minuend
-      * ``b`` - The subtrahend
-
-      **Returns:** The result of a - b.
-
-      .. code-block:: rust
-
-         pub fn multiply(a: i32, b: i32) -> i32
-
-      Multiplies two integers and returns the product.
-
-      **Parameters:**
-
-      * ``a`` - The first integer
-      * ``b`` - The second integer
-
-      **Returns:** The product of a and b.
-
-      .. code-block:: rust
-
-         pub fn divide(a: i32, b: i32) -> Result<i32, CalcError>
-
-      Divides the first integer by the second.
-
-      **Parameters:**
-
-      * ``a`` - The dividend
-      * ``b`` - The divisor
-
-      **Returns:** A Result containing the quotient or a DivisionByZero error.
-
-      **Example:**
-
-      .. code-block:: rust
-
-         match divide(10, 2) {
-             Ok(result) => assert_eq!(result, 5),
-             Err(e) => panic!("Error: {}", e),
-         }
 
     overview: |
       The Calculator crate provides simple arithmetic operations for integer values.

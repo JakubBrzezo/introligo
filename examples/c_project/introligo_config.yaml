@@ -7,6 +7,13 @@ index:
 
 generate_index: true
 
+# Sphinx configuration - auto-generates conf.py
+sphinx:
+  project: "C Calculator"
+  author: "Example Team"
+  version: "1.0.0"
+  html_theme: "furo"
+
 # Global Doxygen configuration
 # This points to the XML output from Doxygen
 doxygen:

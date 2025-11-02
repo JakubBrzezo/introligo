@@ -166,8 +166,8 @@ Next Steps
 
 .. seealso::
 
-   - :doc:`API Reference <api_details>` - Complete API documentation
-   - :doc:`Architecture <architecture>` - System architecture overview
+   - :doc:`API Reference <../documentation/api_documentation>` - Complete API documentation
+   - :doc:`Architecture <../documentation/architecture_guide>` - System architecture overview
    - `GitHub Repository <https://github.com/example/example-system>`_ - Source code and issues
 
 .. tip::

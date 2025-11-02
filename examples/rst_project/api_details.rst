@@ -33,7 +33,7 @@ Get User Information
 
 Retrieve information about a specific user.
 
-.. code-block:: http
+.. code-block:: text
 
    GET /api/v1/users/{user_id}
 
@@ -66,7 +66,7 @@ Create User
 
 Create a new user account.
 
-.. code-block:: http
+.. code-block:: text
 
    POST /api/v1/users
 
@@ -88,7 +88,7 @@ List Resources
 
 Retrieve a paginated list of resources.
 
-.. code-block:: http
+.. code-block:: text
 
    GET /api/v1/resources?page=1&limit=20
 
@@ -163,7 +163,7 @@ Rate Limiting
 
 Rate limit information is included in response headers:
 
-.. code-block:: http
+.. code-block:: text
 
    X-RateLimit-Limit: 1000
    X-RateLimit-Remaining: 995

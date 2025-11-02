@@ -85,16 +85,41 @@ class RustDocExtractor:
         Returns:
             Summary documentation as string, or None if extraction fails.
         """
-        if not self.check_cargo_available():
-            logger.warning("Cargo is not installed - skipping documentation extraction")
-            return None
-
         if not self.crate_path:
             logger.warning("No crate path specified")
             return None
 
+        # If Cargo is not available, fall back to source parsing immediately
+        if not self.check_cargo_available():
+            logger.warning("Cargo is not installed - using direct source parsing")
+            lib_rs = self.crate_path / "src" / "lib.rs"
+            main_rs = self.crate_path / "src" / "main.rs"
+            source_file = lib_rs if lib_rs.exists() else (main_rs if main_rs.exists() else None)
+            if source_file:
+                return self._parse_rust_source(source_file)
+            return None
+
         try:
-            # Build documentation with cargo doc
+            # Try to generate JSON documentation (requires Rust 1.78+)
+            logger.info(f"Attempting to generate rustdoc JSON for crate at {self.crate_path}")
+            json_doc = self._try_rustdoc_json(crate_name)
+
+            if json_doc:
+                logger.info("Successfully extracted documentation from rustdoc JSON")
+                return json_doc
+
+            # Prefer source parsing over HTML parsing - it produces better formatted output
+            logger.info("Rustdoc JSON not available, using direct source parsing")
+            lib_rs = self.crate_path / "src" / "lib.rs"
+            main_rs = self.crate_path / "src" / "main.rs"
+            source_file = lib_rs if lib_rs.exists() else (main_rs if main_rs.exists() else None)
+
+            if source_file:
+                logger.info(f"Parsing source file: {source_file}")
+                return self._parse_rust_source(source_file)
+
+            # Last resort: Try cargo doc HTML parsing (produces less formatted output)
+            logger.info("Source file not found, trying cargo doc HTML parsing")
             cmd = ["cargo", "doc", "--no-deps", "--message-format=json"]
             result = subprocess.run(
                 cmd,
@@ -105,26 +130,214 @@ class RustDocExtractor:
             )
 
             if result.returncode == 0:
-                logger.info(f"Successfully built documentation for crate at {self.crate_path}")
+                logger.info(f"Successfully built HTML documentation for crate at {self.crate_path}")
 
-                # Extract module-level documentation from lib.rs or main.rs
-                lib_rs = self.crate_path / "src" / "lib.rs"
-                main_rs = self.crate_path / "src" / "main.rs"
+                # Try to extract from generated docs
+                extracted = self._extract_from_cargo_doc(crate_name)
+                if extracted:
+                    logger.info("Successfully extracted documentation from cargo doc HTML output")
+                    return extracted
 
-                source_file = lib_rs if lib_rs.exists() else (main_rs if main_rs.exists() else None)
-
-                if source_file:
-                    return self._parse_rust_source(source_file)
-                return None
-            else:
-                logger.warning(f"cargo doc failed: {result.stderr}")
-                return None
+            logger.warning("All extraction methods failed")
+            return None
 
         except subprocess.TimeoutExpired:
             logger.error(f"Timeout while building docs for crate at {self.crate_path}")
             return None
         except Exception as e:
             logger.error(f"Error building docs: {e}")
+            return None
+
+    def _try_rustdoc_json(self, crate_name: Optional[str] = None) -> Optional[str]:
+        """Try to generate and parse rustdoc JSON output.
+
+        Args:
+            crate_name: The crate name (optional).
+
+        Returns:
+            Extracted documentation as string, or None if JSON output is not available.
+        """
+        try:
+            # Try using RUSTDOCFLAGS to enable JSON output
+            cmd = [
+                "cargo",
+                "rustdoc",
+                "--lib",
+                "--",
+                "-Z",
+                "unstable-options",
+                "--output-format",
+                "json",
+            ]
+
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=120,
+                cwd=str(self.crate_path),
+            )
+
+            if result.returncode == 0 and self.crate_path:
+                # Look for generated JSON file
+                target_doc = self.crate_path / "target" / "doc"
+
+                # Get the actual crate name from metadata if not provided
+                if not crate_name:
+                    metadata = self.extract_crate_metadata()
+                    if metadata:
+                        crate_name = metadata.get("name", "").replace("-", "_")
+
+                if crate_name:
+                    json_file = target_doc / f"{crate_name}.json"
+                    if json_file.exists():
+                        return self._parse_rustdoc_json(json_file)
+
+            return None
+
+        except (subprocess.TimeoutExpired, Exception) as e:
+            logger.debug(f"Rustdoc JSON generation not available: {e}")
+            return None
+
+    def _parse_rustdoc_json(self, json_file: Path) -> Optional[str]:
+        """Parse rustdoc JSON output to extract documentation.
+
+        Args:
+            json_file: Path to the JSON file.
+
+        Returns:
+            Formatted documentation as string, or None if parsing fails.
+        """
+        try:
+            with open(json_file, encoding="utf-8") as f:
+                data = json.load(f)
+
+            doc_parts = []
+
+            # Extract crate-level documentation
+            if "index" in data and "crate_id" in data["index"]:
+                crate_id = data["index"]["crate_id"]
+                if crate_id in data["index"]["items"]:
+                    crate_item = data["index"]["items"][crate_id]
+                    if "docs" in crate_item and crate_item["docs"]:
+                        doc_parts.append(crate_item["docs"])
+                        doc_parts.append("")
+
+            # Extract items (this would need more comprehensive parsing)
+            # For now, fall back to source parsing
+            return None
+
+        except (json.JSONDecodeError, Exception) as e:
+            logger.warning(f"Could not parse rustdoc JSON: {e}")
+            return None
+
+    def _extract_from_cargo_doc(self, crate_name: Optional[str] = None) -> Optional[str]:
+        """Extract documentation from cargo doc generated files.
+
+        Args:
+            crate_name: The crate name (optional).
+
+        Returns:
+            Extracted documentation as string, or None if extraction fails.
+        """
+        try:
+            # Get crate name from metadata
+            if not crate_name:
+                metadata = self.extract_crate_metadata()
+                if metadata:
+                    crate_name = metadata.get("name", "").replace("-", "_")
+
+            if not crate_name or not self.crate_path:
+                return None
+
+            # Look for generated documentation in target/doc
+            target_doc = self.crate_path / "target" / "doc" / crate_name
+
+            if not target_doc.exists():
+                logger.debug(f"Documentation directory not found: {target_doc}")
+                return None
+
+            # Check for index.html
+            index_html = target_doc / "index.html"
+
+            if index_html.exists():
+                logger.info(f"Found generated documentation at {index_html}")
+                # Parse HTML to extract text documentation
+                return self._parse_rustdoc_html(index_html, crate_name)
+
+            return None
+
+        except Exception as e:
+            logger.warning(f"Could not extract from cargo doc output: {e}")
+            return None
+
+    def _parse_rustdoc_html(self, html_file: Path, crate_name: str) -> Optional[str]:
+        """Parse rustdoc HTML to extract documentation.
+
+        Args:
+            html_file: Path to the HTML file.
+            crate_name: Name of the crate.
+
+        Returns:
+            Extracted documentation as string, or None if parsing fails.
+        """
+        try:
+            with open(html_file, encoding="utf-8") as f:
+                html_content = f.read()
+
+            doc_parts = []
+
+            # Extract main documentation from HTML
+            # Look for the module documentation section
+            module_doc_match = re.search(
+                r'<div class="docblock"[^>]*>(.*?)</div>', html_content, re.DOTALL
+            )
+
+            if module_doc_match:
+                doc_html = module_doc_match.group(1)
+
+                # Convert HTML to text (basic conversion)
+                # Remove HTML tags
+                doc_text = re.sub(r"<[^>]+>", "", doc_html)
+                # Decode HTML entities
+                doc_text = doc_text.replace("&lt;", "<").replace("&gt;", ">")
+                doc_text = doc_text.replace("&amp;", "&").replace("&quot;", '"')
+                # Clean up whitespace
+                lines = [line.strip() for line in doc_text.split("\n")]
+                doc_text = "\n".join(line for line in lines if line)
+
+                if doc_text:
+                    doc_parts.append("Crate Documentation (from cargo doc)")
+                    doc_parts.append("=" * 40)
+                    doc_parts.append("")
+                    doc_parts.append(doc_text)
+                    doc_parts.append("")
+                    logger.info("Successfully extracted module documentation from HTML")
+
+            # Also try to get list of public items
+            # Look for function/struct/enum listings
+            items_match = re.findall(
+                r'<h3[^>]*><a[^>]+class="[^"]*(?:fn|struct|enum)[^"]*"[^>]*>([^<]+)</a>',
+                html_content,
+            )
+
+            if items_match:
+                doc_parts.append("")
+                doc_parts.append("Public Items")
+                doc_parts.append("=" * 20)
+                doc_parts.append("")
+                for item in items_match[:20]:  # Limit to first 20 items
+                    doc_parts.append(f"- {item}")
+                    doc_parts.append("")
+                logger.info(f"Found {len(items_match)} public items in documentation")
+
+            if doc_parts:
+                return "\n".join(doc_parts)
+
+            return None
+
+        except Exception as e:
+            logger.warning(f"Could not parse rustdoc HTML: {e}")
             return None
 
     def _parse_rust_source(self, source_file: Path) -> str:
@@ -137,29 +350,47 @@ class RustDocExtractor:
             Documentation content as string.
         """
         try:
+            logger.info(f"Parsing Rust source file directly: {source_file}")
+
             with open(source_file, encoding="utf-8") as f:
                 content = f.read()
 
             doc_parts = []
 
+            # Add note about extraction method
+            doc_parts.append(".. note::")
+            doc_parts.append("")
+            doc_parts.append("   Documentation extracted from Rust source code via direct parsing.")
+            doc_parts.append(
+                "   This provides well-formatted documentation with proper RST structure."
+            )
+            doc_parts.append("")
+            doc_parts.append("")
+
             # Extract module-level documentation (//! comments)
-            module_docs = re.findall(r"//!\s*(.+)", content)
+            # Use [ \t]* instead of \s* to avoid matching newlines
+            module_docs = re.findall(r"//![ \t]*(.*)$", content, re.MULTILINE)
             if module_docs:
-                doc_parts.append("Module Documentation")
-                doc_parts.append("~" * 20)
+                # Process module docs to convert markdown headers to RST
+                processed_docs = self._process_doc_comments(module_docs)
+                # Filter out leading empty lines
+                while processed_docs and not processed_docs[0].strip():
+                    processed_docs.pop(0)
+                doc_parts.extend(processed_docs)
                 doc_parts.append("")
-                doc_parts.extend(module_docs)
                 doc_parts.append("")
 
             # Extract public items with their documentation
             items = self._extract_public_items(content)
             if items:
-                doc_parts.append("")
-                doc_parts.append("Public API")
-                doc_parts.append("~" * 10)
+                # Add API reference header at lower level (---) to reduce ToC clutter
+                doc_parts.append("API Reference")
+                doc_parts.append("-" * 13)
                 doc_parts.append("")
                 doc_parts.extend(items)
 
+            item_count = len(items) if items else 0
+            logger.info(f"Successfully parsed {item_count} public items from source")
             return "\n".join(doc_parts)
 
         except Exception as e:
@@ -175,7 +406,13 @@ class RustDocExtractor:
         Returns:
             List of formatted documentation strings.
         """
-        result = []
+        # Categorize items by type
+        functions = []
+        structs = []
+        enums = []
+        traits = []
+        others = []
+
         lines = content.split("\n")
         i = 0
 
@@ -192,7 +429,9 @@ class RustDocExtractor:
                 ):
                     doc_line = lines[i].strip()
                     if doc_line.startswith("///") or doc_line.startswith("/**"):
-                        doc_lines.append(doc_line[3:].strip())
+                        # Remove leading /// and clean up
+                        cleaned = doc_line[3:].strip()
+                        doc_lines.append(cleaned)
                     i += 1
 
                 # Now look for the item definition (pub fn, pub struct, pub enum, pub trait)
@@ -217,21 +456,164 @@ class RustDocExtractor:
                         # Clean up signature
                         signature = signature.split("{")[0].split("where")[0].strip()
 
-                        # Format the documentation
-                        result.append("")
-                        result.append(".. code-block:: rust")
-                        result.append("")
-                        result.append(f"   {signature}")
-                        result.append("")
+                        # Process doc lines to convert markdown to RST
+                        processed_docs = self._process_doc_comments(doc_lines)
 
-                        if doc_lines:
-                            for doc_line in doc_lines:
-                                if doc_line:
-                                    result.append(doc_line)
-                        result.append("")
+                        # Format the item
+                        item_doc = []
+                        item_doc.append("")
+                        item_doc.append(".. code-block:: rust")
+                        item_doc.append("")
+                        item_doc.append(f"   {signature}")
+                        item_doc.append("")
+                        item_doc.extend(processed_docs)
+                        item_doc.append("")
+
+                        # Categorize by type
+                        if "pub fn " in signature or "pub async fn " in signature:
+                            functions.append(item_doc)
+                        elif "pub struct " in signature:
+                            structs.append(item_doc)
+                        elif "pub enum " in signature:
+                            enums.append(item_doc)
+                        elif "pub trait " in signature:
+                            traits.append(item_doc)
+                        else:
+                            others.append(item_doc)
+
                         continue
 
             i += 1
+
+        # Assemble the results with section headers
+        result = []
+
+        if structs:
+            result.append("Structs")
+            result.append("~~~~~~~")
+            result.append("")
+            for struct_doc in structs:
+                result.extend(struct_doc)
+
+        if enums:
+            result.append("Enumerations")
+            result.append("~~~~~~~~~~~~")
+            result.append("")
+            for enum_doc in enums:
+                result.extend(enum_doc)
+
+        if functions:
+            result.append("Functions")
+            result.append("~~~~~~~~~")
+            result.append("")
+            for func_doc in functions:
+                result.extend(func_doc)
+
+        if traits:
+            result.append("Traits")
+            result.append("~~~~~~")
+            result.append("")
+            for trait_doc in traits:
+                result.extend(trait_doc)
+
+        if others:
+            result.append("Other Items")
+            result.append("~~~~~~~~~~~")
+            result.append("")
+            for other_doc in others:
+                result.extend(other_doc)
+
+        return result
+
+    def _process_doc_comments(self, doc_lines: List[str]) -> List[str]:
+        """Process Rust doc comments and convert markdown to RST.
+
+        Args:
+            doc_lines: List of documentation comment lines.
+
+        Returns:
+            Processed lines with markdown converted to RST.
+        """
+        result = []
+        in_code_block = False
+
+        # Rustdoc standard section headers that should be bold, not headers
+        rustdoc_sections = {
+            "Arguments",
+            "Parameters",
+            "Returns",
+            "Return",
+            "Return Value",
+            "Errors",
+            "Error",
+            "Panics",
+            "Panic",
+            "Safety",
+            "Example",
+            "Examples",
+            "Note",
+            "Notes",
+            "Warning",
+            "Warnings",
+            "See Also",
+            "See also",
+        }
+
+        for line in doc_lines:
+            # Detect code fences
+            if line.strip().startswith("```"):
+                if in_code_block:
+                    # End code block
+                    result.append("")
+                    in_code_block = False
+                else:
+                    # Start code block
+                    lang = line.strip()[3:].strip() or "rust"
+                    result.append("")
+                    result.append(f".. code-block:: {lang}")
+                    result.append("")
+                    in_code_block = True
+                continue
+
+            if in_code_block:
+                # Indent code block content
+                result.append(f"   {line}")
+            else:
+                # Convert markdown headers to RST
+                # Check for rustdoc standard sections first
+                if line.startswith("# "):
+                    title = line[2:].strip()
+
+                    # If this is a standard rustdoc section, make it bold instead of a header
+                    if title in rustdoc_sections:
+                        result.append("")
+                        result.append(f"**{title}:**")
+                        result.append("")
+                    else:
+                        # Module-level headers -> use ===
+                        result.append("")
+                        result.append(title)
+                        result.append("=" * len(title))
+                        result.append("")
+                elif line.startswith("## "):
+                    # Module subsections -> use ---
+                    title = line[3:].strip()
+                    result.append("")
+                    result.append(title)
+                    result.append("-" * len(title))
+                    result.append("")
+                elif line.startswith("### "):
+                    # Minor subsections -> use ~~~
+                    title = line[4:].strip()
+                    result.append("")
+                    result.append(title)
+                    result.append("~" * len(title))
+                    result.append("")
+                elif line.strip().startswith("- ") or line.strip().startswith("* "):
+                    # Keep list items as-is
+                    result.append(line)
+                else:
+                    result.append(line)
 
         return result
 

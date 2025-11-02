@@ -229,3 +229,7 @@ docs/_static/*.bmp
 docs/_static/*.tiff
 docs/_static/*.psd
 docs/_static/*.ai
+
+# Rust Python bindings
+**/target/
+**/Cargo.lock
