@@ -457,3 +457,39 @@ public class Arrays {
 """
         result = extractor.parse_java_source(java_code)
         assert "String[] items" in result
+
+    def test_parse_java_source_edge_case_end_of_file_after_javadoc(self):
+        """Test parse_java_source when javadoc is at end of file without declaration."""
+        extractor = JavaDocExtractor()
+        # This covers line 107 - break when reaching end of lines
+        java_code = """
+/**
+ * Documentation at end of file.
+ */
+"""
+        result = extractor.parse_java_source(java_code)
+        # Should handle gracefully without crashing
+        assert result is not None
+
+    def test_convert_javadoc_with_skip_tags(self):
+        """Test _convert_javadoc_to_rst with tags that should be skipped."""
+        extractor = JavaDocExtractor()
+        # This covers line 226 - continue for @version, @since, @see, @deprecated tags
+        javadoc_lines = [
+            "Class description.",
+            "@version 1.0",
+            "@since 2020",
+            "@see OtherClass",
+            "@deprecated Use NewClass instead",
+            "@param name The name parameter",
+        ]
+        result = extractor._convert_javadoc_to_rst(javadoc_lines)
+        result_str = "\n".join(result)
+        # Should have description and param but skip version/since/see/deprecated tags
+        assert "Class description" in result_str
+        assert "name" in result_str or "Parameters" in result_str
+        # These tags should be skipped (line 226)
+        assert "@version" not in result_str
+        assert "@since" not in result_str
+        assert "@see" not in result_str
+        assert "@deprecated" not in result_str

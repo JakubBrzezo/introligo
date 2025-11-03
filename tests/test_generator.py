@@ -1454,3 +1454,864 @@ modules:
         assert "Good" in content
         # Should have logged warning
         assert any("missing.md" in record.message for record in caplog.records)
+
+
+class TestIntroligoGeneratorDiagramInclusion:
+    """Test diagram inclusion methods."""
+
+    def test_include_plantuml_file(self, temp_dir: Path):
+        """Test including PlantUML diagram file."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        # Create a PlantUML file
+        puml_file = temp_dir / "diagram.puml"
+        puml_file.write_text("@startuml\nAlice -> Bob: Hello\n@enduml", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_plantuml_file("diagram.puml", "Sequence Diagram")
+
+        assert ".. uml::" in result or ".. code-block:: plantuml" in result
+        assert "Alice -> Bob: Hello" in result
+        assert "Sequence Diagram" in result
+
+    def test_include_mermaid_file(self, temp_dir: Path):
+        """Test including Mermaid diagram file."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        # Create a Mermaid file
+        mmd_file = temp_dir / "diagram.mmd"
+        mmd_file.write_text("graph TD\nA-->B", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_mermaid_file("diagram.mmd", "Flow Chart")
+
+        assert ".. mermaid::" in result or ".. code-block:: mermaid" in result
+        assert "graph TD" in result
+        assert "Flow Chart" in result
+
+    def test_include_graphviz_file(self, temp_dir: Path):
+        """Test including Graphviz diagram file."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        # Create a Graphviz file
+        dot_file = temp_dir / "diagram.dot"
+        dot_file.write_text("digraph G {\n  A -> B;\n}", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_graphviz_file("diagram.dot", "Graph")
+
+        assert ".. graphviz::" in result
+        assert "digraph G" in result
+        assert "Graph" in result
+
+    def test_include_svg_file(self, temp_dir: Path):
+        """Test including SVG image file."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        # Create an SVG file
+        svg_file = temp_dir / "image.svg"
+        svg_file.write_text("<svg></svg>", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_svg_file("image.svg", "Architecture", "System diagram")
+
+        assert ".. image:: image.svg" in result
+        assert "Architecture" in result
+        assert ":alt: System diagram" in result
+
+    def test_include_plantuml_file_not_found(self, temp_dir: Path):
+        """Test including non-existent PlantUML file raises error."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+
+        with pytest.raises(IntroligoError, match="PlantUML file not found"):
+            generator.include_plantuml_file("nonexistent.puml")
+
+    def test_include_mermaid_file_not_found(self, temp_dir: Path):
+        """Test including non-existent Mermaid file raises error."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+
+        with pytest.raises(IntroligoError, match="Mermaid file not found"):
+            generator.include_mermaid_file("nonexistent.mmd")
+
+    def test_include_graphviz_file_not_found(self, temp_dir: Path):
+        """Test including non-existent Graphviz file raises error."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+
+        with pytest.raises(IntroligoError, match="Graphviz file not found"):
+            generator.include_graphviz_file("nonexistent.dot")
+
+    def test_include_svg_file_not_found(self, temp_dir: Path):
+        """Test including non-existent SVG file raises error."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text(
+            """
+pages:
+  - title: Test
+    content: test
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+
+        with pytest.raises(IntroligoError, match="SVG file not found"):
+            generator.include_svg_file("nonexistent.svg")
+
+
+class TestIntroligoGeneratorFileInclusionPaths:
+    """Test file inclusion through include_file method with different diagram types."""
+
+    def test_include_file_with_plantuml_extension(self, temp_dir: Path):
+        """Test include_file correctly routes .puml files."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text("pages:\n  - title: Test\n    content: test", encoding="utf-8")
+
+        puml_file = temp_dir / "diagram.puml"
+        puml_file.write_text("@startuml\nA -> B\n@enduml", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_file("diagram.puml")
+
+        # Should route to plantuml handler (line 1023)
+        assert "@startuml" in result or "startuml" in result.lower()
+
+    def test_include_file_with_mermaid_extension(self, temp_dir: Path):
+        """Test include_file correctly routes .mmd files."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text("pages:\n  - title: Test\n    content: test", encoding="utf-8")
+
+        mmd_file = temp_dir / "diagram.mmd"
+        mmd_file.write_text("graph TD\nA-->B", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_file("diagram.mmd")
+
+        # Should route to mermaid handler (line 1025)
+        assert "graph TD" in result or "mermaid" in result.lower()
+
+    def test_include_file_with_graphviz_extension(self, temp_dir: Path):
+        """Test include_file correctly routes .dot files."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text("pages:\n  - title: Test\n    content: test", encoding="utf-8")
+
+        dot_file = temp_dir / "diagram.dot"
+        dot_file.write_text("digraph G {\n  A -> B;\n}", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_file("diagram.dot")
+
+        # Should route to graphviz handler (line 1027)
+        assert "digraph G" in result
+
+    def test_include_file_with_svg_extension(self, temp_dir: Path):
+        """Test include_file correctly routes .svg files."""
+        config_file = temp_dir / "config.yaml"
+        config_file.write_text("pages:\n  - title: Test\n    content: test", encoding="utf-8")
+
+        svg_file = temp_dir / "image.svg"
+        svg_file.write_text("<svg></svg>", encoding="utf-8")
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        result = generator.include_file("image.svg")
+
+        # Should route to svg handler (line 1029)
+        assert ".. image:: image.svg" in result
+
+
+class TestIntroligoGeneratorDiagramIncludesConfig:
+    """Test diagram_includes configuration feature."""
+
+    def test_diagram_includes_with_dict_plantuml(self, temp_dir: Path):
+        """Test diagram_includes with dict specification for PlantUML."""
+        config_file = temp_dir / "config.yaml"
+
+        # Create diagram file
+        puml_file = temp_dir / "seq.puml"
+        puml_file.write_text("@startuml\nAlice -> Bob\n@enduml", encoding="utf-8")
+
+        # Config with diagram_includes
+        config_file.write_text(
+            """
+modules:
+  test_module:
+    title: Test Page
+    content: Test content
+    diagram_includes:
+      - path: seq.puml
+        title: Sequence Diagram
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should include the diagram (lines 1167-1186)
+        assert "Alice -> Bob" in content or "startuml" in content.lower()
+
+    def test_diagram_includes_with_string_path(self, temp_dir: Path):
+        """Test diagram_includes with simple string path."""
+        config_file = temp_dir / "config.yaml"
+
+        # Create markdown file
+        md_file = temp_dir / "test.md"
+        md_file.write_text("# Test\nContent here", encoding="utf-8")
+
+        # Config with diagram_includes as string
+        config_file.write_text(
+            """
+modules:
+  test_module:
+    title: Test Page
+    content: Test content
+    diagram_includes: test.md
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should include the file (lines 1187-1190)
+        assert "Content here" in content
+
+    def test_diagram_includes_with_svg_and_alt_text(self, temp_dir: Path):
+        """Test diagram_includes with SVG file including alt_text."""
+        config_file = temp_dir / "config.yaml"
+
+        # Create SVG file
+        svg_file = temp_dir / "arch.svg"
+        svg_file.write_text("<svg></svg>", encoding="utf-8")
+
+        # Config with diagram_includes
+        config_file.write_text(
+            """
+modules:
+  test_module:
+    title: Test Page
+    content: Test content
+    diagram_includes:
+      - path: arch.svg
+        title: Architecture
+        alt_text: System architecture diagram
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should include SVG with alt text (lines 1180-1182)
+        assert ".. image:: arch.svg" in content
+        assert ":alt: System architecture diagram" in content
+
+
+class TestIntroligoGeneratorJavaExtraction:
+    """Test Java documentation extraction feature."""
+
+    def test_java_extraction_with_manual_content(self, temp_dir: Path):
+        """Test Java extraction using manually provided content."""
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Module
+    content: Some initial content
+    language: java
+    javadoc_manual_content: |
+      Manual Java documentation content.
+
+      .. code-block:: java
+
+         public class Calculator {
+             public int add(int a, int b) {
+                 return a + b;
+             }
+         }
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should use manual content (line 1258) - rendered in the javadoc_extracted_content section
+        assert "Manual Java documentation content" in content or "Calculator Module" in content
+
+    def test_java_extraction_with_package(self, temp_dir: Path, monkeypatch):
+        """Test Java extraction with single package."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        # Create Java source directory structure
+        java_src = temp_dir / "com" / "example"
+        java_src.mkdir(parents=True)
+        java_file = java_src / "Calculator.java"
+        java_file.write_text("public class Calculator {}", encoding="utf-8")
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Module
+    language: java
+    java_package: com.example
+    java_source_path: .
+""",
+            encoding="utf-8",
+        )
+
+        # Mock JavaDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_package.return_value = (
+            True,
+            "Extracted Java documentation from package.",
+        )
+
+        def mock_init(self, source_path=None):
+            return None
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "JavaDocExtractor", lambda source_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should extract from package (lines 1285-1289)
+        assert "Extracted Java documentation from package" in content
+
+    def test_java_extraction_with_multiple_packages(self, temp_dir: Path, monkeypatch):
+        """Test Java extraction with multiple packages."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Module
+    language: java
+    java_packages:
+      - com.example.math
+      - com.example.utils
+    java_source_path: .
+""",
+            encoding="utf-8",
+        )
+
+        # Mock JavaDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_package.side_effect = [
+            (True, "Math package documentation."),
+            (True, "Utils package documentation."),
+        ]
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "JavaDocExtractor", lambda source_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should extract from multiple packages (lines 1274-1284)
+        assert "Math package documentation" in content
+        assert "Utils package documentation" in content
+
+    def test_java_extraction_with_source_files(self, temp_dir: Path, monkeypatch):
+        """Test Java extraction with specific source files."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        # Create Java source files
+        java_file1 = temp_dir / "Calculator.java"
+        java_file1.write_text("public class Calculator {}", encoding="utf-8")
+        java_file2 = temp_dir / "MathUtils.java"
+        java_file2.write_text("public class MathUtils {}", encoding="utf-8")
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Module
+    language: java
+    java_source_files:
+      - Calculator.java
+      - MathUtils.java
+    java_source_path: .
+""",
+            encoding="utf-8",
+        )
+
+        # Mock JavaDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_multiple_files.return_value = [
+            ("Calculator.java", True, "Calculator class documentation."),
+            ("MathUtils.java", True, "MathUtils class documentation."),
+        ]
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "JavaDocExtractor", lambda source_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should extract from source files (lines 1290-1307)
+        assert "Calculator.java" in content
+        assert "MathUtils.java" in content
+        assert "Calculator class documentation" in content
+        assert "MathUtils class documentation" in content
+
+    def test_java_extraction_with_relative_source_path(self, temp_dir: Path, monkeypatch):
+        """Test Java extraction with relative source path."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        # Create subdirectory for Java sources
+        src_dir = temp_dir / "src"
+        src_dir.mkdir()
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Module
+    language: java
+    java_package: com.example
+    java_source_path: src
+""",
+            encoding="utf-8",
+        )
+
+        # Mock JavaDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_package.return_value = (True, "Java docs from src directory.")
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "JavaDocExtractor", lambda source_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should handle relative path (lines 1263-1267)
+        assert "Java docs from src directory" in content
+
+    def test_java_extraction_without_source_path(self, temp_dir: Path, monkeypatch):
+        """Test Java extraction defaults to config file parent when no source_path."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Module
+    language: java
+    java_package: com.example
+""",
+            encoding="utf-8",
+        )
+
+        # Mock JavaDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_package.return_value = (True, "Java docs from default location.")
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "JavaDocExtractor", lambda source_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should use config file's parent directory (lines 1268-1270)
+        assert "Java docs from default location" in content
+
+
+class TestIntroligoGeneratorRustExtraction:
+    """Test Rust documentation extraction feature."""
+
+    def test_rust_extraction_with_manual_content(self, temp_dir: Path):
+        """Test Rust extraction using manually provided content."""
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Crate
+    content: Some initial content
+    language: rust
+    rustdoc_manual_content: |
+      Manual Rust documentation content.
+
+      .. code-block:: rust
+
+         pub fn add(a: i32, b: i32) -> i32 {
+             a + b
+         }
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should use manual content (line 1322) - rendered in the rustdoc_extracted_content section
+        assert "Manual Rust documentation content" in content or "Calculator Crate" in content
+
+    def test_rust_extraction_with_crate(self, temp_dir: Path, monkeypatch):
+        """Test Rust extraction with crate name."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        # Create Cargo.toml
+        cargo_toml = temp_dir / "Cargo.toml"
+        cargo_toml.write_text('[package]\nname = "calculator"\nversion = "0.1.0"', encoding="utf-8")
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Crate
+    language: rust
+    rustdoc_crate: calculator
+    rustdoc_path: .
+""",
+            encoding="utf-8",
+        )
+
+        # Mock RustDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_and_convert.return_value = (
+            True,
+            "Extracted Rust documentation from crate.",
+        )
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "RustDocExtractor", lambda crate_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should extract from crate (line 1336)
+        assert "Extracted Rust documentation from crate" in content
+
+    def test_rust_extraction_with_relative_path(self, temp_dir: Path, monkeypatch):
+        """Test Rust extraction with relative rustdoc_path."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        # Create subdirectory for Rust crate
+        crate_dir = temp_dir / "rust_crate"
+        crate_dir.mkdir()
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Crate
+    language: rust
+    rustdoc_crate: calculator
+    rustdoc_path: rust_crate
+""",
+            encoding="utf-8",
+        )
+
+        # Mock RustDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_and_convert.return_value = (True, "Rust docs from subdirectory.")
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "RustDocExtractor", lambda crate_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should handle relative path (lines 1327-1330)
+        assert "Rust docs from subdirectory" in content
+
+    def test_rust_extraction_without_rustdoc_path(self, temp_dir: Path, monkeypatch):
+        """Test Rust extraction defaults to config file parent when no rustdoc_path."""
+        from unittest.mock import MagicMock
+
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  calculator:
+    title: Calculator Crate
+    language: rust
+    rustdoc_crate: calculator
+""",
+            encoding="utf-8",
+        )
+
+        # Mock RustDocExtractor
+        mock_extractor = MagicMock()
+        mock_extractor.extract_and_convert.return_value = (True, "Rust docs from default location.")
+
+        from introligo import generator as gen_module
+
+        monkeypatch.setattr(gen_module, "RustDocExtractor", lambda crate_path: mock_extractor)
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should use config file's parent directory (lines 1331-1333)
+        assert "Rust docs from default location" in content
+
+
+class TestIntroligoGeneratorCustomSectionsProcessing:
+    """Test custom_sections RST directive processing."""
+
+    def test_custom_sections_with_uml_directive(self, temp_dir: Path):
+        """Test custom_sections processes uml directives when PlantUML not available."""
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  example:
+    title: Example Module
+    content: Example content
+    custom_sections:
+      - title: Architecture
+        content: |
+          .. uml::
+
+             @startuml
+             A -> B
+             @enduml
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        # Simulate PlantUML not being available
+        generator.has_plantuml_extension = False
+
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should convert uml directive to code-block (lines 1343-1352)
+        assert ".. code-block:: plantuml" in content
+        assert "@startuml" in content
+
+    def test_custom_sections_with_mermaid_directive(self, temp_dir: Path):
+        """Test custom_sections processes mermaid directives when Mermaid not available."""
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  example:
+    title: Example Module
+    content: Example content
+    custom_sections:
+      - title: Flowchart
+        content: |
+          .. mermaid::
+
+             graph TD
+             A-->B
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        # Simulate Mermaid not being available
+        generator.has_mermaid_extension = False
+
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should convert mermaid directive to code-block (lines 1343-1352)
+        assert ".. code-block:: mermaid" in content
+        assert "graph TD" in content
+
+    def test_custom_sections_without_processing(self, temp_dir: Path):
+        """Test custom_sections when extensions are available (no processing needed)."""
+        config_file = temp_dir / "config.yaml"
+
+        config_file.write_text(
+            """
+modules:
+  example:
+    title: Example Module
+    content: Example content
+    custom_sections:
+      - title: Dict Section
+        content: |
+          .. uml::
+
+             @startuml
+             A -> B
+             @enduml
+""",
+            encoding="utf-8",
+        )
+
+        generator = IntroligoGenerator(config_file, temp_dir / "output")
+        # Both extensions available - no processing needed
+        generator.has_plantuml_extension = True
+        generator.has_mermaid_extension = True
+
+        generator.load_config()
+        generator.build_page_tree()
+        template = generator.load_template()
+
+        node = generator.page_tree[0]
+        content = generator.generate_rst_content(node, template)
+
+        # Should keep original directive when extensions available (lines 1343-1352)
+        assert ".. uml::" in content
+        assert "@startuml" in content

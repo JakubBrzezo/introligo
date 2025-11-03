@@ -370,3 +370,28 @@ Copyright (c) 2025"""
         assert ":doc:" in rst
         # Should preserve parent directory navigation
         assert "../.." in rst or "docs/file" in rst
+
+    def test_doc_link_where_text_equals_path(self):
+        """Test doc link conversion when link text equals the document path."""
+        # This covers line 94 in markdown_converter.py
+        markdown = "[setup](setup.md)"
+        rst = convert_markdown_links_to_rst(markdown)
+        # When text equals path, should use short form
+        assert ":doc:`setup`" in rst
+
+    def test_markdown_to_rst_with_demote_headers_true(self):
+        """Test markdown conversion with demote_headers=True."""
+        # This covers line 369 in markdown_converter.py
+        markdown = "# Main Title\n\nContent here."
+        rst = convert_markdown_to_rst(markdown, demote_headers=True)
+        # With demote_headers=True, first H1 should use dashes instead of equals
+        assert "Main Title" in rst
+        assert "-" * len("Main Title") in rst
+
+    def test_markdown_to_rst_with_demote_headers_false(self):
+        """Test markdown conversion with demote_headers=False."""
+        markdown = "# Main Title\n\nContent here."
+        rst = convert_markdown_to_rst(markdown, demote_headers=False)
+        # With demote_headers=False, first H1 should use equals
+        assert "Main Title" in rst
+        assert "=" * len("Main Title") in rst

@@ -288,3 +288,59 @@ pub fn my_function() {}
         assert "My Crate" in result
         assert "module documentation" in result
         assert "pub fn my_function" in result
+
+    @patch("subprocess.run")
+    def test_extract_crate_doc_fallback_to_source_parsing(self, mock_run):
+        """Test extract_crate_doc falls back to source parsing when rustdoc fails."""
+        # This covers line 99 - calling _parse_rust_source as fallback
+        mock_run.return_value = MagicMock(returncode=1)  # rustdoc fails
+
+        crate_path = Path("/tmp/test_crate")
+        extractor = RustDocExtractor(crate_path=crate_path)
+
+        rust_content = """
+//! Test crate documentation
+pub fn test() {}
+"""
+
+        with patch.object(Path, "exists", return_value=True), patch(
+            "builtins.open", mock_open(read_data=rust_content)
+        ):
+            result = extractor.extract_crate_doc("test_crate")
+
+        # Should have content from source parsing (line 99)
+        assert result is not None
+        assert "Test crate documentation" in result
+
+    def test_extract_from_cargo_doc_with_metadata(self):
+        """Test _extract_from_cargo_doc extracts crate name from metadata."""
+        # This covers lines 189 - extracting crate name from metadata
+        crate_path = Path("/tmp/test_crate")
+        extractor = RustDocExtractor(crate_path=crate_path)
+
+        html_content = '<div class="docblock"><p>Test documentation</p></div>'
+
+        with patch.object(Path, "exists", return_value=True), patch(
+            "builtins.open", mock_open(read_data=html_content)
+        ), patch.object(extractor, "extract_crate_metadata", return_value={"name": "my_crate"}):
+            result = extractor._extract_from_cargo_doc(None)
+
+        # Should successfully extract from cargo doc (using metadata on line 189)
+        assert result is not None
+
+    @patch("subprocess.run")
+    def test_extract_from_cargo_doc_returns_none_on_failure(self, mock_run):
+        """Test _extract_from_cargo_doc returns None when it fails."""
+        # This covers line 268 - return None case
+        mock_run.return_value = MagicMock(returncode=1)
+
+        crate_path = Path("/tmp/test_crate")
+        extractor = RustDocExtractor(crate_path=crate_path)
+
+        with patch.object(Path, "exists", return_value=False), patch.object(
+            extractor, "extract_crate_metadata", return_value=None
+        ):
+            result = extractor._extract_from_cargo_doc(None)
+
+        # Should return None when failing (line 268)
+        assert result is None
