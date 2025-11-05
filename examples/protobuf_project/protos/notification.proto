@@ -1,0 +1,493 @@
+// Notification service protocol definitions
+// This file defines the NotificationService and related message types.
+//
+// This example demonstrates:
+// - Server-side streaming RPC (watch notifications)
+// - Client-side streaming RPC (batch send)
+// - Bidirectional streaming RPC (real-time chat)
+// - Complex event handling patterns
+syntax = "proto3";
+
+package notification.v1;
+
+// Notification represents a notification message to a user.
+//
+// Supports multiple notification types and delivery channels.
+// See also: @Ref NotificationType, @Ref NotificationChannel
+message Notification {
+  // Unique identifier for the notification.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  // @Example: f1e2d3c4-b5a6-4789-a012-b3c4d5e6f789
+  string id = 1;
+
+  // ID of the user receiving the notification.
+  // References user.v1.User
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string user_id = 2;
+
+  // Type of notification.
+  // See @Ref NotificationType enum.
+  NotificationType type = 3;
+
+  // Notification title.
+  // @MinLength: 1
+  // @MaxLength: 200
+  // @Example: Your order has been shipped!
+  string title = 4;
+
+  // Notification message body.
+  // @MinLength: 1
+  // @MaxLength: 1000
+  // @Example: Order #12345 is on its way and will arrive in 2-3 business days.
+  string message = 5;
+
+  // Additional data as key-value pairs.
+  // Used for action buttons, deep links, etc.
+  // @Example: {"order_id": "12345", "action": "view_order"}
+  map<string, string> data = 6;
+
+  // Notification priority level.
+  // See @Ref NotificationPriority enum.
+  NotificationPriority priority = 7;
+
+  // Delivery channels for this notification.
+  // @MinItems: 1
+  repeated NotificationChannel channels = 8;
+
+  // Whether the notification has been read.
+  bool is_read = 9;
+
+  // Whether the notification has been delivered.
+  bool is_delivered = 10;
+
+  // URL of an image to display with the notification.
+  // @Example: https://example.com/images/product.jpg
+  string image_url = 11;
+
+  // Deep link URL for the notification action.
+  // @Example: myapp://orders/12345
+  string action_url = 12;
+
+  // Timestamp when notification was created (Unix timestamp in seconds).
+  // @Minimum: 0
+  // @Example: 1704067200
+  int64 created_at = 13;
+
+  // Timestamp when notification was read (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 read_at = 14;
+
+  // Timestamp when notification was delivered (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 delivered_at = 15;
+
+  // Timestamp when notification expires (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 expires_at = 16;
+}
+
+// NotificationType defines the types of notifications.
+//
+// Used to categorize notifications and apply appropriate handling.
+// See also: @Ref Notification
+enum NotificationType {
+  // Unknown or unspecified type.
+  NOTIFICATION_TYPE_UNSPECIFIED = 0;
+
+  // Order-related notifications.
+  NOTIFICATION_TYPE_ORDER = 1;
+
+  // Payment-related notifications.
+  NOTIFICATION_TYPE_PAYMENT = 2;
+
+  // Shipping and delivery notifications.
+  NOTIFICATION_TYPE_SHIPPING = 3;
+
+  // Promotional and marketing notifications.
+  NOTIFICATION_TYPE_PROMOTION = 4;
+
+  // System and account notifications.
+  NOTIFICATION_TYPE_SYSTEM = 5;
+
+  // Security alerts.
+  NOTIFICATION_TYPE_SECURITY = 6;
+
+  // Social notifications (likes, comments, etc.).
+  NOTIFICATION_TYPE_SOCIAL = 7;
+}
+
+// NotificationChannel defines where a notification should be delivered.
+//
+// See also: @Ref Notification
+enum NotificationChannel {
+  // Unknown or unspecified channel.
+  NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+
+  // Push notification to mobile/web app.
+  NOTIFICATION_CHANNEL_PUSH = 1;
+
+  // Email notification.
+  NOTIFICATION_CHANNEL_EMAIL = 2;
+
+  // SMS notification.
+  NOTIFICATION_CHANNEL_SMS = 3;
+
+  // In-app notification bell/inbox.
+  NOTIFICATION_CHANNEL_IN_APP = 4;
+
+  // Webhook to external service.
+  NOTIFICATION_CHANNEL_WEBHOOK = 5;
+}
+
+// NotificationPriority defines the priority level of notifications.
+//
+// Higher priority notifications may bypass quiet hours or be delivered immediately.
+// See also: @Ref Notification
+enum NotificationPriority {
+  // Normal priority (default).
+  NOTIFICATION_PRIORITY_NORMAL = 0;
+
+  // Low priority (can be batched or delayed).
+  NOTIFICATION_PRIORITY_LOW = 1;
+
+  // High priority (deliver immediately).
+  NOTIFICATION_PRIORITY_HIGH = 2;
+
+  // Urgent priority (bypass do-not-disturb settings).
+  NOTIFICATION_PRIORITY_URGENT = 3;
+}
+
+// SendNotificationRequest is used to send a notification to a user.
+//
+// See also: @Ref SendNotificationResponse, @Ref NotificationService SendNotification
+message SendNotificationRequest {
+  // User ID to send notification to.
+  // References user.v1.User
+  string user_id = 1;
+
+  // Notification type.
+  NotificationType type = 2;
+
+  // Notification title.
+  // @MinLength: 1
+  // @MaxLength: 200
+  string title = 3;
+
+  // Notification message.
+  // @MinLength: 1
+  // @MaxLength: 1000
+  string message = 4;
+
+  // Additional data.
+  map<string, string> data = 5;
+
+  // Priority level.
+  NotificationPriority priority = 6;
+
+  // Delivery channels.
+  // @MinItems: 1
+  repeated NotificationChannel channels = 7;
+
+  // Image URL.
+  string image_url = 8;
+
+  // Action URL.
+  string action_url = 9;
+
+  // Expiration timestamp (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 expires_at = 10;
+}
+
+// SendNotificationResponse contains the sent notification.
+//
+// See also: @Ref SendNotificationRequest
+message SendNotificationResponse {
+  // The sent notification.
+  Notification notification = 1;
+
+  // Delivery status per channel.
+  map<string, bool> delivery_status = 2;
+}
+
+// GetNotificationRequest is used to retrieve a notification by ID.
+//
+// See also: @Ref GetNotificationResponse, @Ref NotificationService GetNotification
+message GetNotificationRequest {
+  // Notification ID to retrieve.
+  string id = 1;
+}
+
+// GetNotificationResponse contains the requested notification.
+//
+// See also: @Ref GetNotificationRequest
+message GetNotificationResponse {
+  // The requested notification.
+  Notification notification = 1;
+}
+
+// ListNotificationsRequest is used to list notifications for a user.
+//
+// See also: @Ref ListNotificationsResponse, @Ref NotificationService ListNotifications
+message ListNotificationsRequest {
+  // User ID to list notifications for.
+  string user_id = 1;
+
+  // Filter by notification type.
+  NotificationType type = 2;
+
+  // Filter by read status.
+  // If not set, returns all notifications.
+  bool is_read = 3;
+
+  // Whether to include expired notifications.
+  // @Default: false
+  bool include_expired = 4;
+
+  // Page number (starting from 1).
+  // @Minimum: 1
+  // @Default: 1
+  int32 page = 5;
+
+  // Number of notifications per page.
+  // @Minimum: 1
+  // @Maximum: 100
+  // @Default: 20
+  int32 page_size = 6;
+}
+
+// ListNotificationsResponse contains a page of notifications.
+//
+// See also: @Ref ListNotificationsRequest
+message ListNotificationsResponse {
+  // List of notifications for the current page.
+  repeated Notification notifications = 1;
+
+  // Total number of notifications matching the filter.
+  // @Minimum: 0
+  int32 total_count = 2;
+
+  // Number of unread notifications.
+  // @Minimum: 0
+  int32 unread_count = 3;
+
+  // Current page number.
+  // @Minimum: 1
+  int32 page = 4;
+
+  // Number of notifications per page.
+  // @Minimum: 1
+  int32 page_size = 5;
+
+  // Total number of pages.
+  // @Minimum: 0
+  int32 total_pages = 6;
+}
+
+// MarkAsReadRequest is used to mark notifications as read.
+//
+// See also: @Ref MarkAsReadResponse, @Ref NotificationService MarkAsRead
+message MarkAsReadRequest {
+  // Notification IDs to mark as read.
+  // @MinItems: 1
+  repeated string notification_ids = 1;
+}
+
+// MarkAsReadResponse confirms notifications were marked as read.
+//
+// See also: @Ref MarkAsReadRequest
+message MarkAsReadResponse {
+  // Number of notifications marked as read.
+  // @Minimum: 0
+  int32 count = 1;
+
+  // IDs of notifications that were marked as read.
+  repeated string notification_ids = 2;
+}
+
+// WatchNotificationsRequest is used to watch for new notifications.
+//
+// Server-side streaming RPC that sends notifications in real-time.
+// See also: @Ref NotificationService WatchNotifications
+message WatchNotificationsRequest {
+  // User ID to watch notifications for.
+  string user_id = 1;
+
+  // Filter by notification types to watch.
+  // If empty, watches all types.
+  repeated NotificationType types = 2;
+
+  // Minimum priority level to watch.
+  // Notifications below this priority are not sent.
+  NotificationPriority min_priority = 3;
+}
+
+// BatchSendRequest is used in client-side streaming to send multiple notifications.
+//
+// Client streams multiple requests, server responds once when done.
+// See also: @Ref BatchSendResponse, @Ref NotificationService BatchSend
+message BatchSendRequest {
+  // Individual notification to send.
+  SendNotificationRequest notification = 1;
+}
+
+// BatchSendResponse confirms batch sending is complete.
+//
+// See also: @Ref BatchSendRequest
+message BatchSendResponse {
+  // Number of notifications successfully sent.
+  // @Minimum: 0
+  int32 sent_count = 1;
+
+  // Number of notifications that failed.
+  // @Minimum: 0
+  int32 failed_count = 2;
+
+  // IDs of successfully sent notifications.
+  repeated string notification_ids = 3;
+
+  // Error messages for failed notifications.
+  repeated string errors = 4;
+}
+
+// ChatMessage represents a message in a real-time chat conversation.
+//
+// Used in bidirectional streaming RPC for real-time chat.
+// See also: @Ref NotificationService Chat
+message ChatMessage {
+  // Unique identifier for the message.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string id = 1;
+
+  // ID of the user sending the message.
+  // References user.v1.User
+  string user_id = 2;
+
+  // Chat room or conversation ID.
+  // @MinLength: 1
+  // @MaxLength: 100
+  string room_id = 3;
+
+  // Message text content.
+  // @MinLength: 1
+  // @MaxLength: 5000
+  string content = 4;
+
+  // Message type.
+  MessageType type = 5;
+
+  // Attachments (URLs).
+  repeated string attachments = 6;
+
+  // ID of the message this is replying to (optional).
+  string reply_to_id = 7;
+
+  // Reactions to the message.
+  map<string, int32> reactions = 8;
+
+  // Timestamp when message was sent (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 timestamp = 9;
+
+  // Whether message has been edited.
+  bool is_edited = 10;
+}
+
+// MessageType defines the type of chat message.
+//
+// See also: @Ref ChatMessage
+enum MessageType {
+  // Regular text message.
+  MESSAGE_TYPE_TEXT = 0;
+
+  // System message (user joined, left, etc.).
+  MESSAGE_TYPE_SYSTEM = 1;
+
+  // Image message.
+  MESSAGE_TYPE_IMAGE = 2;
+
+  // File attachment message.
+  MESSAGE_TYPE_FILE = 3;
+
+  // Video message.
+  MESSAGE_TYPE_VIDEO = 4;
+
+  // Audio/voice message.
+  MESSAGE_TYPE_AUDIO = 5;
+}
+
+// TypingIndicator indicates a user is typing.
+//
+// Used in bidirectional streaming for real-time typing indicators.
+// See also: @Ref NotificationService Chat
+message TypingIndicator {
+  // User ID who is typing.
+  string user_id = 1;
+
+  // Chat room ID.
+  string room_id = 2;
+
+  // Whether user is currently typing.
+  bool is_typing = 3;
+}
+
+// NotificationService provides operations for managing notifications.
+//
+// This service implements:
+// - Unary RPC for simple notification operations
+// - Server-side streaming for real-time notification watching
+// - Client-side streaming for batch sending
+// - Bidirectional streaming for real-time chat
+//
+// See also: @Ref Notification, @Ref ChatMessage
+service NotificationService {
+  // SendNotification sends a single notification to a user.
+  //
+  // Standard unary RPC for sending individual notifications.
+  // Returns NOT_FOUND if user doesn't exist.
+  // See also: @Ref SendNotificationRequest, @Ref SendNotificationResponse
+  rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
+
+  // GetNotification retrieves a notification by its ID.
+  //
+  // Returns NOT_FOUND error if notification doesn't exist.
+  // Returns PERMISSION_DENIED if user doesn't own the notification.
+  // See also: @Ref GetNotificationRequest, @Ref GetNotificationResponse
+  rpc GetNotification(GetNotificationRequest) returns (GetNotificationResponse);
+
+  // ListNotifications returns a paginated list of notifications.
+  //
+  // Supports filtering by type and read status.
+  // See also: @Ref ListNotificationsRequest, @Ref ListNotificationsResponse
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+
+  // MarkAsRead marks one or more notifications as read.
+  //
+  // Updates the is_read flag and read_at timestamp.
+  // See also: @Ref MarkAsReadRequest, @Ref MarkAsReadResponse
+  rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);
+
+  // WatchNotifications streams notifications to a user in real-time.
+  //
+  // Server-side streaming RPC that sends new notifications as they arrive.
+  // Client maintains a long-lived connection to receive updates.
+  // Useful for real-time notification feeds in web/mobile apps.
+  // See also: @Ref WatchNotificationsRequest, @Ref Notification
+  rpc WatchNotifications(WatchNotificationsRequest) returns (stream Notification);
+
+  // BatchSend accepts a stream of notifications and sends them in batch.
+  //
+  // Client-side streaming RPC where client sends multiple notifications
+  // and receives a single response when all are processed.
+  // Useful for bulk notification operations and imports.
+  // See also: @Ref BatchSendRequest, @Ref BatchSendResponse
+  rpc BatchSend(stream BatchSendRequest) returns (BatchSendResponse);
+
+  // Chat enables real-time bidirectional chat messaging.
+  //
+  // Bidirectional streaming RPC where both client and server send messages.
+  // Supports real-time chat, typing indicators, and message delivery.
+  // Each message sent by client is broadcast to other users in the same room.
+  // See also: @Ref ChatMessage, @Ref TypingIndicator
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}

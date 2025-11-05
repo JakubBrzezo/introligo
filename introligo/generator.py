@@ -18,6 +18,8 @@ from .markdown_converter import (
     convert_markdown_to_rst,
 )
 from .page_node import PageNode
+from .protobuf_diagram_generator import generate_proto_diagrams
+from .protodoc_extractor import ProtoDocExtractor
 from .rustdoc_extractor import RustDocExtractor
 from .utils import (
     convert_graphviz_to_rst,
@@ -451,6 +453,44 @@ API Documentation
 
 {% endif %}
 {% endif %}
+{% endif %}
+{% elif language == 'protobuf' %}
+{% if protodoc_extracted_content %}
+{{ protodoc_extracted_content }}
+{% else %}
+.. note::
+
+   Protobuf documentation extraction was not available. This can happen if:
+
+   - protoc is not installed on the system
+   - protoc-gen-doc plugin is not installed
+   - The proto path is not accessible
+   - The proto files have syntax errors
+
+{% if proto_package %}
+   **Package:** ``{{ proto_package }}``
+{% endif %}
+{% if proto_files %}
+   **Proto Files:**
+
+{% for file in proto_files %}
+   * ``{{ file }}``
+{% endfor %}
+{% endif %}
+
+   To generate documentation:
+
+   .. code-block:: bash
+
+      # Install protoc-gen-doc
+      go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
+
+      # Generate documentation
+      protoc --doc_out=html,index.html:docs \\
+          {{ proto_files|join(' ') if proto_files else '*.proto' }}
+
+   Or view the proto files directly in your project at ``{{ proto_path }}``.
+
 {% endif %}
 {% endif %}
 
@@ -1336,6 +1376,100 @@ Related Tools
                 success, content = rust_extractor.extract_and_convert(rustdoc_crate)
                 rustdoc_extracted_content = content
 
+        # Handle Protobuf documentation extraction
+        proto_files = config.get("proto_files", [])
+        proto_package = config.get("proto_package", "")
+        proto_path = config.get("proto_path", "")
+
+        # Extract Protobuf documentation if protobuf language is specified
+        protodoc_extracted_content = ""
+        proto_extractor = None
+
+        # Check if manual documentation is provided
+        manual_protodoc = config.get("protodoc_manual_content")
+
+        if config.get("language") == "protobuf":
+            if manual_protodoc:
+                # Use manually provided documentation
+                protodoc_extracted_content = manual_protodoc
+                logger.info("Using manually provided Protobuf documentation")
+            else:
+                # Try automatic extraction
+                # Determine proto path (relative to config file)
+                if proto_path:
+                    proto_path_obj = Path(proto_path)
+                    if not proto_path_obj.is_absolute():
+                        proto_path_obj = self.config_file.parent / proto_path
+                else:
+                    # Try to use config file's parent directory
+                    proto_path_obj = self.config_file.parent
+
+                proto_extractor = ProtoDocExtractor(proto_path=proto_path_obj)
+                success, content = proto_extractor.extract_and_convert(
+                    proto_files if proto_files else None, proto_package if proto_package else None
+                )
+                protodoc_extracted_content = content
+
+        # Generate automatic diagrams from protobuf if configured
+        # This can work independently of language setting
+        protobuf_diagrams = config.get("protobuf_diagrams", [])
+        if protobuf_diagrams:
+            # Create proto_extractor if not already created (for diagram-only generation)
+            if not proto_extractor and proto_path:
+                proto_path_obj = Path(proto_path)
+                if not proto_path_obj.is_absolute():
+                    proto_path_obj = self.config_file.parent / proto_path
+                proto_extractor = ProtoDocExtractor(proto_path=proto_path_obj)
+
+            if proto_extractor:
+                logger.info(
+                    f"  📊 Generating {len(protobuf_diagrams)} automatic protobuf diagram(s)"
+                )
+                try:
+                    # Parse all proto files to get structure
+                    proto_file_paths = proto_extractor.find_proto_files(proto_files)
+                    parsed_files = []
+                    for proto_file in proto_file_paths:
+                        with open(proto_file, encoding="utf-8") as f:
+                            content = f.read()
+                        parsed = proto_extractor._parse_proto_file(content)
+                        if not proto_package or parsed.get("package") == proto_package:
+                            parsed_files.append(parsed)
+
+                    if parsed_files:
+                        # Generate diagrams
+                        generated = generate_proto_diagrams(
+                            parsed_files,
+                            protobuf_diagrams,
+                            self.output_dir,
+                        )
+
+                        # Add generated diagrams to diagram_includes
+                        for gen_diagram in generated:
+                            diagram_path = gen_diagram["path"]
+                            diagram_title = gen_diagram["title"]
+
+                            # Determine diagram type and include it
+                            suffix = Path(diagram_path).suffix.lower()
+                            try:
+                                if suffix in [".puml", ".plantuml"]:
+                                    content = self.include_plantuml_file(
+                                        diagram_path, diagram_title
+                                    )
+                                elif suffix in [".dot", ".gv"]:
+                                    content = self.include_graphviz_file(
+                                        diagram_path, diagram_title
+                                    )
+                                else:
+                                    content = self.include_file(diagram_path)
+                                diagram_content.append(content)
+                            except Exception as e:
+                                logger.warning(
+                                    f"Failed to include generated diagram {diagram_path}: {e}"
+                                )
+                except Exception as e:
+                    logger.warning(f"Failed to generate protobuf diagrams: {e}")
+
         # Process custom_sections to convert unsupported directives
         custom_sections = config.get("custom_sections", [])
         processed_custom_sections = []
@@ -1374,6 +1508,10 @@ Related Tools
             "rustdoc_crate": rustdoc_crate,
             "rustdoc_path": rustdoc_path,
             "rustdoc_extracted_content": rustdoc_extracted_content,
+            "proto_files": proto_files,
+            "proto_package": proto_package,
+            "proto_path": proto_path,
+            "protodoc_extracted_content": protodoc_extracted_content,
             "description": config.get("description", ""),
             "overview": config.get("overview", ""),
             "features": config.get("features", []),
@@ -1888,6 +2026,25 @@ breathe_default_project = "{project_name}"
                     has_plantuml_global = has_plantuml_global or p
                     has_mermaid_global = has_mermaid_global or m
                     has_graphviz_global = has_graphviz_global or g
+
+                # Check protobuf_diagrams for auto-generated diagrams
+                if "protobuf_diagrams" in module_config:
+                    protobuf_diagrams = module_config["protobuf_diagrams"]
+                    if isinstance(protobuf_diagrams, list):
+                        for diagram_config in protobuf_diagrams:
+                            if isinstance(diagram_config, dict):
+                                diagram_type = diagram_config.get("type", "class")
+                                diagram_format = diagram_config.get("format", "plantuml")
+
+                                # Most diagram types use PlantUML by default
+                                if diagram_type in ["class", "service", "sequence"]:
+                                    has_plantuml_global = True
+                                elif diagram_type == "dependencies":
+                                    # Dependencies can be PlantUML or Graphviz
+                                    if diagram_format == "graphviz":
+                                        has_graphviz_global = True
+                                    else:
+                                        has_plantuml_global = True
 
         # Helper function to check if a package is available
         def is_package_available(package_name: str) -> bool:

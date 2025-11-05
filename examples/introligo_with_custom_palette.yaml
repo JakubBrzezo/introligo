@@ -10,7 +10,7 @@ generate_index: true
 # Sphinx configuration with custom palette
 sphinx:
   project: "Custom Styled Docs"
-  author: "Your Name"
+  author: "WT Tech Jakub Brzezowski"
   copyright_year: "2025"
   release: "1.0.0"
 

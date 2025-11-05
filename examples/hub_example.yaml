@@ -56,7 +56,7 @@ modules:
 # Sphinx configuration (optional)
 sphinx:
   project: "My Project"
-  author: "Your Name"
+  author: "WT Tech Jakub Brzezowski"
   html_theme: "furo"
   palette: "celin"
 

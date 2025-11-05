@@ -1,0 +1,251 @@
+// User service protocol definitions
+// This file defines the User service and related message types.
+//
+// This example demonstrates Introligo's Protocol Buffer documentation support:
+// - AsyncAPI validation keywords (@Pattern, @Min, @Max, @Example, etc.)
+// - Message, enum, and service documentation
+// - Cross-references between types
+//
+// For more information, see:
+// - Introligo Protobuf documentation: docs/composition/markdown/language_support/protobuf_language.md
+// - AsyncAPI specification: https://www.asyncapi.com/
+syntax = "proto3";
+
+package user.v1;
+
+// User represents a user account in the system.
+//
+// This message is the core data structure returned by most UserService methods.
+// See also: @Ref CreateUserRequest, @Ref UpdateUserRequest, @Ref UserRole
+message User {
+  // Unique identifier for the user.
+  // Generated as UUID v4 when the user is created.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  // @Example: 550e8400-e29b-41d4-a716-446655440000
+  string id = 1;
+  // User's email address.
+  // Must be unique across the system.
+  // @Pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+  // @Example: user@example.com
+  string email = 2;
+  // User's display name.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: John Doe
+  string name = 3;
+  // User's role in the system.
+  // See @Ref UserRole enum for available roles.
+  // @Default: USER_ROLE_USER
+  UserRole role = 4;
+  // Timestamp when the user was created (Unix timestamp in seconds)
+  // @Minimum: 0
+  // @Example: 1704067200
+  int64 created_at = 5;
+  // Timestamp when the user was last updated (Unix timestamp in seconds)
+  // @Minimum: 0
+  // @Example: 1704067200
+  int64 updated_at = 6;
+}
+
+// UserRole defines the possible roles for a user.
+//
+// Used in @Ref User role field and @Ref CreateUserRequest role field.
+// Default role for new users is USER_ROLE_USER.
+enum UserRole {
+  // Unknown or unspecified role.
+  // Should not be used in practice; exists for proto3 zero-value.
+  USER_ROLE_UNSPECIFIED = 0;
+  // Regular user with basic permissions.
+  // This is the default role for new users.
+  USER_ROLE_USER = 1;
+  // Administrator with elevated permissions.
+  // Can manage all users and system settings.
+  USER_ROLE_ADMIN = 2;
+  // Moderator with limited elevated permissions.
+  // Can manage user content but not system settings.
+  USER_ROLE_MODERATOR = 3;
+}
+
+// Request to create a new user.
+//
+// Returns a @Ref CreateUserResponse with the newly created @Ref User.
+// The user's ID, created_at, and updated_at fields are automatically generated.
+// See also: @Ref CreateUserResponse, @Ref User, @Ref UserService CreateUser method
+message CreateUserRequest {
+  // Email address for the new user.
+  // Must be unique across the system.
+  // @Pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+  // @Example: newuser@example.com
+  string email = 1;
+  // Display name for the new user.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: Jane Smith
+  string name = 2;
+  // Role to assign to the new user.
+  // If not specified, defaults to USER_ROLE_USER.
+  // See @Ref UserRole enum for available roles.
+  // @Default: USER_ROLE_USER
+  // @Example: USER_ROLE_USER
+  UserRole role = 3;
+}
+
+// Response containing the created user.
+//
+// See also: @Ref CreateUserRequest, @Ref UserService CreateUser method
+message CreateUserResponse {
+  // The newly created user with auto-generated ID and timestamps.
+  User user = 1;
+}
+
+// Request to get a user by ID.
+//
+// See also: @Ref GetUserResponse, @Ref UserService GetUser method
+message GetUserRequest {
+  // The unique identifier of the user to retrieve.
+  // Must be a valid UUID v4 format.
+  // See @Ref User id field for format details.
+  string id = 1;
+}
+
+// Response containing the requested user.
+//
+// See also: @Ref GetUserRequest, @Ref UserService GetUser method
+message GetUserResponse {
+  // The requested user.
+  // Returns NOT_FOUND error if user doesn't exist.
+  User user = 1;
+}
+
+// Request to update an existing user.
+//
+// All fields except ID are optional. Only provided fields will be updated.
+// The updated_at timestamp is automatically updated on successful update.
+// See also: @Ref UpdateUserResponse, @Ref UserService UpdateUser method
+message UpdateUserRequest {
+  // The unique identifier of the user to update.
+  // Required field. Must be a valid UUID v4 format.
+  string id = 1;
+  // New email address (optional).
+  // If provided, must be unique across the system.
+  string email = 2;
+  // New display name (optional).
+  string name = 3;
+  // New role (optional).
+  // See @Ref UserRole enum for available roles.
+  UserRole role = 4;
+}
+
+// Response containing the updated user.
+//
+// See also: @Ref UpdateUserRequest, @Ref UserService UpdateUser method
+message UpdateUserResponse {
+  // The updated user with refreshed updated_at timestamp.
+  User user = 1;
+}
+
+// Request to delete a user.
+//
+// This operation is permanent and cannot be undone.
+// See also: @Ref DeleteUserResponse, @Ref UserService DeleteUser method
+message DeleteUserRequest {
+  // The unique identifier of the user to delete.
+  // Must be a valid UUID v4 format.
+  string id = 1;
+}
+
+// Response confirming user deletion.
+//
+// See also: @Ref DeleteUserRequest, @Ref UserService DeleteUser method
+message DeleteUserResponse {
+  // Whether the deletion was successful.
+  // Returns true if user was deleted, false otherwise.
+  bool success = 1;
+}
+
+// UserPreferences represents user-specific settings and preferences.
+//
+// This message demonstrates all AsyncAPI validation keywords supported by Introligo:
+// - @Pattern, @Min/@Minimum, @Max/@Maximum
+// - @MinLength, @MaxLength
+// - @MultipleOf, @ExclusiveMinimum, @ExclusiveMaximum
+// - @MinItems, @MaxItems
+// - @Default, @Example
+//
+// For more information, see: docs/composition/markdown/language_support/protobuf_language.md#asyncapi-validation-keywords
+message UserPreferences {
+  // User's preferred language code.
+  // Follows ISO 639-1 (language) and ISO 3166-1 (country) format.
+  // @Pattern: ^[a-z]{2}(-[A-Z]{2})?$
+  // @Example: en-US
+  // @Default: en-US
+  string language = 1;
+  // Notification frequency in hours.
+  // Range: 1 hour (minimum) to 168 hours (one week, maximum).
+  // @Minimum: 1
+  // @Maximum: 168
+  // @MultipleOf: 1
+  // @Example: 24
+  // @Default: 24
+  int32 notification_frequency = 2;
+  // Maximum items to display per page.
+  // Must be a multiple of 10 for pagination efficiency.
+  // @Min: 10
+  // @Max: 100
+  // @MultipleOf: 10
+  // @Example: 50
+  // @Default: 20
+  int32 items_per_page = 3;
+  // User's age (for age-appropriate content).
+  // Must be greater than 0 (exclusive) and at most 150.
+  // @ExclusiveMinimum: 0
+  // @Maximum: 150
+  // @Example: 25
+  int32 age = 4;
+  // Favorite tags for content filtering.
+  // Users can have between 0 and 10 favorite tags.
+  // @MinItems: 0
+  // @MaxItems: 10
+  repeated string favorite_tags = 5;
+}
+
+// UserService provides CRUD operations for user management.
+//
+// This service implements the standard Create, Read, Update, Delete pattern
+// for user account management. All methods require appropriate authentication
+// and authorization based on the user's role.
+//
+// For implementation examples in various languages, see:
+// - Python: introligo_config.yaml (usage_examples section)
+// - Go: introligo_config.yaml (usage_examples section)
+// - Node.js: introligo_config.yaml (usage_examples section)
+service UserService {
+  // CreateUser creates a new user account.
+  //
+  // Generates a unique ID and timestamps for the new user.
+  // Returns ALREADY_EXISTS error if email is already registered.
+  // See also: @Ref CreateUserRequest, @Ref CreateUserResponse
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+
+  // GetUser retrieves a user by their ID.
+  //
+  // Returns NOT_FOUND error if user doesn't exist.
+  // See also: @Ref GetUserRequest, @Ref GetUserResponse
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+
+  // UpdateUser updates an existing user's information.
+  //
+  // Only provided fields are updated; omitted fields remain unchanged.
+  // Automatically updates the updated_at timestamp.
+  // Returns NOT_FOUND error if user doesn't exist.
+  // Returns ALREADY_EXISTS error if new email is already in use.
+  // See also: @Ref UpdateUserRequest, @Ref UpdateUserResponse
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+
+  // DeleteUser removes a user account.
+  //
+  // This operation is permanent and cannot be undone.
+  // Returns NOT_FOUND error if user doesn't exist.
+  // See also: @Ref DeleteUserRequest, @Ref DeleteUserResponse
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+}

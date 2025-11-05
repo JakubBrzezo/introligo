@@ -3,7 +3,7 @@
 
 sphinx:
   project: "Diagram Examples"
-  author: "Your Name"
+  author: "WT Tech Jakub Brzezowski"
   release: "1.0.0"
   html_theme: "furo"
 

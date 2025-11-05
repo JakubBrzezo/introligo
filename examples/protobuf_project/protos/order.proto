@@ -1,0 +1,509 @@
+// Order management service protocol definitions
+// This file defines the OrderService and related message types.
+//
+// This example demonstrates:
+// - Cross-package imports and dependencies
+// - Complex state machines with enums
+// - Nested messages and repeated fields
+// - Oneof fields for polymorphic data
+// - Server-side streaming RPC
+syntax = "proto3";
+
+package order.v1;
+
+// Import other packages to reference their types
+// Note: In a real project, these imports would be:
+// import "user/v1/user.proto";
+// import "product/v1/product.proto";
+// For this example, we'll reference by type names in comments.
+
+// Order represents a customer order.
+//
+// An order contains one or more order items, shipping information,
+// and tracks the order lifecycle through various states.
+// See also: @Ref OrderItem, @Ref ShippingAddress, @Ref OrderStatus
+message Order {
+  // Unique identifier for the order.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  // @Example: 9f8e7d6c-5b4a-3210-fedc-ba9876543210
+  string id = 1;
+
+  // ID of the user who placed the order.
+  // References user.v1.User
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string user_id = 2;
+
+  // Items in the order.
+  // @MinItems: 1
+  // @MaxItems: 50
+  repeated OrderItem items = 3;
+
+  // Shipping address for the order.
+  // See @Ref ShippingAddress
+  ShippingAddress shipping_address = 4;
+
+  // Billing address (if different from shipping).
+  // If not provided, shipping address is used for billing.
+  ShippingAddress billing_address = 5;
+
+  // Current status of the order.
+  // See @Ref OrderStatus enum.
+  OrderStatus status = 6;
+
+  // Payment ID associated with this order.
+  // References payment.v1.Payment
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string payment_id = 7;
+
+  // Subtotal amount (sum of all items) in smallest currency unit.
+  // @Minimum: 0
+  // @Example: 15000
+  int64 subtotal = 8;
+
+  // Tax amount in smallest currency unit.
+  // @Minimum: 0
+  // @Example: 1200
+  int64 tax = 9;
+
+  // Shipping cost in smallest currency unit.
+  // @Minimum: 0
+  // @Example: 500
+  int64 shipping_cost = 10;
+
+  // Total amount (subtotal + tax + shipping) in smallest currency unit.
+  // @Minimum: 0
+  // @Example: 16700
+  int64 total = 11;
+
+  // Currency code following ISO 4217.
+  // @Pattern: ^[A-Z]{3}$
+  // @Example: USD
+  // @Default: USD
+  string currency = 12;
+
+  // Order notes or special instructions.
+  // @MaxLength: 500
+  // @Example: Please leave at front door
+  string notes = 13;
+
+  // Tracking information once order is shipped.
+  // See @Ref TrackingInfo
+  TrackingInfo tracking = 14;
+
+  // Timestamp when order was placed (Unix timestamp in seconds).
+  // @Minimum: 0
+  // @Example: 1704067200
+  int64 created_at = 15;
+
+  // Timestamp when order was last updated (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 updated_at = 16;
+
+  // Timestamp when order was completed/delivered (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 completed_at = 17;
+}
+
+// OrderItem represents a single item in an order.
+//
+// Contains product information, quantity, and pricing at the time of order.
+// See also: @Ref Order
+message OrderItem {
+  // ID of the product.
+  // References product.v1.Product
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string product_id = 1;
+
+  // Product name at time of order (snapshot).
+  // @MinLength: 1
+  // @MaxLength: 200
+  // @Example: Wireless Bluetooth Headphones
+  string product_name = 2;
+
+  // Product SKU at time of order (snapshot).
+  // @Pattern: ^[A-Z0-9]{3,20}$
+  // @Example: WBH-2024-BLK
+  string product_sku = 3;
+
+  // Quantity ordered.
+  // @Minimum: 1
+  // @Maximum: 100
+  // @Example: 2
+  int32 quantity = 4;
+
+  // Unit price at time of order in smallest currency unit.
+  // @Minimum: 0
+  // @Example: 9999
+  int64 unit_price = 5;
+
+  // Total price for this line item (quantity * unit_price).
+  // @Minimum: 0
+  // @Example: 19998
+  int64 total_price = 6;
+
+  // Selected product attributes at time of order.
+  // @Example: {"color": "black", "size": "large"}
+  map<string, string> selected_attributes = 7;
+}
+
+// ShippingAddress represents a physical address for shipping or billing.
+//
+// Used in @Ref Order for shipping and billing addresses.
+message ShippingAddress {
+  // Full name of the recipient.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: John Doe
+  string full_name = 1;
+
+  // First line of the street address.
+  // @MinLength: 5
+  // @MaxLength: 100
+  // @Example: 123 Main Street
+  string address_line1 = 2;
+
+  // Second line of the street address (optional).
+  // @MaxLength: 100
+  // @Example: Apt 4B
+  string address_line2 = 3;
+
+  // City name.
+  // @MinLength: 2
+  // @MaxLength: 50
+  // @Example: San Francisco
+  string city = 4;
+
+  // State or province code.
+  // @Pattern: ^[A-Z]{2}$
+  // @Example: CA
+  string state = 5;
+
+  // Postal or ZIP code.
+  // @Pattern: ^[A-Z0-9\s-]{3,10}$
+  // @Example: 94102
+  string postal_code = 6;
+
+  // Country code following ISO 3166-1 alpha-2.
+  // @Pattern: ^[A-Z]{2}$
+  // @Example: US
+  string country = 7;
+
+  // Phone number for delivery contact.
+  // @Pattern: ^\+?[1-9]\d{1,14}$
+  // @Example: +15551234567
+  string phone = 8;
+}
+
+// TrackingInfo contains shipping tracking information.
+//
+// Populated when an order is shipped.
+// See also: @Ref Order
+message TrackingInfo {
+  // Shipping carrier name.
+  // @Example: UPS
+  string carrier = 1;
+
+  // Tracking number provided by the carrier.
+  // @MinLength: 5
+  // @MaxLength: 50
+  // @Example: 1Z999AA10123456784
+  string tracking_number = 2;
+
+  // URL to track the shipment.
+  // @Example: https://www.ups.com/track?tracknum=1Z999AA10123456784
+  string tracking_url = 3;
+
+  // Estimated delivery date (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 estimated_delivery = 4;
+
+  // Actual delivery date (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 actual_delivery = 5;
+}
+
+// OrderStatus defines the possible states of an order.
+//
+// Orders progress through these states from creation to completion.
+// See also: @Ref Order
+enum OrderStatus {
+  // Unknown or unspecified status.
+  ORDER_STATUS_UNSPECIFIED = 0;
+
+  // Order has been created but payment is pending.
+  ORDER_STATUS_PENDING = 1;
+
+  // Payment has been confirmed and order is being processed.
+  ORDER_STATUS_CONFIRMED = 2;
+
+  // Order is being prepared for shipment.
+  ORDER_STATUS_PROCESSING = 3;
+
+  // Order has been shipped to the customer.
+  ORDER_STATUS_SHIPPED = 4;
+
+  // Order has been delivered successfully.
+  ORDER_STATUS_DELIVERED = 5;
+
+  // Order has been cancelled by customer or system.
+  ORDER_STATUS_CANCELLED = 6;
+
+  // Order has been refunded.
+  ORDER_STATUS_REFUNDED = 7;
+
+  // Order failed due to payment or other issues.
+  ORDER_STATUS_FAILED = 8;
+}
+
+// CreateOrderRequest is used to create a new order.
+//
+// See also: @Ref CreateOrderResponse, @Ref OrderService CreateOrder
+message CreateOrderRequest {
+  // ID of the user placing the order.
+  // References user.v1.User
+  string user_id = 1;
+
+  // Items to include in the order.
+  // @MinItems: 1
+  repeated CreateOrderItem items = 2;
+
+  // Shipping address.
+  ShippingAddress shipping_address = 3;
+
+  // Billing address (optional, uses shipping if not provided).
+  ShippingAddress billing_address = 4;
+
+  // Order notes or special instructions.
+  // @MaxLength: 500
+  string notes = 5;
+}
+
+// CreateOrderItem represents an item to add to a new order.
+//
+// See also: @Ref CreateOrderRequest
+message CreateOrderItem {
+  // Product ID to order.
+  // References product.v1.Product
+  string product_id = 1;
+
+  // Quantity to order.
+  // @Minimum: 1
+  // @Maximum: 100
+  int32 quantity = 2;
+
+  // Selected product attributes.
+  map<string, string> selected_attributes = 3;
+}
+
+// CreateOrderResponse contains the created order.
+//
+// See also: @Ref CreateOrderRequest
+message CreateOrderResponse {
+  // The newly created order.
+  Order order = 1;
+}
+
+// GetOrderRequest is used to retrieve an order by ID.
+//
+// See also: @Ref GetOrderResponse, @Ref OrderService GetOrder
+message GetOrderRequest {
+  // Order ID to retrieve.
+  string id = 1;
+}
+
+// GetOrderResponse contains the requested order.
+//
+// See also: @Ref GetOrderRequest
+message GetOrderResponse {
+  // The requested order.
+  Order order = 1;
+}
+
+// ListOrdersRequest is used to list orders with filtering.
+//
+// See also: @Ref ListOrdersResponse, @Ref OrderService ListOrders
+message ListOrdersRequest {
+  // Filter by user ID (required for non-admin users).
+  string user_id = 1;
+
+  // Filter by order status.
+  OrderStatus status = 2;
+
+  // Page number (starting from 1).
+  // @Minimum: 1
+  // @Default: 1
+  int32 page = 3;
+
+  // Number of orders per page.
+  // @Minimum: 1
+  // @Maximum: 100
+  // @Default: 20
+  int32 page_size = 4;
+
+  // Sort field (e.g., "created_at", "total", "status").
+  // @Default: created_at
+  string sort_by = 5;
+
+  // Sort order ("asc" or "desc").
+  // @Pattern: ^(asc|desc)$
+  // @Default: desc
+  string sort_order = 6;
+}
+
+// ListOrdersResponse contains a page of orders.
+//
+// See also: @Ref ListOrdersRequest
+message ListOrdersResponse {
+  // List of orders for the current page.
+  repeated Order orders = 1;
+
+  // Total number of orders matching the filter.
+  // @Minimum: 0
+  int32 total_count = 2;
+
+  // Current page number.
+  // @Minimum: 1
+  int32 page = 3;
+
+  // Number of orders per page.
+  // @Minimum: 1
+  int32 page_size = 4;
+
+  // Total number of pages.
+  // @Minimum: 0
+  int32 total_pages = 5;
+}
+
+// UpdateOrderStatusRequest is used to update an order's status.
+//
+// See also: @Ref UpdateOrderStatusResponse, @Ref OrderService UpdateOrderStatus
+message UpdateOrderStatusRequest {
+  // Order ID to update.
+  string id = 1;
+
+  // New status for the order.
+  OrderStatus status = 2;
+
+  // Tracking information (required when status is SHIPPED).
+  TrackingInfo tracking = 3;
+
+  // Status change reason or notes.
+  // @MaxLength: 500
+  string notes = 4;
+}
+
+// UpdateOrderStatusResponse contains the updated order.
+//
+// See also: @Ref UpdateOrderStatusRequest
+message UpdateOrderStatusResponse {
+  // The updated order.
+  Order order = 1;
+}
+
+// CancelOrderRequest is used to cancel an order.
+//
+// See also: @Ref CancelOrderResponse, @Ref OrderService CancelOrder
+message CancelOrderRequest {
+  // Order ID to cancel.
+  string id = 1;
+
+  // Reason for cancellation.
+  // @MinLength: 10
+  // @MaxLength: 500
+  // @Example: Customer requested cancellation
+  string reason = 2;
+}
+
+// CancelOrderResponse contains the cancelled order.
+//
+// See also: @Ref CancelOrderRequest
+message CancelOrderResponse {
+  // The cancelled order.
+  Order order = 1;
+
+  // Whether refund was initiated.
+  bool refund_initiated = 2;
+}
+
+// WatchOrderRequest is used to watch order status changes.
+//
+// Used with server-side streaming to receive real-time updates.
+// See also: @Ref WatchOrderResponse, @Ref OrderService WatchOrder
+message WatchOrderRequest {
+  // Order ID to watch.
+  string id = 1;
+}
+
+// WatchOrderResponse is streamed when order status changes.
+//
+// See also: @Ref WatchOrderRequest
+message WatchOrderResponse {
+  // The updated order.
+  Order order = 1;
+
+  // Timestamp of the status change (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 changed_at = 2;
+
+  // Description of the change.
+  // @Example: Order status changed from PROCESSING to SHIPPED
+  string change_description = 3;
+}
+
+// OrderService provides operations for managing customer orders.
+//
+// This service implements complete order lifecycle management with:
+// - Order creation and validation
+// - Status tracking and updates
+// - Real-time order watching via streaming
+// - Order cancellation and refunds
+//
+// See also: @Ref Order, @Ref OrderStatus
+service OrderService {
+  // CreateOrder creates a new order for a user.
+  //
+  // Validates product availability and calculates totals.
+  // Returns INVALID_ARGUMENT if products are out of stock.
+  // Returns NOT_FOUND if user or products don't exist.
+  // See also: @Ref CreateOrderRequest, @Ref CreateOrderResponse
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+  // GetOrder retrieves an order by its ID.
+  //
+  // Returns NOT_FOUND error if order doesn't exist.
+  // Returns PERMISSION_DENIED if user doesn't own the order.
+  // See also: @Ref GetOrderRequest, @Ref GetOrderResponse
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+
+  // ListOrders returns a paginated list of orders.
+  //
+  // Non-admin users can only list their own orders.
+  // Supports filtering by status and sorting.
+  // See also: @Ref ListOrdersRequest, @Ref ListOrdersResponse
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+
+  // UpdateOrderStatus updates the status of an order.
+  //
+  // Used by admins or automated systems to progress order state.
+  // Returns NOT_FOUND error if order doesn't exist.
+  // Returns INVALID_ARGUMENT for invalid status transitions.
+  // See also: @Ref UpdateOrderStatusRequest, @Ref UpdateOrderStatusResponse
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+
+  // CancelOrder cancels an existing order.
+  //
+  // Can only cancel orders in PENDING, CONFIRMED, or PROCESSING status.
+  // Automatically initiates refund if payment was completed.
+  // Returns NOT_FOUND error if order doesn't exist.
+  // Returns FAILED_PRECONDITION if order cannot be cancelled.
+  // See also: @Ref CancelOrderRequest, @Ref CancelOrderResponse
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+
+  // WatchOrder streams real-time updates for an order.
+  //
+  // Server-side streaming RPC that sends updates when order status changes.
+  // Useful for tracking order progress in real-time.
+  // Stream closes when order reaches terminal state (DELIVERED, CANCELLED, FAILED).
+  // See also: @Ref WatchOrderRequest, @Ref WatchOrderResponse
+  rpc WatchOrder(WatchOrderRequest) returns (stream WatchOrderResponse);
+}

@@ -10,7 +10,7 @@ generate_index: true
 # Sphinx configuration
 sphinx:
   project: "Rust Calculator"
-  author: "Example Team"
+  author: "WT Tech Jakub Brzezowski"
   version: "0.1.0"
   html_theme: "furo"
 

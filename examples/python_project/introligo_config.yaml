@@ -10,7 +10,7 @@ generate_index: true
 # Sphinx configuration - auto-generates conf.py
 sphinx:
   project: "String Utils"
-  author: "Example Project"
+  author: "WT Tech Jakub Brzezowski"
   copyright_year: "2025"
   release: "1.0.0"
   version: "1.0"

@@ -1,0 +1,503 @@
+// Product catalog service protocol definitions
+// This file defines the ProductService and related message types.
+//
+// This example demonstrates:
+// - Nested message structures
+// - Map fields for key-value data
+// - Repeated fields for collections
+// - Complex filtering and pagination
+// - Rich validation with AsyncAPI keywords
+syntax = "proto3";
+
+package product.v1;
+
+// Product represents an item in the catalog.
+//
+// Each product has inventory tracking, pricing information, and can belong
+// to multiple categories. See also: @Ref ProductCategory, @Ref Price, @Ref Inventory
+message Product {
+  // Unique identifier for the product.
+  // Generated as UUID v4 when the product is created.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  // @Example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+  string id = 1;
+
+  // Product name.
+  // @MinLength: 3
+  // @MaxLength: 200
+  // @Example: Wireless Bluetooth Headphones
+  string name = 2;
+
+  // Product description in markdown format.
+  // @MinLength: 10
+  // @MaxLength: 5000
+  // @Example: High-quality wireless headphones with active noise cancellation
+  string description = 3;
+
+  // Product SKU (Stock Keeping Unit).
+  // Unique identifier for inventory management.
+  // @Pattern: ^[A-Z0-9]{3,20}$
+  // @Example: WBH-2024-BLK
+  string sku = 4;
+
+  // Price information for the product.
+  // See @Ref Price for details.
+  Price price = 5;
+
+  // Current inventory information.
+  // See @Ref Inventory for details.
+  Inventory inventory = 6;
+
+  // Category IDs this product belongs to.
+  // Products can belong to multiple categories.
+  // @MinItems: 1
+  // @MaxItems: 5
+  repeated string category_ids = 7;
+
+  // Product images URLs.
+  // @MinItems: 1
+  // @MaxItems: 10
+  repeated string image_urls = 8;
+
+  // Product attributes as key-value pairs.
+  // Examples: {"color": "black", "weight": "250g", "battery_life": "30h"}
+  // @Example: {"color": "black", "weight": "250g"}
+  map<string, string> attributes = 9;
+
+  // Product tags for search and filtering.
+  // @Example: ["electronics", "audio", "wireless"]
+  repeated string tags = 10;
+
+  // Product status.
+  // See @Ref ProductStatus enum.
+  ProductStatus status = 11;
+
+  // Average rating from customer reviews.
+  // @Minimum: 0.0
+  // @Maximum: 5.0
+  // @Example: 4.5
+  float rating = 12;
+
+  // Number of customer reviews.
+  // @Minimum: 0
+  // @Example: 127
+  int32 review_count = 13;
+
+  // Timestamp when product was created (Unix timestamp in seconds).
+  // @Minimum: 0
+  // @Example: 1704067200
+  int64 created_at = 14;
+
+  // Timestamp when product was last updated (Unix timestamp in seconds).
+  // @Minimum: 0
+  // @Example: 1704153600
+  int64 updated_at = 15;
+}
+
+// Price represents the pricing information for a product.
+//
+// Supports multiple currencies and promotional pricing.
+message Price {
+  // Base price amount in the smallest currency unit (e.g., cents for USD).
+  // @Minimum: 0
+  // @Example: 9999
+  int64 amount = 1;
+
+  // Currency code following ISO 4217.
+  // @Pattern: ^[A-Z]{3}$
+  // @Example: USD
+  // @Default: USD
+  string currency = 2;
+
+  // Promotional discount price (if any).
+  // Must be less than the base amount.
+  // @Minimum: 0
+  // @Example: 7999
+  int64 discount_amount = 3;
+
+  // Discount end timestamp (Unix timestamp in seconds).
+  // Only valid when discount_amount is set.
+  // @Minimum: 0
+  int64 discount_ends_at = 4;
+
+  // Formatted price string for display.
+  // @Example: $99.99
+  string formatted = 5;
+}
+
+// Inventory represents stock information for a product.
+//
+// Tracks quantity available, reserved, and low stock thresholds.
+message Inventory {
+  // Total quantity in stock.
+  // @Minimum: 0
+  // @Example: 150
+  int32 quantity = 1;
+
+  // Quantity reserved for pending orders.
+  // @Minimum: 0
+  // @Example: 5
+  int32 reserved = 2;
+
+  // Threshold for low stock alerts.
+  // @Minimum: 0
+  // @Example: 10
+  // @Default: 10
+  int32 low_stock_threshold = 3;
+
+  // Whether product is currently in stock.
+  // Automatically calculated: (quantity - reserved) > 0
+  bool in_stock = 4;
+
+  // Warehouse location code.
+  // @Pattern: ^[A-Z]{2,5}-[0-9]{1,4}$
+  // @Example: WH-A-123
+  string warehouse_location = 5;
+}
+
+// ProductStatus defines the possible statuses for a product.
+//
+// Controls product visibility and availability.
+enum ProductStatus {
+  // Unknown or unspecified status.
+  PRODUCT_STATUS_UNSPECIFIED = 0;
+
+  // Product is active and visible to customers.
+  PRODUCT_STATUS_ACTIVE = 1;
+
+  // Product is inactive and not visible to customers.
+  PRODUCT_STATUS_INACTIVE = 2;
+
+  // Product is out of stock.
+  PRODUCT_STATUS_OUT_OF_STOCK = 3;
+
+  // Product is discontinued and no longer available.
+  PRODUCT_STATUS_DISCONTINUED = 4;
+}
+
+// ProductCategory represents a category in the product taxonomy.
+//
+// Supports hierarchical category structures with parent-child relationships.
+// See also: @Ref CreateCategoryRequest
+message ProductCategory {
+  // Unique identifier for the category.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  // @Example: 3d1d2e3f-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+  string id = 1;
+
+  // Category name.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: Electronics
+  string name = 2;
+
+  // Category description.
+  // @MaxLength: 500
+  // @Example: Electronic devices and accessories
+  string description = 3;
+
+  // Parent category ID for hierarchical structure.
+  // Empty string means this is a root category.
+  string parent_id = 4;
+
+  // URL-friendly slug for the category.
+  // @Pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+  // @Example: electronics
+  string slug = 5;
+
+  // Number of products in this category.
+  // @Minimum: 0
+  int32 product_count = 6;
+}
+
+// CreateProductRequest is used to create a new product.
+//
+// See also: @Ref CreateProductResponse, @Ref ProductService CreateProduct
+message CreateProductRequest {
+  // Product name.
+  // @MinLength: 3
+  // @MaxLength: 200
+  string name = 1;
+
+  // Product description.
+  // @MinLength: 10
+  // @MaxLength: 5000
+  string description = 2;
+
+  // Product SKU.
+  // @Pattern: ^[A-Z0-9]{3,20}$
+  string sku = 3;
+
+  // Price information.
+  Price price = 4;
+
+  // Initial inventory.
+  Inventory inventory = 5;
+
+  // Category IDs.
+  // @MinItems: 1
+  // @MaxItems: 5
+  repeated string category_ids = 6;
+
+  // Image URLs.
+  // @MinItems: 1
+  repeated string image_urls = 7;
+
+  // Product attributes.
+  map<string, string> attributes = 8;
+
+  // Product tags.
+  repeated string tags = 9;
+}
+
+// CreateProductResponse contains the created product.
+//
+// See also: @Ref CreateProductRequest
+message CreateProductResponse {
+  // The newly created product.
+  Product product = 1;
+}
+
+// GetProductRequest is used to retrieve a product by ID.
+//
+// See also: @Ref GetProductResponse, @Ref ProductService GetProduct
+message GetProductRequest {
+  // Product ID to retrieve.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string id = 1;
+}
+
+// GetProductResponse contains the requested product.
+//
+// See also: @Ref GetProductRequest
+message GetProductResponse {
+  // The requested product.
+  Product product = 1;
+}
+
+// ListProductsRequest is used to list products with filtering and pagination.
+//
+// See also: @Ref ListProductsResponse, @Ref ProductService ListProducts
+message ListProductsRequest {
+  // Page number (starting from 1).
+  // @Minimum: 1
+  // @Default: 1
+  int32 page = 1;
+
+  // Number of products per page.
+  // @Minimum: 1
+  // @Maximum: 100
+  // @Default: 20
+  int32 page_size = 2;
+
+  // Filter by category ID.
+  string category_id = 3;
+
+  // Filter by status.
+  ProductStatus status = 4;
+
+  // Search query for name and description.
+  string search_query = 5;
+
+  // Filter by tags (products must have all specified tags).
+  repeated string tags = 6;
+
+  // Minimum price filter.
+  // @Minimum: 0
+  int64 min_price = 7;
+
+  // Maximum price filter.
+  // @Minimum: 0
+  int64 max_price = 8;
+
+  // Sort field (e.g., "name", "price", "created_at", "rating").
+  // @Default: created_at
+  string sort_by = 9;
+
+  // Sort order ("asc" or "desc").
+  // @Pattern: ^(asc|desc)$
+  // @Default: desc
+  string sort_order = 10;
+}
+
+// ListProductsResponse contains a page of products.
+//
+// See also: @Ref ListProductsRequest
+message ListProductsResponse {
+  // List of products for the current page.
+  repeated Product products = 1;
+
+  // Total number of products matching the filter.
+  // @Minimum: 0
+  int32 total_count = 2;
+
+  // Current page number.
+  // @Minimum: 1
+  int32 page = 3;
+
+  // Number of products per page.
+  // @Minimum: 1
+  int32 page_size = 4;
+
+  // Total number of pages.
+  // @Minimum: 0
+  int32 total_pages = 5;
+}
+
+// UpdateProductRequest is used to update an existing product.
+//
+// See also: @Ref UpdateProductResponse, @Ref ProductService UpdateProduct
+message UpdateProductRequest {
+  // Product ID to update.
+  string id = 1;
+
+  // Updated name (optional).
+  string name = 2;
+
+  // Updated description (optional).
+  string description = 3;
+
+  // Updated price (optional).
+  Price price = 4;
+
+  // Updated inventory (optional).
+  Inventory inventory = 5;
+
+  // Updated category IDs (optional).
+  repeated string category_ids = 6;
+
+  // Updated status (optional).
+  ProductStatus status = 7;
+
+  // Updated attributes (optional).
+  map<string, string> attributes = 8;
+}
+
+// UpdateProductResponse contains the updated product.
+//
+// See also: @Ref UpdateProductRequest
+message UpdateProductResponse {
+  // The updated product.
+  Product product = 1;
+}
+
+// DeleteProductRequest is used to delete a product.
+//
+// See also: @Ref DeleteProductResponse, @Ref ProductService DeleteProduct
+message DeleteProductRequest {
+  // Product ID to delete.
+  string id = 1;
+}
+
+// DeleteProductResponse confirms product deletion.
+//
+// See also: @Ref DeleteProductRequest
+message DeleteProductResponse {
+  // Whether the deletion was successful.
+  bool success = 1;
+}
+
+// CreateCategoryRequest is used to create a new category.
+//
+// See also: @Ref CreateCategoryResponse, @Ref ProductService CreateCategory
+message CreateCategoryRequest {
+  // Category name.
+  // @MinLength: 2
+  // @MaxLength: 100
+  string name = 1;
+
+  // Category description.
+  // @MaxLength: 500
+  string description = 2;
+
+  // Parent category ID (empty for root categories).
+  string parent_id = 3;
+
+  // URL-friendly slug.
+  // @Pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+  string slug = 4;
+}
+
+// CreateCategoryResponse contains the created category.
+//
+// See also: @Ref CreateCategoryRequest
+message CreateCategoryResponse {
+  // The newly created category.
+  ProductCategory category = 1;
+}
+
+// ListCategoriesRequest is used to list all categories.
+//
+// See also: @Ref ListCategoriesResponse, @Ref ProductService ListCategories
+message ListCategoriesRequest {
+  // Filter by parent category ID (empty string for root categories).
+  string parent_id = 1;
+
+  // Whether to include product counts.
+  // @Default: true
+  bool include_counts = 2;
+}
+
+// ListCategoriesResponse contains all categories.
+//
+// See also: @Ref ListCategoriesRequest
+message ListCategoriesResponse {
+  // List of categories.
+  repeated ProductCategory categories = 1;
+}
+
+// ProductService provides operations for managing products and categories.
+//
+// This service implements a complete product catalog management system with:
+// - Full CRUD operations for products
+// - Category management with hierarchical structure
+// - Advanced filtering and search
+// - Inventory tracking
+//
+// See also: @Ref Product, @Ref ProductCategory
+service ProductService {
+  // CreateProduct creates a new product in the catalog.
+  //
+  // Returns ALREADY_EXISTS error if SKU is already in use.
+  // See also: @Ref CreateProductRequest, @Ref CreateProductResponse
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+
+  // GetProduct retrieves a product by its ID.
+  //
+  // Returns NOT_FOUND error if product doesn't exist.
+  // See also: @Ref GetProductRequest, @Ref GetProductResponse
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+
+  // ListProducts returns a paginated list of products with filtering.
+  //
+  // Supports filtering by category, status, price range, and search queries.
+  // See also: @Ref ListProductsRequest, @Ref ListProductsResponse
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+
+  // UpdateProduct updates an existing product.
+  //
+  // Only provided fields are updated; omitted fields remain unchanged.
+  // Returns NOT_FOUND error if product doesn't exist.
+  // See also: @Ref UpdateProductRequest, @Ref UpdateProductResponse
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+
+  // DeleteProduct removes a product from the catalog.
+  //
+  // This operation is permanent and cannot be undone.
+  // Returns NOT_FOUND error if product doesn't exist.
+  // See also: @Ref DeleteProductRequest, @Ref DeleteProductResponse
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+
+  // CreateCategory creates a new product category.
+  //
+  // Categories can be hierarchical by specifying a parent_id.
+  // Returns ALREADY_EXISTS error if slug is already in use.
+  // See also: @Ref CreateCategoryRequest, @Ref CreateCategoryResponse
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+
+  // ListCategories returns all categories, optionally filtered by parent.
+  //
+  // Useful for building category navigation trees.
+  // See also: @Ref ListCategoriesRequest, @Ref ListCategoriesResponse
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+}

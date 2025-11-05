@@ -1,0 +1,134 @@
+# Introligo configuration for Protobuf example
+# This demonstrates how to document Protocol Buffer definitions using Introligo
+# This example includes a complete e-commerce system with multiple services
+
+index:
+  title: "E-Commerce Platform API Documentation"
+  description: "Complete gRPC API definitions for an e-commerce platform with user management, product catalog, order processing, payments, and notifications"
+
+generate_index: true
+
+# Sphinx configuration
+sphinx:
+  project: "E-Commerce Platform API"
+  author: "WT Tech Jakub Brzezowski"
+  version: "1.0.0"
+  html_theme: "furo"
+
+modules:
+  # System overview with architecture diagram
+  system_overview:
+    title: "System Overview"
+    description: "E-commerce platform architecture and service dependencies"
+    proto_path: "protos"
+    markdown_includes: "docs_markdown/system_overview.md"
+    protobuf_diagrams:
+      - type: "dependencies"
+        title: "Service Dependencies"
+        format: "graphviz"
+
+  # Parent category for grouping
+  api_reference:
+    title: "API Reference"
+    description: "Complete API documentation for all platform services"
+
+  # User service
+  user_service:
+    parent: "api_reference"
+    title: "User Service"
+    language: protobuf
+    description: "gRPC service for user account management with role-based access control"
+    proto_path: "protos"
+    proto_files:
+      - "user.proto"
+    markdown_includes: "docs_markdown/user_service.md"
+    protobuf_diagrams:
+      - type: "class"
+        title: "User Service Data Model"
+        package: "user.v1"
+      - type: "service"
+        title: "User Service API"
+        package: "user.v1"
+
+  # Product catalog service
+  product_service:
+    parent: "api_reference"
+    title: "Product Service"
+    language: protobuf
+    description: "gRPC service for product catalog management with inventory tracking"
+    proto_path: "protos"
+    proto_files:
+      - "product.proto"
+    markdown_includes: "docs_markdown/product_service.md"
+    protobuf_diagrams:
+      - type: "class"
+        title: "Product Catalog Data Model"
+        package: "product.v1"
+      - type: "service"
+        title: "Product Service API"
+        package: "product.v1"
+
+  # Order management service
+  order_service:
+    parent: "api_reference"
+    title: "Order Service"
+    language: protobuf
+    description: "gRPC service for order management with cross-service dependencies"
+    proto_path: "protos"
+    proto_files:
+      - "order.proto"
+    markdown_includes: "docs_markdown/order_service.md"
+    protobuf_diagrams:
+      - type: "class"
+        title: "Order Management Data Model"
+        package: "order.v1"
+      - type: "service"
+        title: "Order Service API"
+        package: "order.v1"
+      - type: "sequence"
+        title: "Create Order Flow"
+        service: "OrderService"
+        rpc: "CreateOrder"
+
+  # Payment processing service
+  payment_service:
+    parent: "api_reference"
+    title: "Payment Service"
+    language: protobuf
+    description: "gRPC service for payment processing with multiple payment methods"
+    proto_path: "protos"
+    proto_files:
+      - "payment.proto"
+    markdown_includes: "docs_markdown/payment_service.md"
+    protobuf_diagrams:
+      - type: "class"
+        title: "Payment Methods and Processing"
+        package: "payment.v1"
+      - type: "service"
+        title: "Payment Service API"
+        package: "payment.v1"
+
+  # Notification service
+  notification_service:
+    parent: "api_reference"
+    title: "Notification Service"
+    language: protobuf
+    description: "gRPC service for notifications with streaming RPC examples"
+    proto_path: "protos"
+    proto_files:
+      - "notification.proto"
+    markdown_includes: "docs_markdown/notification_service.md"
+    protobuf_diagrams:
+      - type: "class"
+        title: "Notification Data Model"
+        package: "notification.v1"
+      - type: "service"
+        title: "Notification Service API (with Streaming RPCs)"
+        package: "notification.v1"
+
+  # Integration examples
+  integration_examples:
+    parent: "api_reference"
+    title: "Integration Examples"
+    description: "Complete integration examples showing how services work together"
+    markdown_includes: "docs_markdown/integration_examples.md"

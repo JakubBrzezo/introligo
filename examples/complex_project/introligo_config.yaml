@@ -5,7 +5,7 @@
 # Sphinx Configuration
 sphinx:
   project: "Smart Door Driver"
-  author: "Smart Systems Inc."
+  author: "WT Tech Jakub Brzezowski"
   release: "1.0.0"
   html_theme: "furo"
   palette: "steampunk"  # Victorian-era inspired color scheme

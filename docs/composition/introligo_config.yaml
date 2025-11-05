@@ -280,6 +280,12 @@ modules:
     description: "Automatic documentation extraction for Rust packages"
     markdown_includes: "markdown/language_support/rust_language.md"
 
+  protobuf_support:
+    parent: "language_support"
+    title: "Protocol Buffers Support"
+    description: "Documentation extraction for Protocol Buffers"
+    markdown_includes: "markdown/language_support/protobuf_language.md"
+
   # ============================================================================
   # API REFERENCE
   # ============================================================================

@@ -1,0 +1,621 @@
+// Payment processing service protocol definitions
+// This file defines the PaymentService and related message types.
+//
+// This example demonstrates:
+// - Oneof fields for polymorphic payment methods
+// - Complex validation rules
+// - Sensitive data handling patterns
+// - Payment state machines
+syntax = "proto3";
+
+package payment.v1;
+
+// Payment represents a payment transaction.
+//
+// Supports multiple payment methods and tracks the payment lifecycle.
+// See also: @Ref PaymentMethod, @Ref PaymentStatus
+message Payment {
+  // Unique identifier for the payment.
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  // @Example: a1b2c3d4-e5f6-4789-a012-b3c4d5e6f789
+  string id = 1;
+
+  // ID of the order this payment is for.
+  // References order.v1.Order
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string order_id = 2;
+
+  // ID of the user making the payment.
+  // References user.v1.User
+  // @Pattern: ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+  string user_id = 3;
+
+  // Payment amount in smallest currency unit (e.g., cents).
+  // @Minimum: 0
+  // @Example: 16700
+  int64 amount = 4;
+
+  // Currency code following ISO 4217.
+  // @Pattern: ^[A-Z]{3}$
+  // @Example: USD
+  // @Default: USD
+  string currency = 5;
+
+  // Payment method used.
+  // See @Ref PaymentMethod for available methods.
+  PaymentMethod method = 6;
+
+  // Current status of the payment.
+  // See @Ref PaymentStatus enum.
+  PaymentStatus status = 7;
+
+  // Payment processor transaction ID.
+  // Opaque identifier from the payment gateway.
+  // @Example: ch_3Abc123Def456Ghi
+  string transaction_id = 8;
+
+  // Payment processor name.
+  // @Example: stripe
+  string processor = 9;
+
+  // Failure reason if payment failed.
+  // @MaxLength: 500
+  // @Example: Insufficient funds
+  string failure_reason = 10;
+
+  // Number of payment attempts made.
+  // @Minimum: 1
+  // @Example: 1
+  int32 attempt_count = 11;
+
+  // Timestamp when payment was initiated (Unix timestamp in seconds).
+  // @Minimum: 0
+  // @Example: 1704067200
+  int64 created_at = 12;
+
+  // Timestamp when payment was last updated (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 updated_at = 13;
+
+  // Timestamp when payment completed (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 completed_at = 14;
+
+  // Timestamp when payment expires if not completed (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 expires_at = 15;
+}
+
+// PaymentMethod represents the method used for payment.
+//
+// Uses oneof to support different payment method types.
+// Only one payment method can be set at a time.
+// See also: @Ref CreditCard, @Ref BankAccount, @Ref DigitalWallet
+message PaymentMethod {
+  // The type of payment method being used.
+  // Only one of these fields should be set.
+  oneof method {
+    // Credit or debit card payment.
+    // See @Ref CreditCard
+    CreditCard card = 1;
+
+    // Bank account / ACH payment.
+    // See @Ref BankAccount
+    BankAccount bank_account = 2;
+
+    // Digital wallet payment (PayPal, Apple Pay, Google Pay, etc.).
+    // See @Ref DigitalWallet
+    DigitalWallet wallet = 3;
+
+    // Cryptocurrency payment.
+    // See @Ref CryptoPayment
+    CryptoPayment crypto = 4;
+
+    // Buy now, pay later service.
+    // See @Ref BuyNowPayLater
+    BuyNowPayLater bnpl = 5;
+  }
+}
+
+// CreditCard represents credit or debit card payment information.
+//
+// Sensitive card data should be tokenized by payment processor.
+// See also: @Ref PaymentMethod
+message CreditCard {
+  // Tokenized card identifier from payment processor.
+  // Never store raw card numbers.
+  // @MinLength: 10
+  // @MaxLength: 100
+  // @Example: tok_1234567890abcdef
+  string token = 1;
+
+  // Last 4 digits of the card number (for display).
+  // @Pattern: ^\d{4}$
+  // @Example: 4242
+  string last4 = 2;
+
+  // Card brand.
+  // @Example: visa
+  CardBrand brand = 3;
+
+  // Cardholder name.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: John Doe
+  string cardholder_name = 4;
+
+  // Card expiration month (1-12).
+  // @Minimum: 1
+  // @Maximum: 12
+  // @Example: 12
+  int32 exp_month = 5;
+
+  // Card expiration year.
+  // @Minimum: 2024
+  // @Maximum: 2050
+  // @Example: 2025
+  int32 exp_year = 6;
+
+  // Billing address postal code for AVS verification.
+  // @Pattern: ^[A-Z0-9\s-]{3,10}$
+  // @Example: 94102
+  string billing_postal_code = 7;
+}
+
+// CardBrand represents the brand of a credit card.
+//
+// See also: @Ref CreditCard
+enum CardBrand {
+  // Unknown or unspecified brand.
+  CARD_BRAND_UNSPECIFIED = 0;
+
+  // Visa card.
+  CARD_BRAND_VISA = 1;
+
+  // Mastercard.
+  CARD_BRAND_MASTERCARD = 2;
+
+  // American Express.
+  CARD_BRAND_AMEX = 3;
+
+  // Discover card.
+  CARD_BRAND_DISCOVER = 4;
+
+  // JCB card.
+  CARD_BRAND_JCB = 5;
+
+  // Diners Club card.
+  CARD_BRAND_DINERS = 6;
+
+  // UnionPay card.
+  CARD_BRAND_UNIONPAY = 7;
+}
+
+// BankAccount represents bank account / ACH payment information.
+//
+// Used for direct bank transfers.
+// See also: @Ref PaymentMethod
+message BankAccount {
+  // Tokenized bank account identifier from payment processor.
+  // @MinLength: 10
+  // @MaxLength: 100
+  // @Example: ba_1234567890abcdef
+  string token = 1;
+
+  // Last 4 digits of the account number (for display).
+  // @Pattern: ^\d{4}$
+  // @Example: 6789
+  string last4 = 2;
+
+  // Bank name.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: Chase Bank
+  string bank_name = 3;
+
+  // Account holder name.
+  // @MinLength: 2
+  // @MaxLength: 100
+  // @Example: John Doe
+  string account_holder_name = 4;
+
+  // Account type.
+  AccountType account_type = 5;
+
+  // Routing number (for display, partially masked).
+  // @Pattern: ^\*+\d{4}$
+  // @Example: *****6789
+  string routing_number = 6;
+}
+
+// AccountType represents the type of bank account.
+//
+// See also: @Ref BankAccount
+enum AccountType {
+  // Unknown or unspecified account type.
+  ACCOUNT_TYPE_UNSPECIFIED = 0;
+
+  // Checking account.
+  ACCOUNT_TYPE_CHECKING = 1;
+
+  // Savings account.
+  ACCOUNT_TYPE_SAVINGS = 2;
+
+  // Business checking account.
+  ACCOUNT_TYPE_BUSINESS_CHECKING = 3;
+
+  // Business savings account.
+  ACCOUNT_TYPE_BUSINESS_SAVINGS = 4;
+}
+
+// DigitalWallet represents a digital wallet payment.
+//
+// Supports PayPal, Apple Pay, Google Pay, and other digital wallets.
+// See also: @Ref PaymentMethod
+message DigitalWallet {
+  // Type of digital wallet.
+  WalletType wallet_type = 1;
+
+  // Wallet account identifier or email.
+  // @Example: user@example.com
+  string account_identifier = 2;
+
+  // Wallet provider transaction ID.
+  // @Example: PAY-1234567890ABCDEF
+  string wallet_transaction_id = 3;
+}
+
+// WalletType represents the type of digital wallet.
+//
+// See also: @Ref DigitalWallet
+enum WalletType {
+  // Unknown or unspecified wallet type.
+  WALLET_TYPE_UNSPECIFIED = 0;
+
+  // PayPal.
+  WALLET_TYPE_PAYPAL = 1;
+
+  // Apple Pay.
+  WALLET_TYPE_APPLE_PAY = 2;
+
+  // Google Pay.
+  WALLET_TYPE_GOOGLE_PAY = 3;
+
+  // Samsung Pay.
+  WALLET_TYPE_SAMSUNG_PAY = 4;
+
+  // Venmo.
+  WALLET_TYPE_VENMO = 5;
+
+  // Amazon Pay.
+  WALLET_TYPE_AMAZON_PAY = 6;
+}
+
+// CryptoPayment represents a cryptocurrency payment.
+//
+// See also: @Ref PaymentMethod
+message CryptoPayment {
+  // Cryptocurrency used for payment.
+  // @Example: BTC
+  CryptoType crypto_type = 1;
+
+  // Blockchain transaction hash.
+  // @MinLength: 64
+  // @MaxLength: 66
+  // @Example: 0xabc123def456...
+  string transaction_hash = 2;
+
+  // Wallet address that made the payment.
+  // @MinLength: 26
+  // @MaxLength: 62
+  // @Example: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+  string from_address = 3;
+
+  // Wallet address that received the payment.
+  // @MinLength: 26
+  // @MaxLength: 62
+  string to_address = 4;
+
+  // Amount in cryptocurrency.
+  // @Example: 0.00025
+  double crypto_amount = 5;
+
+  // Number of network confirmations.
+  // @Minimum: 0
+  int32 confirmations = 6;
+}
+
+// CryptoType represents the type of cryptocurrency.
+//
+// See also: @Ref CryptoPayment
+enum CryptoType {
+  // Unknown or unspecified crypto type.
+  CRYPTO_TYPE_UNSPECIFIED = 0;
+
+  // Bitcoin.
+  CRYPTO_TYPE_BTC = 1;
+
+  // Ethereum.
+  CRYPTO_TYPE_ETH = 2;
+
+  // Litecoin.
+  CRYPTO_TYPE_LTC = 3;
+
+  // Bitcoin Cash.
+  CRYPTO_TYPE_BCH = 4;
+
+  // USDC Stablecoin.
+  CRYPTO_TYPE_USDC = 5;
+
+  // USDT Stablecoin.
+  CRYPTO_TYPE_USDT = 6;
+}
+
+// BuyNowPayLater represents a BNPL service payment.
+//
+// Services like Affirm, Klarna, Afterpay, etc.
+// See also: @Ref PaymentMethod
+message BuyNowPayLater {
+  // BNPL provider.
+  BnplProvider provider = 1;
+
+  // Provider's transaction ID.
+  // @Example: KLRN-1234567890
+  string provider_transaction_id = 2;
+
+  // Number of installments.
+  // @Minimum: 1
+  // @Maximum: 36
+  // @Example: 4
+  int32 installment_count = 3;
+
+  // Amount per installment in smallest currency unit.
+  // @Minimum: 0
+  int64 installment_amount = 4;
+}
+
+// BnplProvider represents the BNPL service provider.
+//
+// See also: @Ref BuyNowPayLater
+enum BnplProvider {
+  // Unknown or unspecified provider.
+  BNPL_PROVIDER_UNSPECIFIED = 0;
+
+  // Affirm.
+  BNPL_PROVIDER_AFFIRM = 1;
+
+  // Klarna.
+  BNPL_PROVIDER_KLARNA = 2;
+
+  // Afterpay.
+  BNPL_PROVIDER_AFTERPAY = 3;
+
+  // Sezzle.
+  BNPL_PROVIDER_SEZZLE = 4;
+}
+
+// PaymentStatus defines the possible states of a payment.
+//
+// Payments progress through these states during processing.
+// See also: @Ref Payment
+enum PaymentStatus {
+  // Unknown or unspecified status.
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+
+  // Payment has been created but not yet processed.
+  PAYMENT_STATUS_PENDING = 1;
+
+  // Payment is being processed by the payment gateway.
+  PAYMENT_STATUS_PROCESSING = 2;
+
+  // Payment requires additional authentication (3D Secure, etc.).
+  PAYMENT_STATUS_REQUIRES_AUTH = 3;
+
+  // Payment has been successfully completed.
+  PAYMENT_STATUS_COMPLETED = 4;
+
+  // Payment failed.
+  PAYMENT_STATUS_FAILED = 5;
+
+  // Payment was cancelled.
+  PAYMENT_STATUS_CANCELLED = 6;
+
+  // Payment has been refunded.
+  PAYMENT_STATUS_REFUNDED = 7;
+
+  // Payment is partially refunded.
+  PAYMENT_STATUS_PARTIALLY_REFUNDED = 8;
+}
+
+// CreatePaymentRequest is used to create a new payment.
+//
+// See also: @Ref CreatePaymentResponse, @Ref PaymentService CreatePayment
+message CreatePaymentRequest {
+  // Order ID to create payment for.
+  // References order.v1.Order
+  string order_id = 1;
+
+  // User ID making the payment.
+  // References user.v1.User
+  string user_id = 2;
+
+  // Payment amount in smallest currency unit.
+  // @Minimum: 0
+  int64 amount = 3;
+
+  // Currency code.
+  // @Pattern: ^[A-Z]{3}$
+  string currency = 4;
+
+  // Payment method to use.
+  PaymentMethod method = 5;
+
+  // Return URL for redirect-based payment methods.
+  // @Example: https://example.com/payment/return
+  string return_url = 6;
+}
+
+// CreatePaymentResponse contains the created payment.
+//
+// See also: @Ref CreatePaymentRequest
+message CreatePaymentResponse {
+  // The newly created payment.
+  Payment payment = 1;
+
+  // Client secret for completing payment authentication.
+  // Required for certain payment methods (e.g., Stripe).
+  // @Example: pi_1234567890_secret_abcdefg
+  string client_secret = 2;
+
+  // URL to redirect user for payment completion.
+  // Used for redirect-based payment methods.
+  string redirect_url = 3;
+}
+
+// GetPaymentRequest is used to retrieve a payment by ID.
+//
+// See also: @Ref GetPaymentResponse, @Ref PaymentService GetPayment
+message GetPaymentRequest {
+  // Payment ID to retrieve.
+  string id = 1;
+}
+
+// GetPaymentResponse contains the requested payment.
+//
+// See also: @Ref GetPaymentRequest
+message GetPaymentResponse {
+  // The requested payment.
+  Payment payment = 1;
+}
+
+// RefundPaymentRequest is used to refund a payment.
+//
+// See also: @Ref RefundPaymentResponse, @Ref PaymentService RefundPayment
+message RefundPaymentRequest {
+  // Payment ID to refund.
+  string id = 1;
+
+  // Amount to refund in smallest currency unit.
+  // If not specified or 0, full refund is performed.
+  // @Minimum: 0
+  int64 amount = 2;
+
+  // Reason for the refund.
+  // @MinLength: 10
+  // @MaxLength: 500
+  // @Example: Customer requested refund
+  string reason = 3;
+}
+
+// RefundPaymentResponse contains the refund information.
+//
+// See also: @Ref RefundPaymentRequest
+message RefundPaymentResponse {
+  // The refund transaction payment record.
+  Payment payment = 1;
+
+  // Refund ID from the payment processor.
+  // @Example: re_1234567890abcdef
+  string refund_id = 2;
+
+  // Whether the refund was successful.
+  bool success = 3;
+}
+
+// ListPaymentsRequest is used to list payments with filtering.
+//
+// See also: @Ref ListPaymentsResponse, @Ref PaymentService ListPayments
+message ListPaymentsRequest {
+  // Filter by user ID.
+  string user_id = 1;
+
+  // Filter by order ID.
+  string order_id = 2;
+
+  // Filter by payment status.
+  PaymentStatus status = 3;
+
+  // Filter by date range start (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 from_date = 4;
+
+  // Filter by date range end (Unix timestamp in seconds).
+  // @Minimum: 0
+  int64 to_date = 5;
+
+  // Page number (starting from 1).
+  // @Minimum: 1
+  // @Default: 1
+  int32 page = 6;
+
+  // Number of payments per page.
+  // @Minimum: 1
+  // @Maximum: 100
+  // @Default: 20
+  int32 page_size = 7;
+}
+
+// ListPaymentsResponse contains a page of payments.
+//
+// See also: @Ref ListPaymentsRequest
+message ListPaymentsResponse {
+  // List of payments for the current page.
+  repeated Payment payments = 1;
+
+  // Total number of payments matching the filter.
+  // @Minimum: 0
+  int32 total_count = 2;
+
+  // Current page number.
+  // @Minimum: 1
+  int32 page = 3;
+
+  // Number of payments per page.
+  // @Minimum: 1
+  int32 page_size = 4;
+
+  // Total number of pages.
+  // @Minimum: 0
+  int32 total_pages = 5;
+}
+
+// PaymentService provides operations for processing payments.
+//
+// This service implements:
+// - Multiple payment method support (cards, bank accounts, wallets, crypto, BNPL)
+// - Secure payment processing with tokenization
+// - Refund handling
+// - Payment status tracking
+//
+// See also: @Ref Payment, @Ref PaymentMethod, @Ref PaymentStatus
+service PaymentService {
+  // CreatePayment creates a new payment for an order.
+  //
+  // Returns client_secret for payment authentication when required.
+  // Returns NOT_FOUND if order doesn't exist.
+  // Returns INVALID_ARGUMENT if payment method is invalid.
+  // See also: @Ref CreatePaymentRequest, @Ref CreatePaymentResponse
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+
+  // GetPayment retrieves a payment by its ID.
+  //
+  // Returns NOT_FOUND error if payment doesn't exist.
+  // Returns PERMISSION_DENIED if user doesn't own the payment.
+  // See also: @Ref GetPaymentRequest, @Ref GetPaymentResponse
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+
+  // RefundPayment refunds a completed payment.
+  //
+  // Supports both full and partial refunds.
+  // Returns NOT_FOUND error if payment doesn't exist.
+  // Returns FAILED_PRECONDITION if payment cannot be refunded.
+  // See also: @Ref RefundPaymentRequest, @Ref RefundPaymentResponse
+  rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse);
+
+  // ListPayments returns a paginated list of payments.
+  //
+  // Supports filtering by user, order, status, and date range.
+  // Non-admin users can only list their own payments.
+  // See also: @Ref ListPaymentsRequest, @Ref ListPaymentsResponse
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}

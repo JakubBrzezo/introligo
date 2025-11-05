@@ -74,6 +74,21 @@ Introligo supports automatic API documentation extraction for multiple programmi
 
 [Rust Documentation Guide →](rust_language_support.md)
 
+### Protocol Buffers (Protobuf)
+
+**Extraction Tool:** Direct source parser
+**Complexity:** ★★☆☆☆ (Easy)
+**Features:** ★★★★☆ (Very Good)
+
+- Automatic extraction from .proto source files
+- No external tools required (works without protoc)
+- AsyncAPI validation keywords support (@Min, @Max, @Pattern, etc.)
+- Message, enum, and service documentation
+- gRPC API documentation
+- Multiple comment styles (inline and block)
+
+[Protocol Buffers Documentation Guide →](protobuf_language_support.md)
+
 ### LaTeX / Mathematics
 
 **Extraction Tool:** MathJax
@@ -97,6 +112,7 @@ Introligo supports automatic API documentation extraction for multiple programmi
 | **Go** | Minimal | ✅ Yes* | Go (optional) | Fast |
 | **Java** | Minimal | ✅ Yes | No | Fast |
 | **Rust** | Minimal | ✅ Yes* | Cargo (optional) | Moderate |
+| **Protobuf** | Minimal | ✅ Yes | No | Fast |
 | **LaTeX** | Minimal | Manual | No | Fast |
 
 *Go extraction requires Go to be installed; gracefully falls back to manual docs
@@ -106,22 +122,22 @@ Introligo supports automatic API documentation extraction for multiple programmi
 
 ### Documentation Quality
 
-| Feature | Python | C/C++ | Go | Java | Rust | LaTeX |
-|---------|--------|-------|-----|------|------|-------|
-| Function Docs | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
-| Class Docs | ✅ | ✅ | ⚠️ | ✅ | ✅ | N/A |
-| Type Info | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
-| Examples | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Cross-refs | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
-| Diagrams | ❌ | ✅ | ❌ | ❌ | ❌ | ⚠️ |
+| Feature | Python | C/C++ | Go | Java | Rust | Protobuf | LaTeX |
+|---------|--------|-------|-----|------|------|----------|-------|
+| Function Docs | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| Class Docs | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ | N/A |
+| Type Info | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| Examples | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cross-refs | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ | ✅ |
+| Diagrams | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ⚠️ |
 
 ### Configuration Complexity
 
-| Aspect | Python | C/C++ | Go | Java | Rust | LaTeX |
-|--------|--------|-------|-----|------|------|-------|
-| Initial Setup | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ |
-| Learning Curve | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ |
-| Maintenance | ⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐ |
+| Aspect | Python | C/C++ | Go | Java | Rust | Protobuf | LaTeX |
+|--------|--------|-------|-----|------|------|----------|-------|
+| Initial Setup | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ |
+| Learning Curve | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ |
+| Maintenance | ⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐ | ⭐ |
 
 ### Integration Method
 
@@ -171,6 +187,14 @@ modules:
     rustdoc_path: "."
 ```
 
+**Protobuf:**
+```yaml
+modules:
+  my_api:
+    language: protobuf
+    proto_path: "protos"
+```
+
 **LaTeX:**
 ```yaml
 modules:
@@ -214,6 +238,15 @@ modules:
 - You want full Javadoc tag support (@param, @return, @throws)
 - You can provide source files to the documentation build
 
+### For Protocol Buffers Projects
+
+✅ **Use Protobuf support** if:
+- You have .proto files defining gRPC services or message formats
+- You want to document API contracts and message schemas
+- You need AsyncAPI validation keywords (@Min, @Max, @Pattern)
+- You want documentation without requiring protoc
+- You need to document microservice APIs
+
 ### For Mathematical Content
 
 ✅ **Use LaTeX support** if:
@@ -252,6 +285,12 @@ modules:
     java_package: "com.myproject.backend"
     java_source_path: "backend/src/main/java"
 
+  # Protobuf API
+  protobuf_api:
+    title: "Protobuf API"
+    language: protobuf
+    proto_path: "proto"
+
   # Mathematical Models
   math_models:
     title: "Mathematical Models"
@@ -270,6 +309,8 @@ Introligo automatically configures Sphinx extensions based on detected languages
 **Detected Go godoc** → Logs detection (no extension needed)
 
 **Detected Java package** → Logs detection (no extension needed)
+
+**Detected Protobuf** → Logs detection (no extension needed)
 
 **Detected LaTeX includes** → Adds `sphinx.ext.mathjax`
 
@@ -383,6 +424,12 @@ modules:
     godoc_package: "github.com/org/go-service"
     title: "Go Service"
 
+  protobuf_api:
+    parent: "services"
+    language: protobuf
+    proto_path: "proto"
+    title: "gRPC API Definitions"
+
   cpp_lib:
     parent: "services"
     language: cpp
@@ -429,6 +476,19 @@ java_manual_content: |
   Package documentation here...
 ```
 
+### Protobuf Files Not Found
+
+**Solution:** Verify proto_path:
+```bash
+ls protos/*.proto  # Should exist
+```
+
+Or use manual docs:
+```yaml
+protodoc_manual_content: |
+  API documentation here...
+```
+
 ### Math Not Rendering
 
 **Solution:** Check MathJax extension:
@@ -445,17 +505,20 @@ sphinx:
 - [Doxygen Manual](https://www.doxygen.nl/manual/)
 - [Go Documentation](https://go.dev/doc/comment)
 - [Javadoc Guide](https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html)
+- [Protocol Buffers Guide](https://developers.google.com/protocol-buffers)
+- [gRPC Documentation](https://grpc.io/docs/)
 - [LaTeX Mathematics](https://en.wikibooks.org/wiki/LaTeX/Mathematics)
 
 ## Summary
 
 Introligo provides comprehensive multi-language documentation support:
 
-✅ **Python** - Zero-config autodoc integration
-✅ **C/C++** - Industry-standard Doxygen + Breathe
-✅ **Go** - Automatic go doc extraction
-✅ **Java** - Javadoc source file parsing with full tag support
-✅ **Rust** - Automatic cargo doc extraction with RST conversion
-✅ **LaTeX** - Beautiful mathematical formulas
+- ✅ **Python** - Zero-config autodoc integration
+- ✅ **C/C++** - Industry-standard Doxygen + Breathe
+- ✅ **Go** - Automatic go doc extraction
+- ✅ **Java** - Javadoc source file parsing with full tag support
+- ✅ **Rust** - Automatic cargo doc extraction with RST conversion
+- ✅ **Protobuf** - gRPC and Protocol Buffer API documentation with AsyncAPI keywords
+- ✅ **LaTeX** - Beautiful mathematical formulas
 
 Choose the language support that fits your project, or use them all together for multi-language documentation!
