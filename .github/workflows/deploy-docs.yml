@@ -38,11 +38,15 @@ jobs:
         pip install -r docs/requirements.txt
 
     - name: Generate RST with Introligo
+      env:
+        FORCE_COLOR: "1"
       run: |
         cd docs
         python -m introligo composition/introligo_config.yaml -o .
 
     - name: Build Sphinx documentation
+      env:
+        FORCE_COLOR: "1"
       run: |
         cd docs
         sphinx-build -b html . _build/html

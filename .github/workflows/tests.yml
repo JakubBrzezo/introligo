@@ -93,6 +93,8 @@ jobs:
         pip install -e .
 
     - name: Run tests with coverage
+      env:
+        FORCE_COLOR: "1"
       run: |
         pytest tests/ --cov=introligo --cov-report=term-missing --cov-report=xml
 

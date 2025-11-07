@@ -33,6 +33,7 @@ dependencies = [
     "PyYAML>=6.0",
     "Jinja2>=3.0",
     "sphinx>=4.0",
+    "colorama>=0.4.6",
 ]
 
 [project.optional-dependencies]
@@ -107,6 +108,10 @@ exclude = ["examples/", "docs/"]
 
 [[tool.mypy.overrides]]
 module = "yaml"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "colorama"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

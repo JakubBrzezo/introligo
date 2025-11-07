@@ -146,15 +146,19 @@ from pathlib import Path
 if __name__ == "__main__" and __package__ is None:
     # Direct execution - add parent directory to path
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from introligo.colored_formatter import ColoredFormatter
     from introligo.errors import IntroligoError
     from introligo.generator import IntroligoGenerator
 else:
     # Package import
+    from .colored_formatter import ColoredFormatter
     from .errors import IntroligoError
     from .generator import IntroligoGenerator
 
-# Configure logging
-logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
+# Configure logging with colored output
+handler = logging.StreamHandler()
+handler.setFormatter(ColoredFormatter("%(levelname)s: %(message)s"))
+logging.basicConfig(level=logging.WARNING, handlers=[handler])
 logger = logging.getLogger(__name__)
 
 

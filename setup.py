@@ -45,6 +45,7 @@ setup(
     install_requires=[
         "PyYAML>=6.0",
         "Jinja2>=3.0",
+        "colorama>=0.4.6",
     ],
     extras_require={
         "docs": [

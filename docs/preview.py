@@ -260,10 +260,15 @@ def run(
 
     print(f"→ {' '.join(map(str, cmd))}")
     try:
+        # Set up environment to force colored output
+        run_env = env.copy() if env else os.environ.copy()
+        run_env["FORCE_COLOR"] = "1"  # Force colorama to output colors
+        run_env["PYTHONUNBUFFERED"] = "1"  # Unbuffered output for real-time display
+
         proc = subprocess.run(
             cmd,
             cwd=cwd,
-            env=env,
+            env=run_env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
