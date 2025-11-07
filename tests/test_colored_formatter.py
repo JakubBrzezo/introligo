@@ -426,32 +426,49 @@ class TestColoredFormatter:
 class TestColoredFormatterEnvironmentVariables:
     """Test environment variable handling in colored_formatter module."""
 
-    def test_force_color_module_constant(self):
-        """Test FORCE_COLOR module constant."""
-        import importlib
-        import os
+    def test_force_color_runtime_check(self):
+        """Test FORCE_COLOR is checked at runtime, not module load time."""
+        formatter = ColoredFormatter("%(levelname)s: %(message)s")
+        record = logging.LogRecord(
+            name="test",
+            level=logging.ERROR,
+            pathname="test.py",
+            lineno=1,
+            msg="Test",
+            args=(),
+            exc_info=None,
+        )
 
-        import introligo.colored_formatter as cf
+        # Test that environment changes are picked up at runtime
+        with patch.dict("os.environ", {"FORCE_COLOR": "1"}, clear=True):
+            formatted = formatter.format(record)
+            # With FORCE_COLOR, should have colors
+            assert "ERROR" in formatted
 
-        # Set environment and reload
-        with patch.dict(os.environ, {"FORCE_COLOR": "1"}, clear=True):
-            importlib.reload(cf)
-            # Verify the constant is set (this tests module initialization)
-            assert hasattr(cf, "FORCE_COLOR")
-            # Clean up by reloading without the env var
-            importlib.reload(cf)
+        # Now without FORCE_COLOR and no TTY, should not have colors
+        with patch.dict("os.environ", {}, clear=True), patch.object(
+            sys.stdout, "isatty", return_value=False
+        ):
+            formatted = formatter.format(record)
+            # Without FORCE_COLOR and no TTY, no colors
+            assert formatted == "ERROR: Test"
 
-    def test_no_color_module_constant(self):
-        """Test NO_COLOR module constant."""
-        import importlib
-        import os
+    def test_no_color_runtime_check(self):
+        """Test NO_COLOR is checked at runtime, not module load time."""
+        formatter = ColoredFormatter("%(levelname)s: %(message)s")
+        record = logging.LogRecord(
+            name="test",
+            level=logging.ERROR,
+            pathname="test.py",
+            lineno=1,
+            msg="Test",
+            args=(),
+            exc_info=None,
+        )
 
-        import introligo.colored_formatter as cf
-
-        # Set environment and reload
-        with patch.dict(os.environ, {"NO_COLOR": "1"}, clear=True):
-            importlib.reload(cf)
-            # Verify the constant is set (this tests module initialization)
-            assert hasattr(cf, "NO_COLOR")
-            # Clean up by reloading without the env var
-            importlib.reload(cf)
+        # Test that NO_COLOR is respected even after module is loaded
+        with patch.dict("os.environ", {"NO_COLOR": "1", "FORCE_COLOR": "1"}, clear=True):
+            formatted = formatter.format(record)
+            # NO_COLOR should override FORCE_COLOR
+            assert formatted == "ERROR: Test"
+            assert "\x1b[" not in formatted

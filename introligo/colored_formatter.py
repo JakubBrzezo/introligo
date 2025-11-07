@@ -13,10 +13,6 @@ from colorama import Fore, Style, init
 # strip=False ensures colors work when output is redirected
 init(autoreset=True, strip=False)
 
-# Check if colors should be forced or disabled
-FORCE_COLOR = os.environ.get("FORCE_COLOR", "").lower() in ("1", "true", "yes")
-NO_COLOR = os.environ.get("NO_COLOR", "").lower() in ("1", "true", "yes")
-
 
 class ColoredFormatter(logging.Formatter):
     """Custom formatter that adds colors to log levels.
@@ -45,8 +41,12 @@ class ColoredFormatter(logging.Formatter):
         Returns:
             Colored and formatted log message.
         """
+        # Check environment variables at runtime (not at module load time)
+        no_color = os.environ.get("NO_COLOR", "").lower() in ("1", "true", "yes")
+        force_color = os.environ.get("FORCE_COLOR", "").lower() in ("1", "true", "yes")
+
         # Check if colors should be used
-        use_colors = not NO_COLOR and (FORCE_COLOR or self._should_use_colors())
+        use_colors = not no_color and (force_color or self._should_use_colors())
 
         # Get the color for this log level
         color = self.COLORS.get(record.levelno, "") if use_colors else ""
