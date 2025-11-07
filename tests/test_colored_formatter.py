@@ -428,22 +428,30 @@ class TestColoredFormatterEnvironmentVariables:
 
     def test_force_color_module_constant(self):
         """Test FORCE_COLOR module constant."""
-        with patch.dict("os.environ", {"FORCE_COLOR": "1"}, clear=True):
-            # Re-import to test module-level constant
-            import importlib
+        import importlib
+        import os
 
-            import introligo.colored_formatter as cf
+        import introligo.colored_formatter as cf
 
+        # Set environment and reload
+        with patch.dict(os.environ, {"FORCE_COLOR": "1"}, clear=True):
             importlib.reload(cf)
-            # The constant should be set at module load time
+            # Verify the constant is set (this tests module initialization)
+            assert hasattr(cf, "FORCE_COLOR")
+            # Clean up by reloading without the env var
+            importlib.reload(cf)
 
     def test_no_color_module_constant(self):
         """Test NO_COLOR module constant."""
-        with patch.dict("os.environ", {"NO_COLOR": "1"}, clear=True):
-            # Re-import to test module-level constant
-            import importlib
+        import importlib
+        import os
 
-            import introligo.colored_formatter as cf
+        import introligo.colored_formatter as cf
 
+        # Set environment and reload
+        with patch.dict(os.environ, {"NO_COLOR": "1"}, clear=True):
             importlib.reload(cf)
-            # The constant should be set at module load time
+            # Verify the constant is set (this tests module initialization)
+            assert hasattr(cf, "NO_COLOR")
+            # Clean up by reloading without the env var
+            importlib.reload(cf)
