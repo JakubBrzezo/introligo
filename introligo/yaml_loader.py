@@ -18,10 +18,14 @@ logger = logging.getLogger(__name__)
 class IncludeLoader(yaml.SafeLoader):
     """YAML loader with support for !include directive.
 
-    Allows splitting configuration across multiple files using:
+    Allows splitting configuration across multiple files using::
+
         !include path/to/file.yaml
 
     Paths are resolved relative to the file containing the !include directive.
+
+    Inherits from:
+        yaml.SafeLoader: Safe YAML loader from PyYAML library.
     """
 
     def __init__(self, stream):
@@ -40,18 +44,18 @@ class IncludeLoader(yaml.SafeLoader):
         super().__init__(stream)
 
 
-def include_constructor(loader: IncludeLoader, node: yaml.Node) -> Any:
+def include_constructor(loader: IncludeLoader, node: Any) -> Any:
     """Construct included YAML content.
 
     Args:
-        loader: The YAML loader instance
-        node: The YAML node containing the include path
+        loader: The YAML loader instance (IncludeLoader).
+        node: The YAML node containing the include path (yaml.nodes.Node).
 
     Returns:
-        The loaded content from the included file
+        The loaded content from the included file.
 
     Raises:
-        IntroligoError: If the included file cannot be loaded
+        IntroligoError: If the included file cannot be loaded.
     """
     # Get the path from the node
     include_path = loader.construct_scalar(cast(yaml.ScalarNode, node))

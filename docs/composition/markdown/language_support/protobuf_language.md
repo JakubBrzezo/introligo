@@ -63,7 +63,7 @@ modules:
 
 1. **Detection**: Introligo detects `language: protobuf` in your configuration
 2. **File Discovery**: Finds .proto source files in the specified path
-3. **Parsing**: Reads proto files and extracts comments (// and /* */ styles)
+3. **Parsing**: Reads proto files and extracts comments (// and /\* \*/ styles)
 4. **Conversion**: Parses messages, enums, services and converts to RST
 5. **Integration**: Injects the formatted documentation into your Sphinx build
 
@@ -222,9 +222,10 @@ service UserService {
 ```
 
 **Methods:**
+
 - `CreateUser`: Creates a new user account
-  Request: `CreateUserRequest`
-  Response: `CreateUserResponse`
+  - Request: `CreateUserRequest`
+  - Response: `CreateUserResponse`
 
 ## Comment Styles
 
@@ -524,7 +525,7 @@ modules:
 | `rpc` | Specific RPC method for sequence diagrams | No | Method name |
 | `format` | Output format for dependencies | No | `plantuml` (default) or `graphviz` |
 
-*Required for sequence diagrams
+\*Required for sequence diagrams
 
 ### Multiple Services with Diagrams
 
@@ -1032,7 +1033,7 @@ See [Language Support Overview](overview.md) for a comprehensive comparison of a
 | **Manual Fallback** | No | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
 | **Validation Keywords** | No | No | No | No | ✅ Yes |
 
-*Requires language runtime to be installed
+\*Requires language runtime to be installed
 
 ## Example Protobuf Project
 

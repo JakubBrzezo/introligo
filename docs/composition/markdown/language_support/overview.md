@@ -115,8 +115,9 @@ Introligo supports automatic API documentation extraction for multiple programmi
 | **Protobuf** | Minimal | ✅ Yes | No | Fast |
 | **LaTeX** | Minimal | Manual | No | Fast |
 
-*Go extraction requires Go to be installed; gracefully falls back to manual docs
-*Rust extraction requires Cargo to be installed; gracefully falls back to manual docs
+\*Go extraction requires Go to be installed; gracefully falls back to manual docs
+
+\*Rust extraction requires Cargo to be installed; gracefully falls back to manual docs
 
 ## Features by Language
 

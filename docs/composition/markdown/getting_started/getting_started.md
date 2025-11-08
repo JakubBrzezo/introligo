@@ -314,7 +314,7 @@ Now that you have basic docs working:
 
 1. **Explore Examples**: Check [`examples/`](examples/) for real-world configs
 2. **Read the Guide**: See [EXAMPLES.md](examples/EXAMPLES.md) for detailed patterns
-3. **Customize Theme**: Try different palettes and themes - see [Theme Motifs Guide](theme_motifs.md)
+3. **Customize Theme**: Try different palettes and themes
 4. **Preview Themes**: Use `python docs/preview.py --motive <theme>` to test different color palettes
 5. **Add API Docs**: Include autodoc for your code
 6. **Share**: Publish to Read the Docs or GitHub Pages

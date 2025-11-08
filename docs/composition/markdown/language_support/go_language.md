@@ -295,7 +295,7 @@ modules:
 | **Format** | Docstrings | Comments | Comments |
 | **Manual Fallback** | No | No | ✅ Yes |
 
-*Requires Go to be installed
+\*Requires Go to be installed
 
 ## See Also
 

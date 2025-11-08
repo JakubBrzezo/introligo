@@ -43,7 +43,15 @@ sphinx:
 
   # Template and build settings
   templates_path: ["_templates"]
-  exclude_patterns: ["_build", "Thumbs.db", ".DS_Store"]
+  exclude_patterns:
+    - "_build"
+    - "Thumbs.db"
+    - ".DS_Store"
+    - "_motif_preview"
+    - "composition"
+    - "generated/index.rst"
+    - "generated/user_guide/theme_motifs.rst"
+    - "generated/generated"
   language: "en"
 
   # Intersphinx mapping
@@ -54,6 +62,30 @@ sphinx:
     sphinx:
       - "https://www.sphinx-doc.org/en/master"
       - null
+    jinja2:
+      - "https://jinja.palletsprojects.com/en/stable"
+      - null
+
+  # Suppress warnings for external references without intersphinx mappings
+  nitpick_ignore:
+    - ["py:class", "yaml.SafeLoader"]
+    - ["py:class", "yaml.loader.SafeLoader"]
+    - ["py:class", "yaml.ScalarNode"]
+    - ["py:class", "yaml.nodes.Node"]
+    - ["py:class", "jinja2.environment.Template"]
+
+  # Suppress specific warning categories
+  suppress_warnings:
+    - "ref.doc"
+    - "ref.ref"
+    - "ref.class"
+    - "misc.highlighting_failure"
+
+  # Configure Pygments to use fallback highlighting for unknown lexers
+  highlight_options:
+    default_language: "text"
+    force: false
+  pygments_style: "default"
 
   # HTML output configuration
   html_theme: "furo"
@@ -183,11 +215,12 @@ modules:
     markdown_includes: "markdown/sphinx_tutorial/04_advanced.md"
 
   # Theme Motifs Tutorial
-  theme_motifs:
-    parent: "user_guide"
-    title: "🎨 Theme Motifs"
-    description: "Explore and preview different color palettes"
-    markdown_includes: "markdown/getting_started/theme_motifs.md"
+  # TODO: Uncomment when theme_motifs.md is created
+  # theme_motifs:
+  #   parent: "user_guide"
+  #   title: "🎨 Theme Motifs"
+  #   description: "Explore and preview different color palettes"
+  #   markdown_includes: "markdown/getting_started/theme_motifs.md"
 
   # Devcontainer Tutorial
   devcontainer_tutorial:

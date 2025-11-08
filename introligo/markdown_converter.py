@@ -7,17 +7,46 @@ Copyright (c) 2025 WT Tech Jakub Brzezowski
 import re
 from typing import Optional
 
+from .utils import count_display_width
+
+
+def create_label_from_title(title: str, add_labels: bool = True) -> str:
+    """Create a valid RST label from a title.
+
+    Args:
+        title: The header title text.
+        add_labels: If True, creates label anchors for headers. If False, returns empty string.
+                   Default is True for backwards compatibility.
+
+    Returns:
+        A valid RST label string, or empty string if add_labels is False.
+    """
+    if not add_labels:
+        return ""
+
+    # Convert to lowercase and replace spaces with hyphens
+    label = title.lower()
+    # Remove or replace special characters
+    label = re.sub(r"[^\w\s-]", "", label)
+    label = re.sub(r"[-\s]+", "-", label)
+    # Remove leading/trailing hyphens
+    label = label.strip("-")
+    return label
+
 
 def convert_markdown_links_to_rst(text: str) -> str:
     """Convert markdown links to RST format.
 
     Handles:
-    - External links: [text](http://url) -> `text <http://url>`_
-    - External links with anchors: [text](http://url#anchor) -> `text <http://url#anchor>`_
-    - Internal docs with anchors: [text](./file.md#anchor) -> :doc:`text <file>` (see section)
-    - Internal docs: [text](./file.md) -> :doc:`file`
-    - Anchor links: [text](#anchor) -> :ref:`anchor`
-    - Images: ![alt](path) -> .. image:: path
+
+    - External links: ``[text](http://url)`` -> ```text <http://url>`_``
+    - External links with anchors: ``[text](http://url#anchor)`` ->
+      ```text <http://url#anchor>`_``
+    - Internal docs with anchors: ``[text](./file.md#anchor)`` ->
+      ``:doc:`text <file>``` (see section)
+    - Internal docs: ``[text](./file.md)`` -> ``:doc:`file```
+    - Anchor links: ``[text](#anchor)`` -> ``:ref:`anchor```
+    - Images: ``![alt](path)`` -> ``.. image:: path``
 
     Args:
         text: Line of text potentially containing markdown links.
@@ -231,7 +260,10 @@ def convert_checkbox_list_to_html(lines: list, start_index: int) -> tuple:
 
 
 def convert_markdown_to_rst(
-    markdown: str, doc_type: Optional[str] = None, demote_headers: bool = True
+    markdown: str,
+    doc_type: Optional[str] = None,
+    demote_headers: bool = True,
+    add_labels: bool = False,
 ) -> str:
     """Convert basic markdown syntax to reStructuredText.
 
@@ -240,15 +272,30 @@ def convert_markdown_to_rst(
         doc_type: Type of document (readme, changelog, license) for special handling.
         demote_headers: If True, demote all headers by one level (# -> ##, ## -> ###, etc.)
                        to avoid duplicate H1 headers when including files. Default is True.
+        add_labels: If True, adds RST label anchors for headers. Default is False to avoid
+                   duplicate label warnings when same headers appear in multiple files.
 
     Returns:
         RST-compatible content.
     """
+    # Map unsupported Pygments lexers to safe alternatives
+    # These diagram languages don't have Pygments lexers, so we map them to 'text'
+    lexer_fallback_map = {
+        "plantuml": "text",
+        "puml": "text",
+        "mermaid": "text",
+        "mmd": "text",
+        "gitignore": "text",
+    }
+
     lines = markdown.split("\n")
     result = []
     in_code_block = False
     code_language = ""
+    code_block_fence = ""  # Track the fence pattern (```, ````, etc.)
     first_h1_found = False
+    prev_list_indent = -1  # Track previous list item indentation
+    prev_list_ended_with_colon = False  # Track if previous list item ended with colon
 
     # Special handling for changelogs
     skip_first_h1 = doc_type == "changelog"
@@ -257,19 +304,30 @@ def convert_markdown_to_rst(
     while i < len(lines):
         line = lines[i]
 
-        # Handle code blocks
-        if line.strip().startswith("```"):
+        # Handle code blocks - support 3 or more backticks
+        backtick_match = re.match(r"^(\s*)(```+)(.*)$", line)
+        if backtick_match:
+            fence = backtick_match.group(2)
+            lang = backtick_match.group(3).strip()
+
             if not in_code_block:
                 # Start of code block
                 in_code_block = True
-                code_language = line.strip()[3:].strip() or "text"
+                code_block_fence = fence  # Remember the fence pattern
+                code_language = lang or "text"
+                # Apply lexer fallback mapping for unsupported languages
+                code_language = lexer_fallback_map.get(code_language, code_language)
                 result.append("")
                 result.append(f".. code-block:: {code_language}")
                 result.append("")
-            else:
-                # End of code block
+            elif fence == code_block_fence:
+                # End of code block (must match the opening fence)
                 in_code_block = False
+                code_block_fence = ""
                 result.append("")
+            else:
+                # Different fence pattern inside code block - treat as content
+                result.append("   " + line)
             i += 1
             continue
 
@@ -306,6 +364,26 @@ def convert_markdown_to_rst(
         # Convert markdown links to RST (before processing headers)
         line = convert_markdown_links_to_rst(line)
 
+        # Handle nested bullet lists - add blank lines for level transitions
+        # This fixes RST "Unexpected indentation" errors
+        stripped = line.lstrip()
+        if stripped.startswith("- ") or stripped.startswith("* "):
+            current_indent = len(line) - len(stripped)
+            # Add blank line when changing indentation levels (deeper or shallower)
+            # Add TWO blank lines if prev item ended with colon (def list prevention)
+            if prev_list_indent >= 0 and current_indent != prev_list_indent:
+                result.append("")
+                # Add extra blank line if transitioning from a colon-ending item to deeper nesting
+                if prev_list_ended_with_colon and current_indent > prev_list_indent:
+                    result.append("")
+            prev_list_indent = current_indent
+            # Track if this list item ends with colon
+            prev_list_ended_with_colon = stripped.rstrip().endswith(":")
+        elif stripped and not line.startswith(" "):
+            # Reset when we encounter non-list content
+            prev_list_indent = -1
+            prev_list_ended_with_colon = False
+
         # Handle headers
         # When demote_headers is True:
         # H1 (#) -> H2 (----)
@@ -317,58 +395,88 @@ def convert_markdown_to_rst(
         if line.startswith("##### "):
             # H5 -> H6 (when demoted)
             title = line[6:].strip()
+            title_width = count_display_width(title)
+            # Add anchor label for cross-referencing (if enabled)
+            label = create_label_from_title(title, add_labels)
             result.append("")
+            if label:
+                result.append(f".. _{label}:")
+                result.append("")
             result.append(title)
             if demote_headers:
-                result.append("," * len(title))
+                result.append("," * title_width)
             else:
-                result.append(":" * len(title))
+                result.append(":" * title_width)
             result.append("")
         elif line.startswith("#### "):
             # H4 -> H5 (when demoted)
             title = line[5:].strip()
+            title_width = count_display_width(title)
+            # Add anchor label for cross-referencing (if enabled)
+            label = create_label_from_title(title, add_labels)
             result.append("")
+            if label:
+                result.append(f".. _{label}:")
+                result.append("")
             result.append(title)
             if demote_headers:
-                result.append('"' * len(title))
+                result.append('"' * title_width)
             else:
-                result.append("^" * len(title))
+                result.append("^" * title_width)
             result.append("")
         elif line.startswith("### "):
             # H3 -> H4 (when demoted)
             title = line[4:].strip()
+            title_width = count_display_width(title)
+            # Add anchor label for cross-referencing (if enabled)
+            label = create_label_from_title(title, add_labels)
             result.append("")
+            if label:
+                result.append(f".. _{label}:")
+                result.append("")
             result.append(title)
             if demote_headers:
-                result.append("^" * len(title))
+                result.append("^" * title_width)
             else:
-                result.append("~" * len(title))
+                result.append("~" * title_width)
             result.append("")
         elif line.startswith("## "):
             # H2 -> H3 (when demoted)
             title = line[3:].strip()
+            title_width = count_display_width(title)
+            # Add anchor label for cross-referencing (if enabled)
+            label = create_label_from_title(title, add_labels)
             result.append("")
+            if label:
+                result.append(f".. _{label}:")
+                result.append("")
             result.append(title)
             if demote_headers:
-                result.append("~" * len(title))
+                result.append("~" * title_width)
             else:
-                result.append("-" * len(title))
+                result.append("-" * title_width)
             result.append("")
         elif line.startswith("# "):
             # H1 -> H2 (when demoted)
             title = line[2:].strip()
+            title_width = count_display_width(title)
             # Skip first H1 for changelogs or if title matches doc type
             if skip_first_h1 and not first_h1_found:
                 first_h1_found = True
                 i += 1
                 continue
             first_h1_found = True
+            # Add anchor label for cross-referencing (if enabled)
+            label = create_label_from_title(title, add_labels)
             result.append("")
+            if label:
+                result.append(f".. _{label}:")
+                result.append("")
             result.append(title)
             if demote_headers:
-                result.append("-" * len(title))
+                result.append("-" * title_width)
             else:
-                result.append("=" * len(title))
+                result.append("=" * title_width)
             result.append("")
         else:
             # Regular line

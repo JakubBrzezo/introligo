@@ -82,7 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Markdown link conversion: `[text](url)` → `` `text <url>`_ ``
   - Internal document links: `[text](file.md)` → `:doc:`text <file>``
   - Anchor links: `[text](#anchor)` → `:ref:`anchor``
-  - Image conversion: `![alt](path)` → `.. image:: path`
+  - Image conversion from markdown image syntax to RST image directive
   - Markdown table to RST list-table conversion
   - Link with anchor support: `[text](file.md#section)`
   - Code block preservation (links not converted inside code)

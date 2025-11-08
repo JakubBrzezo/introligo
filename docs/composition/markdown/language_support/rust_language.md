@@ -290,7 +290,7 @@ modules:
 | **Format** | Docstrings | Comments | Comments | Doc comments |
 | **Manual Fallback** | No | ✅ Yes | ✅ Yes | ✅ Yes |
 
-*Requires Go to be installed
+\*Requires Cargo to be installed
 
 ## See Also
 

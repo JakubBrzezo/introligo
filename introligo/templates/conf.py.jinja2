@@ -125,6 +125,27 @@ intersphinx_mapping = {
 {% endfor %}
 }
 {% endif %}
+{% if sphinx.nitpick_ignore %}
+
+# -- Suppress warnings for external references ---------------------------------
+nitpick_ignore = {{ sphinx.nitpick_ignore|tojson }}
+{% endif %}
+{% if sphinx.suppress_warnings %}
+
+# -- Suppress specific warning categories --------------------------------------
+suppress_warnings = {{ sphinx.suppress_warnings|tojson }}
+{% endif %}
+{% if sphinx.highlight_options %}
+
+# -- Syntax highlighting options ----------------------------------------------
+{% for key, value in sphinx.highlight_options.items() %}
+highlight_{{ key }} = {{ 'True' if value is sameas true else ('False' if value is sameas false else ('"' + value + '"' if value is string else value)) }}
+{% endfor %}
+{% endif %}
+{% if sphinx.pygments_style %}
+pygments_style = "{{ sphinx.pygments_style }}"
+{% endif %}
+
 
 # -- HTML output options -------------------------------------------------------
 html_theme = "{{ sphinx.html_theme }}"

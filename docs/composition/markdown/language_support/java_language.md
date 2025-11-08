@@ -38,7 +38,7 @@ modules:
 | `java_source_files` | List of specific Java files | Optional |
 | `java_manual_content` | Manual documentation (fallback) | Optional |
 
-*Either `java_package`, `java_packages`, or `java_source_files` is required
+\*Either `java_package`, `java_packages`, or `java_source_files` is required
 
 ## How It Works
 
@@ -445,7 +445,7 @@ private void helperMethod() { ... }
 | **Manual Fallback** | No | No | ✅ Yes | ✅ Yes |
 | **Tag Support** | ✅ Full | ✅ Full | ⚠️ Limited | ✅ Full |
 
-*Requires Go to be installed
+\*Requires Java to be installed
 
 ## Example Java Project
 
