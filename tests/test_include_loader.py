@@ -103,11 +103,11 @@ class TestIncludeLoader:
 
         with open(yaml_file, encoding="utf-8") as f:
             loader = IncludeLoader(f)
-            assert hasattr(loader, "_root_dir")
-            assert loader._root_dir == temp_dir
+            assert hasattr(loader, "root_dir")
+            assert loader.root_dir == temp_dir
 
     def test_include_with_relative_path_fallback(self, temp_dir: Path):
-        """Test include with path resolution when loader has no _root_dir attribute."""
+        """Test include with path resolution when loader has no root_dir attribute."""
         # Create included file
         included = temp_dir / "included.yaml"
         included.write_text("value: 42", encoding="utf-8")
@@ -120,14 +120,14 @@ class TestIncludeLoader:
 
         import yaml
 
-        # Simulate include_constructor being called without _root_dir
+        # Simulate include_constructor being called without root_dir
         from introligo.yaml_loader import include_constructor
 
         stream = StringIO("test: value")
         loader = IncludeLoader(stream)
 
-        # Manually remove _root_dir to test fallback
-        delattr(loader, "_root_dir")
+        # Manually remove root_dir to test fallback
+        delattr(loader, "root_dir")
 
         # Create a scalar node with absolute path
         node = yaml.ScalarNode(tag="tag:yaml.org,2002:str", value=str(included.resolve()))

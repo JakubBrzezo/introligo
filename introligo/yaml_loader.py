@@ -34,12 +34,12 @@ class IncludeLoader(yaml.SafeLoader):
         Args:
             stream: YAML input stream, typically a file object.
         """
-        self._root_dir = Path.cwd()
+        self.root_dir = Path.cwd()
 
         # Track the directory of the current file for relative includes
         if hasattr(stream, "name"):
             self._current_file = Path(stream.name).resolve()
-            self._root_dir = self._current_file.parent
+            self.root_dir = self._current_file.parent
 
         super().__init__(stream)
 
@@ -61,8 +61,8 @@ def include_constructor(loader: IncludeLoader, node: Any) -> Any:
     include_path = loader.construct_scalar(cast(yaml.ScalarNode, node))
 
     # Resolve path relative to the current file's directory
-    if hasattr(loader, "_root_dir"):
-        full_path = (loader._root_dir / include_path).resolve()
+    if hasattr(loader, "root_dir"):
+        full_path = (loader.root_dir / include_path).resolve()
     else:
         full_path = Path(include_path).resolve()
 
@@ -74,7 +74,8 @@ def include_constructor(loader: IncludeLoader, node: Any) -> Any:
     # Load the included file with the same loader to support nested includes
     try:
         with open(full_path, encoding="utf-8") as f:
-            return yaml.load(f, Loader=IncludeLoader)
+            # Using custom IncludeLoader for YAML file inclusion feature
+            return yaml.load(f, Loader=IncludeLoader)  # nosec B506
     except yaml.YAMLError as e:
         raise IntroligoError(f"Invalid YAML in included file {full_path}: {e}") from e
     except Exception as e:

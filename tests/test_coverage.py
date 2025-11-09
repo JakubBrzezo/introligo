@@ -33,8 +33,8 @@ class TestIncludeLoaderEdgeCases:
         loader = IncludeLoader(stream)
 
         # Should use cwd as root_dir when stream has no name
-        assert hasattr(loader, "_root_dir")
-        assert loader._root_dir == Path.cwd()
+        assert hasattr(loader, "root_dir")
+        assert loader.root_dir == Path.cwd()
 
     def test_include_absolute_path(self, temp_dir: Path):
         """Test include with absolute path."""

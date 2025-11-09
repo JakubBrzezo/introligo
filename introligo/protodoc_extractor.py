@@ -372,7 +372,7 @@ class ProtoDocExtractor:
                     content = f.read()
 
                 # Parse the entire proto file structure
-                parsed = self._parse_proto_file(content)
+                parsed = self.parse_proto_file(content)
 
                 # Filter by package if specified
                 if package_name and parsed.get("package") != package_name:
@@ -424,13 +424,12 @@ class ProtoDocExtractor:
         Returns:
             Text with @Ref converted to RST cross-reference syntax.
         """
-        import re
-
         # Match @Ref followed by one or more word characters (letters, digits, underscores, dots)
         # This will match: @Ref User, @Ref user.v1.User, @Ref CreateUserRequest, etc.
         pattern = r"@Ref\s+([\w.]+)"
 
         def replace_ref(match):
+            """Replace @Ref with Sphinx reference directive."""
             ref_name = match.group(1)
             # Convert to Sphinx :ref: directive for clickable links
             # Format: :ref:`Display Text <label>`
@@ -525,7 +524,7 @@ class ProtoDocExtractor:
                     break
                 idx -= 1
                 continue
-            elif line.startswith("//"):
+            if line.startswith("//"):
                 comments.insert(0, line)
                 idx -= 1
             elif "*/" in line:
@@ -562,7 +561,7 @@ class ProtoDocExtractor:
             return parts[0].rstrip(), self._normalize_comment(parts[1])
         return line, ""
 
-    def _parse_proto_file(self, content: str) -> Dict[str, Any]:
+    def parse_proto_file(self, content: str) -> Dict[str, Any]:
         """Parse a protobuf file and extract all elements with their comments.
 
         Args:
@@ -591,9 +590,9 @@ class ProtoDocExtractor:
             if stripped.startswith("syntax"):
                 found_syntax = True
                 continue
-            elif stripped.startswith("package"):
+            if stripped.startswith("package"):
                 break
-            elif stripped.startswith("//") or stripped.startswith("/*"):
+            if stripped.startswith("//") or stripped.startswith("/*"):
                 file_comments.append(stripped)
             elif found_syntax and not stripped:
                 # Empty line after syntax is ok

@@ -310,7 +310,7 @@ class TestProtoDocExtractorEdgeCases:
         # Should capture the block comment
         assert "*/" in result or "Comment" in result
 
-    def test_parse_proto_file_with_block_comments(self, temp_dir):
+    def testparse_proto_file_with_block_comments(self, temp_dir):
         """Test parsing proto file with block comments before package."""
         from introligo.protodoc_extractor import ProtoDocExtractor
 
@@ -326,7 +326,7 @@ message Test {
     string id = 1;
 }
 """
-        result = extractor._parse_proto_file(content)
+        result = extractor.parse_proto_file(content)
 
         assert result["syntax"] == "proto3"
         assert result["package"] == "test.v1"
@@ -340,7 +340,7 @@ message Test {
 syntax = "proto3";
 package test.v1;
 """
-        result = extractor._parse_proto_file(content)
+        result = extractor.parse_proto_file(content)
 
         # File comment before syntax should be captured
         assert result["syntax"] == "proto3"

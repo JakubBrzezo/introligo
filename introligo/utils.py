@@ -26,6 +26,54 @@ def slugify(text: str) -> str:
     return slug or "unnamed"
 
 
+def _is_emoji_code(code: int) -> bool:
+    """Check if a character code is an emoji.
+
+    Args:
+        code: Unicode code point.
+
+    Returns:
+        True if the code represents an emoji character.
+    """
+    # Emoji ranges (comprehensive coverage)
+    emoji_ranges = [
+        (0x1F300, 0x1F9FF),  # Misc Symbols and Pictographs + Supplemental
+        (0x2600, 0x26FF),  # Misc symbols
+        (0x2700, 0x27BF),  # Dingbats
+        (0xFE00, 0xFE0F),  # Variation selectors
+        (0x1F000, 0x1F02F),  # Additional symbols
+        (0x1F600, 0x1F64F),  # Emoticons
+        (0x1F680, 0x1F6FF),  # Transport and Map
+        (0x1F900, 0x1F9FF),  # Supplemental Symbols and Pictographs
+        (0x2194, 0x2199),  # Arrows
+        (0x21A9, 0x21AA),  # Return arrows
+        (0x231A, 0x231B),  # Watch + Hourglass
+        (0x23E9, 0x23F3),  # Media buttons
+        (0x23F8, 0x23FA),  # Media buttons continued
+    ]
+
+    # Check if code is in any range
+    for start, end in emoji_ranges:
+        if start <= code <= end:
+            return True
+
+    # Single emoji code points
+    single_emojis = {
+        0x2B50,
+        0x2705,
+        0x274C,
+        0x2716,
+        0x2714,
+        0x2728,
+        0x203C,
+        0x2049,
+        0x25B6,
+        0x25C0,
+        0x2139,
+    }
+    return code in single_emojis
+
+
 def count_display_width(text: str) -> int:
     """Calculate display width for RST underlines, accounting for emojis.
 
@@ -40,37 +88,7 @@ def count_display_width(text: str) -> int:
         Estimated character width for RST underlines
     """
     # Count emojis (characters in emoji ranges)
-    emoji_count = 0
-    for char in text:
-        code = ord(char)
-        # Common emoji ranges - comprehensive coverage
-        if (
-            0x1F300 <= code <= 0x1F9FF  # Misc Symbols and Pictographs + Supplemental
-            or 0x2600 <= code <= 0x26FF  # Misc symbols
-            or 0x2700 <= code <= 0x27BF  # Dingbats
-            or 0xFE00 <= code <= 0xFE0F  # Variation selectors
-            or 0x1F000 <= code <= 0x1F02F  # Additional symbols
-            or 0x1F600 <= code <= 0x1F64F  # Emoticons
-            or 0x1F680 <= code <= 0x1F6FF  # Transport and Map
-            or 0x1F900 <= code <= 0x1F9FF  # Supplemental Symbols and Pictographs
-            or code == 0x2B50  # Star
-            or code == 0x2705  # Check mark
-            or code == 0x274C  # Cross mark
-            or code == 0x2716  # Heavy multiplication X
-            or code == 0x2714  # Heavy check mark
-            or code == 0x2728  # Sparkles
-            or code == 0x203C  # Double exclamation
-            or code == 0x2049  # Exclamation question
-            or code == 0x25B6  # Play button
-            or code == 0x25C0  # Reverse button
-            or code == 0x2139  # Information
-            or 0x2194 <= code <= 0x2199  # Arrows
-            or 0x21A9 <= code <= 0x21AA  # Return arrows
-            or 0x231A <= code <= 0x231B  # Watch + Hourglass
-            or 0x23E9 <= code <= 0x23F3  # Media buttons
-            or 0x23F8 <= code <= 0x23FA
-        ):  # Media buttons continued
-            emoji_count += 1
+    emoji_count = sum(1 for char in text if _is_emoji_code(ord(char)))
 
     # Add extra character for each emoji (emojis display wider)
     # Use +1 per emoji for better results

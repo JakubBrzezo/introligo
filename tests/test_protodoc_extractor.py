@@ -360,14 +360,14 @@ class TestProtoDocExtractor:
         assert line_without == line
         assert comment == ""
 
-    def test_parse_proto_file(self, temp_proto_dir):
+    def testparse_proto_file(self, temp_proto_dir):
         """Test parsing a complete proto file."""
         extractor = ProtoDocExtractor(temp_proto_dir)
         proto_file = temp_proto_dir / "user.proto"
         with open(proto_file) as f:
             content = f.read()
 
-        result = extractor._parse_proto_file(content)
+        result = extractor.parse_proto_file(content)
 
         assert result["syntax"] == "proto3"
         assert result["package"] == "user.v1"

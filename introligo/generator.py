@@ -89,7 +89,8 @@ class IntroligoGenerator:
 
         try:
             with open(self.config_file, encoding="utf-8") as f:
-                self.config = yaml.load(f, Loader=IncludeLoader)
+                # Using custom IncludeLoader for YAML file inclusion feature
+                self.config = yaml.load(f, Loader=IncludeLoader)  # nosec B506
         except yaml.YAMLError as e:
             raise IntroligoError(f"Invalid YAML in {self.config_file}: {e}") from e
 
@@ -101,11 +102,10 @@ class IntroligoGenerator:
             # Show deprecation warning if using old structure without hub/discovery
             if not self.config.get("hub") and not self.config.get("discovery"):
                 raise IntroligoError("Configuration must contain a 'modules' dictionary")
-            else:
-                # Hub mode - modules will be generated
-                logger.info("Hub mode detected - modules will be auto-generated")
-                self.config["modules"] = {}
-                modules = {}
+            # Hub mode - modules will be generated
+            logger.info("Hub mode detected - modules will be auto-generated")
+            self.config["modules"] = {}
+            modules = {}
 
         # Load Doxygen configuration if present
         if "doxygen" in self.config:
@@ -724,7 +724,8 @@ Related Tools
             logger.info("Using enhanced default template")
 
         # Create environment with custom filter
-        env = Environment()
+        # Generating RST documentation, not HTML, XSS not applicable
+        env = Environment()  # nosec B701
         env.filters["display_width"] = count_display_width
 
         return env.from_string(template_content)
@@ -1432,7 +1433,7 @@ Related Tools
                     for proto_file in proto_file_paths:
                         with open(proto_file, encoding="utf-8") as f:
                             content = f.read()
-                        parsed = proto_extractor._parse_proto_file(content)
+                        parsed = proto_extractor.parse_proto_file(content)
                         if not proto_package or parsed.get("package") == proto_package:
                             parsed_files.append(parsed)
 
@@ -1763,7 +1764,8 @@ breathe_default_project = "{project_name}"
 
         try:
             with open(palette_path, encoding="utf-8") as f:
-                palette_data: Dict[str, Any] = yaml.load(f, Loader=IncludeLoader)
+                # Using custom IncludeLoader for YAML file inclusion feature
+                palette_data: Dict[str, Any] = yaml.load(f, Loader=IncludeLoader)  # nosec B506
                 logger.info(f"✅ Loaded palette: {palette_data.get('name', palette_name)}")
                 return palette_data
         except Exception as e:
@@ -2129,7 +2131,8 @@ breathe_default_project = "{project_name}"
             return None
 
         template_content = template_path.read_text(encoding="utf-8")
-        env = Environment()
+        # Generating Python config file, not HTML, XSS not applicable
+        env = Environment()  # nosec B701
         template = env.from_string(template_content)
 
         # Prepare template context

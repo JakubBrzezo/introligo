@@ -1,0 +1,58 @@
+# Pre-commit hooks for introligo project
+# Run all quality checks before committing
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        name: Ruff Linter
+        args: [--fix]
+      - id: ruff-format
+        name: Ruff Formatter
+
+  # Local hooks for tools that need the project environment
+  - repo: local
+    hooks:
+      # MyPy - Static type checker (uses local environment with all dependencies)
+      - id: mypy
+        name: MyPy Type Checker
+        entry: mypy
+        language: system
+        args: [.]
+        pass_filenames: false
+
+      # Bandit - Security linter
+      - id: bandit
+        name: Bandit Security Checker
+        entry: bandit
+        language: system
+        args: [-r, introligo, -ll, -f, screen]
+        pass_filenames: false
+
+      # Pylint - Code quality checker
+      - id: pylint
+        name: Pylint Linter
+        entry: pylint
+        language: system
+        args: [introligo]
+        pass_filenames: false
+
+      # Interrogate - Docstring coverage
+      - id: interrogate
+        name: Interrogate Docstring Coverage
+        entry: interrogate
+        language: system
+        args: [introligo]
+        pass_filenames: false
+
+      # Xenon - Complexity checker
+      - id: xenon
+        name: Xenon Complexity Checker
+        entry: xenon
+        language: system
+        args: [--max-absolute, F, --max-modules, C, --max-average, B, introligo]
+        pass_filenames: false

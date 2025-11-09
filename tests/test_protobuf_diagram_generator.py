@@ -391,7 +391,7 @@ class TestProtobufDiagramGenerator:
         for parsed in sample_parsed_files:
             generator.add_parsed_file(parsed)
 
-        diagram = generator.generate_dependency_graph(format="graphviz")
+        diagram = generator.generate_dependency_graph(output_format="graphviz")
 
         assert "digraph ProtobufDependencies" in diagram
         assert "rankdir=LR" in diagram
@@ -406,7 +406,7 @@ class TestProtobufDiagramGenerator:
             generator.add_parsed_file(parsed)
 
         diagram = generator.generate_dependency_graph(
-            title="Package Dependencies", format="graphviz"
+            title="Package Dependencies", output_format="graphviz"
         )
 
         assert 'label="Package Dependencies"' in diagram
@@ -417,7 +417,7 @@ class TestProtobufDiagramGenerator:
         for parsed in sample_parsed_files:
             generator.add_parsed_file(parsed)
 
-        diagram = generator.generate_dependency_graph(format="plantuml")
+        diagram = generator.generate_dependency_graph(output_format="plantuml")
 
         assert "@startuml" in diagram
         assert "@enduml" in diagram
@@ -431,7 +431,9 @@ class TestProtobufDiagramGenerator:
         for parsed in sample_parsed_files:
             generator.add_parsed_file(parsed)
 
-        diagram = generator.generate_dependency_graph(title="Dependencies", format="plantuml")
+        diagram = generator.generate_dependency_graph(
+            title="Dependencies", output_format="plantuml"
+        )
 
         assert "title Dependencies" in diagram
 

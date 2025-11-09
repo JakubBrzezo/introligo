@@ -13,7 +13,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-
 # -- Paths --------------------------------------------------------------------
 DOCS_DIR = Path(__file__).resolve().parent
 
@@ -21,7 +20,6 @@ PROJECT_ROOT = DOCS_DIR.parent
 
 
 sys.path.insert(0, str(PROJECT_ROOT))
-
 
 
 # -- Project information -------------------------------------------------------
@@ -39,21 +37,16 @@ version = "1.0"
 
 # -- General configuration -----------------------------------------------------
 extensions = [
-
     "sphinx.ext.autodoc",
-
     "sphinx.ext.napoleon",
-
     "sphinx.ext.viewcode",
-
 ]
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 language = "en"
-
 
 
 # -- HTML output options -------------------------------------------------------
@@ -63,47 +56,21 @@ html_theme = "alabaster"
 html_title = "String Utils Documentation"
 
 
-
-
-
 html_theme_options = {
-
-
-
-
-
-
     "description": "Common string manipulation utilities",
-
-
-
     "github_user": "example",
-
-
-
     "github_repo": "string-utils",
-
-
-
 }
-
 
 
 # -- Options for autodoc extension -------------------------------------------
 autodoc_default_options = {
-
     "members": True,
-
     "member-order": "bysource",
-
     "special-members": "__init__",
-
     "undoc-members": True,
-
     "exclude-members": "__weakref__",
-
 }
-
 
 
 # -- Napoleon settings for better docstring rendering -----------------------
@@ -123,9 +90,3 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 napoleon_attr_annotations = True
-
-
-
-
-
-

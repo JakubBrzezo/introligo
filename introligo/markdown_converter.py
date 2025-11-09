@@ -69,6 +69,7 @@ def convert_markdown_links_to_rst(text: str) -> str:
     # Handle internal document links with anchors: [text](./file.md#anchor)
     # Convert to :doc: reference with note about the section
     def convert_doc_link_with_anchor(match):
+        """Convert markdown link with anchor to RST doc reference."""
         link_text = match.group(1)
         file_path = match.group(2)
         anchor = match.group(3)
@@ -104,6 +105,7 @@ def convert_markdown_links_to_rst(text: str) -> str:
     # [text](./file.md) or [text](path/to/file.md)
     # Convert to :doc: reference without .md extension
     def convert_doc_link(match):
+        """Convert markdown link to RST doc reference."""
         link_text = match.group(1)
         file_path = match.group(2)
 
@@ -259,6 +261,26 @@ def convert_checkbox_list_to_html(lines: list, start_index: int) -> tuple:
     return (rst_lines, i)
 
 
+def _is_table_start(line: str, lines: list, i: int, in_code_block: bool) -> bool:
+    """Check if current line is the start of a markdown table.
+
+    Args:
+        line: Current line to check.
+        lines: All lines in the document.
+        i: Current line index.
+        in_code_block: Whether we're currently in a code block.
+
+    Returns:
+        True if this line starts a table, False otherwise.
+    """
+    if in_code_block or "|" not in line:
+        return False
+    if i + 1 >= len(lines):
+        return False
+    next_line = lines[i + 1]
+    return "|" in next_line and ("-" in next_line or "=" in next_line)
+
+
 def convert_markdown_to_rst(
     markdown: str,
     doc_type: Optional[str] = None,
@@ -338,13 +360,7 @@ def convert_markdown_to_rst(
             continue
 
         # Handle tables (before link conversion to preserve table structure)
-        if (
-            "|" in line
-            and not in_code_block
-            and i + 1 < len(lines)
-            and "|" in lines[i + 1]
-            and ("-" in lines[i + 1] or "=" in lines[i + 1])
-        ):
+        if _is_table_start(line, lines, i, in_code_block):
             # This is a table!
             rst_table, new_index = convert_markdown_table_to_rst(lines, i)
             if rst_table:

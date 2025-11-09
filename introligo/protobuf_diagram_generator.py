@@ -220,21 +220,20 @@ class ProtobufDiagramGenerator:
     def generate_dependency_graph(
         self,
         title: Optional[str] = None,
-        format: str = "graphviz",
+        output_format: str = "graphviz",
     ) -> str:
         """Generate a dependency graph showing package relationships.
 
         Args:
             title: Optional diagram title.
-            format: Output format ('graphviz' or 'plantuml').
+            output_format: Output format ('graphviz' or 'plantuml').
 
         Returns:
             Diagram as string.
         """
-        if format == "plantuml":
+        if output_format == "plantuml":
             return self._generate_dependency_graph_plantuml(title)
-        else:
-            return self._generate_dependency_graph_graphviz(title)
+        return self._generate_dependency_graph_graphviz(title)
 
     def _generate_dependency_graph_graphviz(self, title: Optional[str] = None) -> str:
         """Generate Graphviz dependency graph.
