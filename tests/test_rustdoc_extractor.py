@@ -110,7 +110,7 @@ class TestRustDocExtractor:
         assert result is None
 
     @patch(
-        "builtins.open",
+        "introligo.rustdoc_extractor.open",
         new_callable=mock_open,
         read_data="""
 //! # Test Crate

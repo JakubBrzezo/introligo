@@ -79,7 +79,7 @@ class TestJavaDocExtractor:
         assert result == "public class Test {}"
         mock_file.assert_called_once()
 
-    @patch("builtins.open", side_effect=FileNotFoundError())
+    @patch("introligo.javadoc_extractor.open", side_effect=FileNotFoundError())
     def test_extract_from_source_file_not_found(self, mock_file):
         """Test extract_from_source when file doesn't exist."""
         extractor = JavaDocExtractor()
@@ -87,7 +87,10 @@ class TestJavaDocExtractor:
 
         assert result is None
 
-    @patch("builtins.open", side_effect=UnicodeDecodeError("utf-8", b"", 0, 1, ""))
+    @patch(
+        "introligo.javadoc_extractor.open",
+        side_effect=UnicodeDecodeError("utf-8", b"", 0, 1, ""),
+    )
     def test_extract_from_source_encoding_error(self, mock_file):
         """Test extract_from_source when file has encoding issues."""
         extractor = JavaDocExtractor()
