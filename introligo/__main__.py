@@ -209,10 +209,10 @@ Examples:
         # Generate and write Breathe configuration if Doxygen is configured
         breathe_config = generator.generate_breathe_config()
         if breathe_config and not args.dry_run:
-            generator.generated_dir.mkdir(parents=True, exist_ok=True)
+            generator.paths.generated_dir.mkdir(parents=True, exist_ok=True)
 
             # Create __init__.py to make it a package
-            init_path = generator.generated_dir / "__init__.py"
+            init_path = generator.paths.generated_dir / "__init__.py"
             init_content = '''"""AUTO-GENERATED documentation files by Introligo.
 
 WARNING: This directory and all files within are AUTO-GENERATED.
@@ -225,7 +225,7 @@ To modify the documentation:
 '''
             init_path.write_text(init_content, encoding="utf-8")
 
-            breathe_config_path = generator.generated_dir / "breathe_config.py"
+            breathe_config_path = generator.paths.generated_dir / "breathe_config.py"
             breathe_config_path.write_text(breathe_config, encoding="utf-8")
             logger.info(f"Generated Breathe configuration: {breathe_config_path}")
             logger.info("Import this in your conf.py: from generated.breathe_config import *")
@@ -236,7 +236,7 @@ To modify the documentation:
             if args.dry_run:
                 logger.info("Would generate conf.py")
             else:
-                conf_py_path = generator.output_dir / "conf.py"
+                conf_py_path = generator.paths.output_dir / "conf.py"
                 conf_py_path.write_text(conf_py_content, encoding="utf-8")
                 logger.info(f"Generated Sphinx configuration: {conf_py_path}")
                 logger.info(

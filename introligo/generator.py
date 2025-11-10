@@ -5,6 +5,7 @@ Copyright (c) 2025 WT Tech Jakub Brzezowski
 """
 
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -40,6 +41,32 @@ except ModuleNotFoundError:
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class PathConfig:
+    """Configuration for file paths used by the generator."""
+
+    config_file: Path
+    output_dir: Path
+    generated_dir: Path
+    template_file: Optional[Path] = None
+
+
+@dataclass
+class GeneratorOptions:
+    """Options for controlling generator behavior."""
+
+    dry_run: bool = False
+    strict: bool = False
+
+
+@dataclass
+class ExtensionFlags:
+    """Flags indicating which Sphinx extensions are available."""
+
+    has_plantuml_extension: bool = False
+    has_mermaid_extension: bool = False
+
+
 class IntroligoGenerator:
     """Main generator class for processing YAML and creating RST files."""
 
@@ -47,6 +74,7 @@ class IntroligoGenerator:
         self,
         config_file: Path,
         output_dir: Path,
+        *,
         template_file: Optional[Path] = None,
         dry_run: bool = False,
         strict: bool = False,
@@ -60,20 +88,20 @@ class IntroligoGenerator:
             dry_run: If True, only show what would be generated.
             strict: If True, fail on any generation error.
         """
-        self.config_file = config_file
-        self.output_dir = output_dir
-        self.generated_dir = output_dir / "generated"
-        self.template_file = template_file
-        self.dry_run = dry_run
-        self.strict = strict
+        self.paths = PathConfig(
+            config_file=config_file,
+            output_dir=output_dir,
+            generated_dir=output_dir / "generated",
+            template_file=template_file,
+        )
+        self.options = GeneratorOptions(dry_run=dry_run, strict=strict)
+        self.extensions = ExtensionFlags()
         self.config: Dict[str, Any] = {}
         self.page_tree: List[PageNode] = []
         self.doxygen_config: Dict[str, str] = {}
         self.sphinx_config: Dict[str, Any] = {}
         self.palette_data: Dict[str, Any] = {}
         self.hub: Optional[DocumentationHub] = None
-        self.has_plantuml_extension: bool = False
-        self.has_mermaid_extension: bool = False
 
     def load_config(self) -> None:
         """Load configuration with support for !include directives.
@@ -82,17 +110,17 @@ class IntroligoGenerator:
             IntroligoError: If the config file is not found, has invalid YAML,
                 or doesn't contain required 'modules' dictionary.
         """
-        if not self.config_file.exists():
-            raise IntroligoError(f"Configuration file not found: {self.config_file}")
+        if not self.paths.config_file.exists():
+            raise IntroligoError(f"Configuration file not found: {self.paths.config_file}")
 
-        logger.info(f"📖 Loading configuration from {self.config_file}")
+        logger.info(f"📖 Loading configuration from {self.paths.config_file}")
 
         try:
-            with open(self.config_file, encoding="utf-8") as f:
+            with open(self.paths.config_file, encoding="utf-8") as f:
                 # Using custom IncludeLoader for YAML file inclusion feature
                 self.config = yaml.load(f, Loader=IncludeLoader)  # nosec B506
         except yaml.YAMLError as e:
-            raise IntroligoError(f"Invalid YAML in {self.config_file}: {e}") from e
+            raise IntroligoError(f"Invalid YAML in {self.paths.config_file}: {e}") from e
 
         if not isinstance(self.config, dict):
             raise IntroligoError("Configuration must be a YAML dictionary")
@@ -115,7 +143,7 @@ class IntroligoGenerator:
 
         # Initialize documentation hub if configured
         if self.config.get("hub") or self.config.get("discovery"):
-            self.hub = DocumentationHub(self.config_file, self.config)
+            self.hub = DocumentationHub(self.paths.config_file, self.config)
             logger.info("🌐 Documentation Hub initialized")
 
             # Discover documentation if enabled
@@ -716,9 +744,9 @@ Related Tools
         Returns:
             Configured Jinja2 Template object with custom filters.
         """
-        if self.template_file and self.template_file.exists():
-            template_content = self.template_file.read_text(encoding="utf-8")
-            logger.info(f"Using custom template: {self.template_file}")
+        if self.paths.template_file and self.paths.template_file.exists():
+            template_content = self.paths.template_file.read_text(encoding="utf-8")
+            logger.info(f"Using custom template: {self.paths.template_file}")
         else:
             template_content = self.get_default_template()
             logger.info("Using enhanced default template")
@@ -798,7 +826,7 @@ Related Tools
         # Resolve path relative to the config file's directory
         md_path_obj = Path(markdown_path)
         if not md_path_obj.is_absolute():
-            md_path_obj = self.config_file.parent / markdown_path
+            md_path_obj = self.paths.config_file.parent / markdown_path
 
         if not md_path_obj.exists():
             raise IntroligoError(f"Markdown file not found: {md_path_obj}")
@@ -827,7 +855,7 @@ Related Tools
         # Resolve path relative to the config file's directory
         latex_path_obj = Path(latex_path)
         if not latex_path_obj.is_absolute():
-            latex_path_obj = self.config_file.parent / latex_path
+            latex_path_obj = self.paths.config_file.parent / latex_path
 
         if not latex_path_obj.exists():
             raise IntroligoError(f"LaTeX file not found: {latex_path_obj}")
@@ -856,7 +884,7 @@ Related Tools
         # Resolve path relative to the config file's directory
         rst_path_obj = Path(rst_path)
         if not rst_path_obj.is_absolute():
-            rst_path_obj = self.config_file.parent / rst_path
+            rst_path_obj = self.paths.config_file.parent / rst_path
 
         if not rst_path_obj.exists():
             raise IntroligoError(f"RST file not found: {rst_path_obj}")
@@ -883,7 +911,7 @@ Related Tools
         # Resolve path relative to the config file's directory
         txt_path_obj = Path(txt_path)
         if not txt_path_obj.is_absolute():
-            txt_path_obj = self.config_file.parent / txt_path
+            txt_path_obj = self.paths.config_file.parent / txt_path
 
         if not txt_path_obj.exists():
             raise IntroligoError(f"Text file not found: {txt_path_obj}")
@@ -915,14 +943,16 @@ Related Tools
         # Resolve path relative to the config file's directory
         puml_path_obj = Path(plantuml_path)
         if not puml_path_obj.is_absolute():
-            puml_path_obj = self.config_file.parent / plantuml_path
+            puml_path_obj = self.paths.config_file.parent / plantuml_path
 
         if not puml_path_obj.exists():
             raise IntroligoError(f"PlantUML file not found: {puml_path_obj}")
 
         try:
             content = puml_path_obj.read_text(encoding="utf-8")
-            rst_content = convert_plantuml_to_rst(content, title, self.has_plantuml_extension)
+            rst_content = convert_plantuml_to_rst(
+                content, title, self.extensions.has_plantuml_extension
+            )
             logger.info(f"  📊 Included PlantUML: {puml_path_obj}")
             return rst_content
         except Exception as e:
@@ -944,14 +974,16 @@ Related Tools
         # Resolve path relative to the config file's directory
         mmd_path_obj = Path(mermaid_path)
         if not mmd_path_obj.is_absolute():
-            mmd_path_obj = self.config_file.parent / mermaid_path
+            mmd_path_obj = self.paths.config_file.parent / mermaid_path
 
         if not mmd_path_obj.exists():
             raise IntroligoError(f"Mermaid file not found: {mmd_path_obj}")
 
         try:
             content = mmd_path_obj.read_text(encoding="utf-8")
-            rst_content = convert_mermaid_to_rst(content, title, self.has_mermaid_extension)
+            rst_content = convert_mermaid_to_rst(
+                content, title, self.extensions.has_mermaid_extension
+            )
             logger.info(f"  📊 Included Mermaid: {mmd_path_obj}")
             return rst_content
         except Exception as e:
@@ -973,7 +1005,7 @@ Related Tools
         # Resolve path relative to the config file's directory
         dot_path_obj = Path(graphviz_path)
         if not dot_path_obj.is_absolute():
-            dot_path_obj = self.config_file.parent / graphviz_path
+            dot_path_obj = self.paths.config_file.parent / graphviz_path
 
         if not dot_path_obj.exists():
             raise IntroligoError(f"Graphviz file not found: {dot_path_obj}")
@@ -1003,7 +1035,7 @@ Related Tools
         # Resolve path relative to the config file's directory
         svg_path_obj = Path(svg_path)
         if not svg_path_obj.is_absolute():
-            svg_path_obj = self.config_file.parent / svg_path
+            svg_path_obj = self.paths.config_file.parent / svg_path
 
         if not svg_path_obj.exists():
             raise IntroligoError(f"SVG file not found: {svg_path_obj}")
@@ -1040,7 +1072,7 @@ Related Tools
         """
         path_obj = Path(file_path)
         if not path_obj.is_absolute():
-            path_obj = self.config_file.parent / file_path
+            path_obj = self.paths.config_file.parent / file_path
 
         if not path_obj.exists():
             raise IntroligoError(f"Include file not found: {path_obj}")
@@ -1052,28 +1084,164 @@ Related Tools
         text_file_names = ["LICENSE", "COPYING", "AUTHORS", "CONTRIBUTORS", "NOTICE"]
         is_text_file = filename in text_file_names or filename.startswith("LICENSE")
 
-        if suffix == ".rst":
-            return self.include_rst_file(file_path)
-        elif suffix == ".md":
-            return self.include_markdown_file(file_path)
-        elif suffix == ".tex":
-            return self.include_latex_file(file_path)
-        elif suffix == ".txt" or is_text_file:
+        # Map file extensions to their handler methods
+        extension_handlers = {
+            ".rst": self.include_rst_file,
+            ".md": self.include_markdown_file,
+            ".tex": self.include_latex_file,
+            ".txt": self.include_txt_file,
+            ".puml": self.include_plantuml_file,
+            ".plantuml": self.include_plantuml_file,
+            ".mmd": self.include_mermaid_file,
+            ".mermaid": self.include_mermaid_file,
+            ".dot": self.include_graphviz_file,
+            ".gv": self.include_graphviz_file,
+            ".svg": self.include_svg_file,
+        }
+
+        # Handle text files without extensions
+        if is_text_file:
             return self.include_txt_file(file_path)
-        elif suffix in [".puml", ".plantuml"]:
-            return self.include_plantuml_file(file_path)
-        elif suffix in [".mmd", ".mermaid"]:
-            return self.include_mermaid_file(file_path)
-        elif suffix in [".dot", ".gv"]:
-            return self.include_graphviz_file(file_path)
-        elif suffix == ".svg":
-            return self.include_svg_file(file_path)
-        else:
-            raise IntroligoError(
-                f"Unsupported file type '{suffix}' for file: {path_obj}. "
-                f"Supported types: .rst, .md, .tex, .txt, .puml, .plantuml, "
-                f".mmd, .mermaid, .dot, .gv, .svg"
-            )
+
+        # Dispatch to appropriate handler
+        handler = extension_handlers.get(suffix)
+        if handler:
+            return handler(file_path)  # type: ignore[no-any-return, operator]
+
+        raise IntroligoError(
+            f"Unsupported file type '{suffix}' for file: {path_obj}. "
+            f"Supported types: .rst, .md, .tex, .txt, .puml, .plantuml, "
+            f".mmd, .mermaid, .dot, .gv, .svg"
+        )
+
+    def _generate_protobuf_diagrams(
+        self,
+        proto_extractor,
+        protobuf_diagrams: List,
+        proto_files: Optional[List[str]],
+        *,
+        proto_package: Optional[str],
+        diagram_content: List[str],
+    ) -> None:
+        """Generate and include protobuf diagrams.
+
+        Args:
+            proto_extractor: ProtoDoc extractor instance.
+            protobuf_diagrams: List of diagram configurations.
+            proto_files: Optional list of proto files to process.
+            proto_package: Optional package filter.
+            diagram_content: List to append generated diagram content to.
+        """
+        logger.info(f"  📊 Generating {len(protobuf_diagrams)} automatic protobuf diagram(s)")
+        try:
+            # Parse all proto files to get structure
+            proto_file_paths = proto_extractor.find_proto_files(proto_files)
+            parsed_files = self._parse_proto_files(proto_extractor, proto_file_paths, proto_package)
+
+            if parsed_files:
+                # Generate diagrams
+                generated = generate_proto_diagrams(
+                    parsed_files, protobuf_diagrams, self.paths.output_dir
+                )
+
+                # Add generated diagrams to diagram_includes
+                self._include_generated_diagrams(generated, diagram_content)
+        except Exception as e:
+            logger.warning(f"Failed to generate protobuf diagrams: {e}")
+
+    def _parse_proto_files(
+        self, proto_extractor, proto_file_paths: List[Path], proto_package: Optional[str]
+    ) -> List[Dict]:
+        """Parse proto files and filter by package if specified.
+
+        Args:
+            proto_extractor: ProtoDoc extractor instance.
+            proto_file_paths: List of proto file paths.
+            proto_package: Optional package filter.
+
+        Returns:
+            List of parsed proto file data.
+        """
+        parsed_files = []
+        for proto_file in proto_file_paths:
+            with open(proto_file, encoding="utf-8") as f:
+                content = f.read()
+            parsed = proto_extractor.parse_proto_file(content)
+            if not proto_package or parsed.get("package") == proto_package:
+                parsed_files.append(parsed)
+        return parsed_files
+
+    def _include_generated_diagrams(
+        self, generated: List[Dict], diagram_content: List[str]
+    ) -> None:
+        """Include generated diagrams in the documentation.
+
+        Args:
+            generated: List of generated diagram metadata.
+            diagram_content: List to append diagram content to.
+        """
+        for gen_diagram in generated:
+            diagram_path = gen_diagram["path"]
+            diagram_title = gen_diagram["title"]
+
+            # Determine diagram type and include it
+            suffix = Path(diagram_path).suffix.lower()
+            try:
+                content = self._include_diagram_by_type(diagram_path, diagram_title, suffix)
+                diagram_content.append(content)
+            except Exception as e:
+                logger.warning(f"Failed to include generated diagram {diagram_path}: {e}")
+
+    def _include_diagram_by_type(self, diagram_path: str, diagram_title: str, suffix: str) -> str:
+        """Include a diagram based on its file type.
+
+        Args:
+            diagram_path: Path to the diagram file.
+            diagram_title: Title for the diagram.
+            suffix: File suffix (e.g., '.puml', '.dot').
+
+        Returns:
+            RST content for the diagram.
+        """
+        if suffix in [".puml", ".plantuml"]:
+            return self.include_plantuml_file(diagram_path, diagram_title)
+        if suffix in [".dot", ".gv"]:
+            return self.include_graphviz_file(diagram_path, diagram_title)
+        return self.include_file(diagram_path)
+
+    def _check_protobuf_diagram_types(self, protobuf_diagrams) -> Tuple[bool, bool]:
+        """Check protobuf diagrams to determine required extensions.
+
+        Args:
+            protobuf_diagrams: Protobuf diagram configuration.
+
+        Returns:
+            Tuple of (has_plantuml, has_graphviz).
+        """
+        has_plantuml = False
+        has_graphviz = False
+
+        if not isinstance(protobuf_diagrams, list):
+            return has_plantuml, has_graphviz
+
+        for diagram_config in protobuf_diagrams:
+            if not isinstance(diagram_config, dict):
+                continue
+
+            diagram_type = diagram_config.get("type", "class")
+            diagram_format = diagram_config.get("format", "plantuml")
+
+            # Most diagram types use PlantUML by default
+            if diagram_type in ["class", "service", "sequence"]:
+                has_plantuml = True
+            elif diagram_type == "dependencies":
+                # Dependencies can be PlantUML or Graphviz
+                if diagram_format == "graphviz":
+                    has_graphviz = True
+                else:
+                    has_plantuml = True
+
+        return has_plantuml, has_graphviz
 
     def _convert_latex_to_rst(self, latex: str) -> str:
         """Convert LaTeX content to reStructuredText math directive.
@@ -1132,8 +1300,10 @@ Related Tools
         children_info = []
         if node.children:
             for child in node.children:
-                current_output_dir = node.get_output_dir(self.generated_dir)
-                relative_path = child.get_relative_path_from(current_output_dir, self.generated_dir)
+                current_output_dir = node.get_output_dir(self.paths.generated_dir)
+                relative_path = child.get_relative_path_from(
+                    current_output_dir, self.paths.generated_dir
+                )
                 children_info.append({"title": child.title, "relative_path": relative_path})
 
         # Build context with all possible fields
@@ -1258,10 +1428,10 @@ Related Tools
                 if godoc_path:
                     godoc_path_obj = Path(godoc_path)
                     if not godoc_path_obj.is_absolute():
-                        godoc_path_obj = self.config_file.parent / godoc_path
+                        godoc_path_obj = self.paths.config_file.parent / godoc_path
                 else:
                     # Try to use config file's parent directory
-                    godoc_path_obj = self.config_file.parent
+                    godoc_path_obj = self.paths.config_file.parent
 
                 extractor = GoDocExtractor(package_path=godoc_path_obj)
 
@@ -1305,10 +1475,10 @@ Related Tools
                 if java_source_path:
                     java_source_path_obj = Path(java_source_path)
                     if not java_source_path_obj.is_absolute():
-                        java_source_path_obj = self.config_file.parent / java_source_path
+                        java_source_path_obj = self.paths.config_file.parent / java_source_path
                 else:
                     # Try to use config file's parent directory
-                    java_source_path_obj = self.config_file.parent
+                    java_source_path_obj = self.paths.config_file.parent
 
                 java_extractor = JavaDocExtractor(source_path=java_source_path_obj)
 
@@ -1334,7 +1504,7 @@ Related Tools
                     for file_path in java_source_files:
                         file_path_obj = Path(file_path)
                         if not file_path_obj.is_absolute():
-                            file_path_obj = self.config_file.parent / file_path
+                            file_path_obj = self.paths.config_file.parent / file_path
                         java_file_paths.append(file_path_obj)
 
                     results = java_extractor.extract_multiple_files(java_file_paths)
@@ -1368,10 +1538,10 @@ Related Tools
                 if rustdoc_path:
                     rustdoc_path_obj = Path(rustdoc_path)
                     if not rustdoc_path_obj.is_absolute():
-                        rustdoc_path_obj = self.config_file.parent / rustdoc_path
+                        rustdoc_path_obj = self.paths.config_file.parent / rustdoc_path
                 else:
                     # Try to use config file's parent directory
-                    rustdoc_path_obj = self.config_file.parent
+                    rustdoc_path_obj = self.paths.config_file.parent
 
                 rust_extractor = RustDocExtractor(crate_path=rustdoc_path_obj)
                 success, content = rust_extractor.extract_and_convert(rustdoc_crate)
@@ -1400,10 +1570,10 @@ Related Tools
                 if proto_path:
                     proto_path_obj = Path(proto_path)
                     if not proto_path_obj.is_absolute():
-                        proto_path_obj = self.config_file.parent / proto_path
+                        proto_path_obj = self.paths.config_file.parent / proto_path
                 else:
                     # Try to use config file's parent directory
-                    proto_path_obj = self.config_file.parent
+                    proto_path_obj = self.paths.config_file.parent
 
                 proto_extractor = ProtoDocExtractor(proto_path=proto_path_obj)
                 success, content = proto_extractor.extract_and_convert(
@@ -1419,57 +1589,17 @@ Related Tools
             if not proto_extractor and proto_path:
                 proto_path_obj = Path(proto_path)
                 if not proto_path_obj.is_absolute():
-                    proto_path_obj = self.config_file.parent / proto_path
+                    proto_path_obj = self.paths.config_file.parent / proto_path
                 proto_extractor = ProtoDocExtractor(proto_path=proto_path_obj)
 
             if proto_extractor:
-                logger.info(
-                    f"  📊 Generating {len(protobuf_diagrams)} automatic protobuf diagram(s)"
+                self._generate_protobuf_diagrams(
+                    proto_extractor,
+                    protobuf_diagrams,
+                    proto_files,
+                    proto_package=proto_package,
+                    diagram_content=diagram_content,
                 )
-                try:
-                    # Parse all proto files to get structure
-                    proto_file_paths = proto_extractor.find_proto_files(proto_files)
-                    parsed_files = []
-                    for proto_file in proto_file_paths:
-                        with open(proto_file, encoding="utf-8") as f:
-                            content = f.read()
-                        parsed = proto_extractor.parse_proto_file(content)
-                        if not proto_package or parsed.get("package") == proto_package:
-                            parsed_files.append(parsed)
-
-                    if parsed_files:
-                        # Generate diagrams
-                        generated = generate_proto_diagrams(
-                            parsed_files,
-                            protobuf_diagrams,
-                            self.output_dir,
-                        )
-
-                        # Add generated diagrams to diagram_includes
-                        for gen_diagram in generated:
-                            diagram_path = gen_diagram["path"]
-                            diagram_title = gen_diagram["title"]
-
-                            # Determine diagram type and include it
-                            suffix = Path(diagram_path).suffix.lower()
-                            try:
-                                if suffix in [".puml", ".plantuml"]:
-                                    content = self.include_plantuml_file(
-                                        diagram_path, diagram_title
-                                    )
-                                elif suffix in [".dot", ".gv"]:
-                                    content = self.include_graphviz_file(
-                                        diagram_path, diagram_title
-                                    )
-                                else:
-                                    content = self.include_file(diagram_path)
-                                diagram_content.append(content)
-                            except Exception as e:
-                                logger.warning(
-                                    f"Failed to include generated diagram {diagram_path}: {e}"
-                                )
-                except Exception as e:
-                    logger.warning(f"Failed to generate protobuf diagrams: {e}")
 
         # Process custom_sections to convert unsupported directives
         custom_sections = config.get("custom_sections", [])
@@ -1479,8 +1609,8 @@ Related Tools
                 processed_section = section.copy()
                 processed_section["content"] = process_rst_directives(
                     section["content"],
-                    self.has_plantuml_extension,
-                    self.has_mermaid_extension,
+                    self.extensions.has_plantuml_extension,
+                    self.extensions.has_mermaid_extension,
                 )
                 processed_custom_sections.append(processed_section)
             else:
@@ -1585,7 +1715,9 @@ Related Tools
 
 """
         for node in sorted(root_nodes, key=lambda n: n.title):
-            relative_path = node.get_relative_path_from(self.generated_dir, self.generated_dir)
+            relative_path = node.get_relative_path_from(
+                self.paths.generated_dir, self.paths.generated_dir
+            )
             content += f"   generated/{relative_path}\n"
 
         # Add footer note
@@ -1632,7 +1764,7 @@ Related Tools
         for node in nodes:
             try:
                 content = self.generate_rst_content(node, template)
-                output_file = node.get_output_file(self.generated_dir)
+                output_file = node.get_output_file(self.paths.generated_dir)
                 generated_files[str(output_file)] = (content, output_file)
                 logger.info(f"  Generated: {node.title} -> {output_file}")
 
@@ -1662,11 +1794,11 @@ Related Tools
         template = self.load_template()
 
         logger.info("Generating RST files for page tree...")
-        generated_files = self.generate_all_nodes(self.page_tree, template, self.strict)
+        generated_files = self.generate_all_nodes(self.page_tree, template, self.options.strict)
 
         if self.config.get("generate_index", True):
             index_content = self.generate_index(self.page_tree)
-            index_path = self.output_dir / "index.rst"
+            index_path = self.paths.output_dir / "index.rst"
             generated_files[str(index_path)] = (index_content, index_path)
             logger.info("  📋 Generated: index.rst")
 
@@ -1678,7 +1810,7 @@ Related Tools
         Args:
             generated_files: Dictionary mapping file paths to (content, Path) tuples.
         """
-        if self.dry_run:
+        if self.options.dry_run:
             logger.info("DRY RUN - Would generate:")
             for _, full_path in generated_files.values():
                 logger.info(f"  {full_path}")
@@ -1709,7 +1841,7 @@ Related Tools
         xml_path_obj = Path(xml_path)
         if not xml_path_obj.is_absolute():
             # Resolve relative to config file directory
-            xml_path_obj = self.config_file.parent / xml_path
+            xml_path_obj = self.paths.config_file.parent / xml_path
         xml_path_str = str(xml_path_obj.resolve())
 
         config = f"""# Breathe Configuration for Doxygen Integration
@@ -1753,7 +1885,7 @@ breathe_default_project = "{project_name}"
                 palette_path = package_palette
             else:
                 # Try relative to config file
-                config_relative = self.config_file.parent / palette_name
+                config_relative = self.paths.config_file.parent / palette_name
                 if config_relative.exists():
                     palette_path = config_relative
                 else:
@@ -2014,39 +2146,28 @@ breathe_default_project = "{project_name}"
         has_graphviz_global = False
 
         for module_config in self.config.get("modules", {}).values():
-            if isinstance(module_config, dict):
-                # Check diagram_includes
-                if "diagram_includes" in module_config:
-                    p, m, g = has_diagram_files(module_config["diagram_includes"])
-                    has_plantuml_global = has_plantuml_global or p
-                    has_mermaid_global = has_mermaid_global or m
-                    has_graphviz_global = has_graphviz_global or g
+            if not isinstance(module_config, dict):
+                continue
 
-                # Check file_includes for diagram files
-                if "file_includes" in module_config:
-                    p, m, g = has_diagram_files(module_config["file_includes"])
-                    has_plantuml_global = has_plantuml_global or p
-                    has_mermaid_global = has_mermaid_global or m
-                    has_graphviz_global = has_graphviz_global or g
+            # Check diagram_includes
+            if "diagram_includes" in module_config:
+                p, m, g = has_diagram_files(module_config["diagram_includes"])
+                has_plantuml_global = has_plantuml_global or p
+                has_mermaid_global = has_mermaid_global or m
+                has_graphviz_global = has_graphviz_global or g
 
-                # Check protobuf_diagrams for auto-generated diagrams
-                if "protobuf_diagrams" in module_config:
-                    protobuf_diagrams = module_config["protobuf_diagrams"]
-                    if isinstance(protobuf_diagrams, list):
-                        for diagram_config in protobuf_diagrams:
-                            if isinstance(diagram_config, dict):
-                                diagram_type = diagram_config.get("type", "class")
-                                diagram_format = diagram_config.get("format", "plantuml")
+            # Check file_includes for diagram files
+            if "file_includes" in module_config:
+                p, m, g = has_diagram_files(module_config["file_includes"])
+                has_plantuml_global = has_plantuml_global or p
+                has_mermaid_global = has_mermaid_global or m
+                has_graphviz_global = has_graphviz_global or g
 
-                                # Most diagram types use PlantUML by default
-                                if diagram_type in ["class", "service", "sequence"]:
-                                    has_plantuml_global = True
-                                elif diagram_type == "dependencies":
-                                    # Dependencies can be PlantUML or Graphviz
-                                    if diagram_format == "graphviz":
-                                        has_graphviz_global = True
-                                    else:
-                                        has_plantuml_global = True
+            # Check protobuf_diagrams for auto-generated diagrams
+            if "protobuf_diagrams" in module_config:
+                p, g = self._check_protobuf_diagram_types(module_config["protobuf_diagrams"])
+                has_plantuml_global = has_plantuml_global or p
+                has_graphviz_global = has_graphviz_global or g
 
         # Helper function to check if a package is available
         def is_package_available(package_name: str) -> bool:
@@ -2066,10 +2187,10 @@ breathe_default_project = "{project_name}"
         if has_plantuml_global and "sphinxcontrib.plantuml" not in extensions:
             if is_package_available("sphinxcontrib.plantuml"):
                 extensions.append("sphinxcontrib.plantuml")
-                self.has_plantuml_extension = True
+                self.extensions.has_plantuml_extension = True
                 logger.info("  Auto-added diagram extension: sphinxcontrib.plantuml")
             else:
-                self.has_plantuml_extension = False
+                self.extensions.has_plantuml_extension = False
                 logger.warning(
                     "  PlantUML diagrams detected but sphinxcontrib-plantuml not installed"
                 )
@@ -2079,10 +2200,10 @@ breathe_default_project = "{project_name}"
         if has_mermaid_global and "sphinxcontrib.mermaid" not in extensions:
             if is_package_available("sphinxcontrib.mermaid"):
                 extensions.append("sphinxcontrib.mermaid")
-                self.has_mermaid_extension = True
+                self.extensions.has_mermaid_extension = True
                 logger.info("  Auto-added diagram extension: sphinxcontrib.mermaid")
             else:
-                self.has_mermaid_extension = False
+                self.extensions.has_mermaid_extension = False
                 logger.warning(
                     "  Mermaid diagrams detected but sphinxcontrib-mermaid not installed"
                 )
@@ -2137,7 +2258,7 @@ breathe_default_project = "{project_name}"
 
         # Prepare template context
         context = {
-            "config_file_name": self.config_file.name,
+            "config_file_name": self.paths.config_file.name,
             "sphinx": self.sphinx_config,
             "has_breathe": bool(self.doxygen_config),
         }

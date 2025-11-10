@@ -91,62 +91,88 @@ class RustDocExtractor:
 
         # If Cargo is not available, fall back to source parsing immediately
         if not self.check_cargo_available():
-            logger.warning("Cargo is not installed - using direct source parsing")
-            lib_rs = self.crate_path / "src" / "lib.rs"
-            main_rs = self.crate_path / "src" / "main.rs"
-            source_file = lib_rs if lib_rs.exists() else (main_rs if main_rs.exists() else None)
-            if source_file:
-                return self._parse_rust_source(source_file)
-            return None
+            return self._extract_without_cargo()
 
         try:
-            # Try to generate JSON documentation (requires Rust 1.78+)
-            logger.info(f"Attempting to generate rustdoc JSON for crate at {self.crate_path}")
-            json_doc = self._try_rustdoc_json(crate_name)
-
-            if json_doc:
-                logger.info("Successfully extracted documentation from rustdoc JSON")
-                return json_doc
-
-            # Prefer source parsing over HTML parsing - it produces better formatted output
-            logger.info("Rustdoc JSON not available, using direct source parsing")
-            lib_rs = self.crate_path / "src" / "lib.rs"
-            main_rs = self.crate_path / "src" / "main.rs"
-            source_file = lib_rs if lib_rs.exists() else (main_rs if main_rs.exists() else None)
-
-            if source_file:
-                logger.info(f"Parsing source file: {source_file}")
-                return self._parse_rust_source(source_file)
-
-            # Last resort: Try cargo doc HTML parsing (produces less formatted output)
-            logger.info("Source file not found, trying cargo doc HTML parsing")
-            cmd = ["cargo", "doc", "--no-deps", "--message-format=json"]
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=120,
-                cwd=str(self.crate_path),
-            )
-
-            if result.returncode == 0:
-                logger.info(f"Successfully built HTML documentation for crate at {self.crate_path}")
-
-                # Try to extract from generated docs
-                extracted = self._extract_from_cargo_doc(crate_name)
-                if extracted:
-                    logger.info("Successfully extracted documentation from cargo doc HTML output")
-                    return extracted
-
-            logger.warning("All extraction methods failed")
-            return None
-
+            return self._extract_with_cargo(crate_name)
         except subprocess.TimeoutExpired:
             logger.error(f"Timeout while building docs for crate at {self.crate_path}")
             return None
         except Exception as e:
             logger.error(f"Error building docs: {e}")
             return None
+
+    def _extract_without_cargo(self) -> Optional[str]:
+        """Extract documentation when Cargo is not available.
+
+        Returns:
+            Documentation string, or None if extraction fails.
+        """
+        logger.warning("Cargo is not installed - using direct source parsing")
+        lib_rs = self.crate_path / "src" / "lib.rs" if self.crate_path else None
+        main_rs = self.crate_path / "src" / "main.rs" if self.crate_path else None
+        source_file = (
+            lib_rs
+            if lib_rs and lib_rs.exists()
+            else (main_rs if main_rs and main_rs.exists() else None)
+        )
+        if source_file:
+            return self._parse_rust_source(source_file)
+        return None
+
+    def _extract_with_cargo(self, crate_name: Optional[str] = None) -> Optional[str]:
+        """Extract documentation using Cargo toolchain.
+
+        Args:
+            crate_name: The crate name (optional).
+
+        Returns:
+            Documentation string, or None if extraction fails.
+        """
+        # Try to generate JSON documentation (requires Rust 1.78+)
+        logger.info(f"Attempting to generate rustdoc JSON for crate at {self.crate_path}")
+        json_doc = self._try_rustdoc_json(crate_name)
+
+        if json_doc:
+            logger.info("Successfully extracted documentation from rustdoc JSON")
+            return json_doc
+
+        # Prefer source parsing over HTML parsing - it produces better formatted output
+        logger.info("Rustdoc JSON not available, using direct source parsing")
+        lib_rs = self.crate_path / "src" / "lib.rs" if self.crate_path else None
+        main_rs = self.crate_path / "src" / "main.rs" if self.crate_path else None
+        source_file = (
+            lib_rs
+            if lib_rs and lib_rs.exists()
+            else (main_rs if main_rs and main_rs.exists() else None)
+        )
+
+        if source_file:
+            logger.info(f"Parsing source file: {source_file}")
+            return self._parse_rust_source(source_file)
+
+        # Last resort: Try cargo doc HTML parsing (produces less formatted output)
+        logger.info("Source file not found, trying cargo doc HTML parsing")
+        cmd = ["cargo", "doc", "--no-deps", "--message-format=json"]
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            cwd=str(self.crate_path),
+        )
+
+        if result.returncode == 0:
+            logger.info(f"Successfully built HTML documentation for crate at {self.crate_path}")
+
+            # Try to extract from generated docs
+            extracted = self._extract_from_cargo_doc(crate_name)
+            if extracted:
+                logger.info("Successfully extracted documentation from cargo doc HTML output")
+                return extracted
+
+        logger.warning("All extraction methods failed")
+        return None
 
     def _try_rustdoc_json(self, crate_name: Optional[str] = None) -> Optional[str]:
         """Try to generate and parse rustdoc JSON output.
@@ -421,71 +447,142 @@ class RustDocExtractor:
 
             # Look for doc comments (/// or /** */)
             if line.startswith("///") or line.startswith("/**"):
-                doc_lines = []
+                doc_lines, i = self._collect_doc_comments(lines, i)
+                item_doc, i = self._process_documented_item(lines, i, doc_lines)
 
-                # Collect all consecutive doc comments
-                while i < len(lines) and (
-                    lines[i].strip().startswith("///") or lines[i].strip().startswith("/**")
-                ):
-                    doc_line = lines[i].strip()
-                    if doc_line.startswith("///") or doc_line.startswith("/**"):
-                        # Remove leading /// and clean up
-                        cleaned = doc_line[3:].strip()
-                        doc_lines.append(cleaned)
-                    i += 1
+                if item_doc:
+                    signature = item_doc["signature"]
+                    doc = item_doc["doc"]
 
-                # Now look for the item definition (pub fn, pub struct, pub enum, pub trait)
-                if i < len(lines):
-                    item_line = lines[i].strip()
-
-                    # Check if it's a public item
-                    if item_line.startswith("pub "):
-                        # Extract the signature
-                        signature = item_line
-                        i += 1
-
-                        # For multi-line signatures, collect until we hit {, ;, or where
-                        while i < len(lines) and not any(c in signature for c in ["{", ";"]):
-                            next_line = lines[i].strip()
-                            if next_line:
-                                signature += " " + next_line
-                            i += 1
-                            if "where" in next_line or "{" in next_line or ";" in next_line:
-                                break
-
-                        # Clean up signature
-                        signature = signature.split("{")[0].split("where")[0].strip()
-
-                        # Process doc lines to convert markdown to RST
-                        processed_docs = self._process_doc_comments(doc_lines)
-
-                        # Format the item
-                        item_doc = []
-                        item_doc.append("")
-                        item_doc.append(".. code-block:: rust")
-                        item_doc.append("")
-                        item_doc.append(f"   {signature}")
-                        item_doc.append("")
-                        item_doc.extend(processed_docs)
-                        item_doc.append("")
-
-                        # Categorize by type
-                        if "pub fn " in signature or "pub async fn " in signature:
-                            functions.append(item_doc)
-                        elif "pub struct " in signature:
-                            structs.append(item_doc)
-                        elif "pub enum " in signature:
-                            enums.append(item_doc)
-                        elif "pub trait " in signature:
-                            traits.append(item_doc)
-                        else:
-                            others.append(item_doc)
-
-                        continue
+                    # Categorize by type
+                    if "pub fn " in signature or "pub async fn " in signature:
+                        functions.append(doc)
+                    elif "pub struct " in signature:
+                        structs.append(doc)
+                    elif "pub enum " in signature:
+                        enums.append(doc)
+                    elif "pub trait " in signature:
+                        traits.append(doc)
+                    else:
+                        others.append(doc)
+                    continue
 
             i += 1
 
         # Assemble the results with section headers
+        return self._assemble_categorized_items(
+            structs, enums, functions, traits=traits, others=others
+        )
+
+    def _collect_doc_comments(self, lines: List[str], start_index: int) -> Tuple[List[str], int]:
+        """Collect consecutive doc comment lines.
+
+        Args:
+            lines: All source lines.
+            start_index: Starting index for collection.
+
+        Returns:
+            Tuple of (doc_lines, next_index).
+        """
+        doc_lines = []
+        i = start_index
+
+        while i < len(lines):
+            line = lines[i].strip()
+            if line.startswith("///") or line.startswith("/**"):
+                cleaned = line[3:].strip()
+                doc_lines.append(cleaned)
+                i += 1
+            else:
+                break
+
+        return doc_lines, i
+
+    def _process_documented_item(
+        self, lines: List[str], start_index: int, doc_lines: List[str]
+    ) -> Tuple[Optional[Dict], int]:
+        """Process a documented public item.
+
+        Args:
+            lines: All source lines.
+            start_index: Starting index (should be at the item definition).
+            doc_lines: Documentation comment lines.
+
+        Returns:
+            Tuple of (item_dict or None, next_index).
+        """
+        if start_index >= len(lines):
+            return None, start_index
+
+        item_line = lines[start_index].strip()
+        if not item_line.startswith("pub "):
+            return None, start_index
+
+        # Extract the signature
+        signature, i = self._extract_signature(lines, start_index)
+
+        # Process doc lines to convert markdown to RST
+        processed_docs = self._process_doc_comments(doc_lines)
+
+        # Format the item
+        item_doc = []
+        item_doc.append("")
+        item_doc.append(".. code-block:: rust")
+        item_doc.append("")
+        item_doc.append(f"   {signature}")
+        item_doc.append("")
+        item_doc.extend(processed_docs)
+        item_doc.append("")
+
+        return {"signature": signature, "doc": item_doc}, i
+
+    def _extract_signature(self, lines: List[str], start_index: int) -> Tuple[str, int]:
+        """Extract a complete signature from lines.
+
+        Args:
+            lines: All source lines.
+            start_index: Starting index.
+
+        Returns:
+            Tuple of (signature, next_index).
+        """
+        signature = lines[start_index].strip()
+        i = start_index + 1
+
+        # For multi-line signatures, collect until we hit {, ;, or where
+        while i < len(lines) and not any(c in signature for c in ["{", ";"]):
+            next_line = lines[i].strip()
+            if next_line:
+                signature += " " + next_line
+            i += 1
+            if "where" in next_line or "{" in next_line or ";" in next_line:
+                break
+
+        # Clean up signature
+        signature = signature.split("{")[0].split("where")[0].strip()
+        return signature, i
+
+    def _assemble_categorized_items(
+        self,
+        structs: List[List[str]],
+        enums: List[List[str]],
+        functions: List[List[str]],
+        *,
+        traits: List[List[str]],
+        others: List[List[str]],
+    ) -> List[str]:
+        """Assemble categorized items into a single result list.
+
+        Args:
+            structs: List of struct documentation.
+            enums: List of enum documentation.
+            functions: List of function documentation.
+            traits: List of trait documentation.
+            others: List of other item documentation.
+
+        Returns:
+            Assembled list of documentation strings.
+        """
         result = []
 
         if structs:

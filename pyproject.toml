@@ -145,12 +145,8 @@ disable = [
     "R1705",  # no-else-return (else after return is readable)
     "C0302",  # too-many-lines (some modules are necessarily large)
     "W0613",  # unused-argument (needed for API compatibility)
-    "R0911",  # too-many-return-statements
-    "R0902",  # too-many-instance-attributes
-    "R1702",  # too-many-nested-blocks
     "C0415",  # import-outside-toplevel (sometimes needed)
     "R0901",  # too-many-ancestors (YAML loader inheritance)
-    "R0917",  # too-many-positional-arguments
     "R0904",  # too-many-public-methods
     "R0903",  # too-few-public-methods
     "R0801",  # duplicate-code (similar patterns are intentional)

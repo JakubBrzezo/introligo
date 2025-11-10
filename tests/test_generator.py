@@ -18,11 +18,11 @@ class TestIntroligoGeneratorInit:
             output_dir=output_dir,
         )
 
-        assert generator.config_file == sample_yaml_config
-        assert generator.output_dir == output_dir
-        assert generator.generated_dir == output_dir / "generated"
-        assert generator.dry_run is False
-        assert generator.strict is False
+        assert generator.paths.config_file == sample_yaml_config
+        assert generator.paths.output_dir == output_dir
+        assert generator.paths.generated_dir == output_dir / "generated"
+        assert generator.options.dry_run is False
+        assert generator.options.strict is False
 
     def test_generator_with_template(self, sample_yaml_config: Path, temp_dir: Path):
         """Test generator with custom template."""
@@ -36,7 +36,7 @@ class TestIntroligoGeneratorInit:
             template_file=template_file,
         )
 
-        assert generator.template_file == template_file
+        assert generator.paths.template_file == template_file
 
     def test_generator_dry_run(self, sample_yaml_config: Path, temp_dir: Path):
         """Test generator in dry-run mode."""
@@ -47,7 +47,7 @@ class TestIntroligoGeneratorInit:
             dry_run=True,
         )
 
-        assert generator.dry_run is True
+        assert generator.options.dry_run is True
 
     def test_generator_strict_mode(self, sample_yaml_config: Path, temp_dir: Path):
         """Test generator in strict mode."""
@@ -58,7 +58,7 @@ class TestIntroligoGeneratorInit:
             strict=True,
         )
 
-        assert generator.strict is True
+        assert generator.options.strict is True
 
 
 class TestLoadConfig:
@@ -2229,7 +2229,7 @@ modules:
 
         generator = IntroligoGenerator(config_file, temp_dir / "output")
         # Simulate PlantUML not being available
-        generator.has_plantuml_extension = False
+        generator.extensions.has_plantuml_extension = False
 
         generator.load_config()
         generator.build_page_tree()
@@ -2265,7 +2265,7 @@ modules:
 
         generator = IntroligoGenerator(config_file, temp_dir / "output")
         # Simulate Mermaid not being available
-        generator.has_mermaid_extension = False
+        generator.extensions.has_mermaid_extension = False
 
         generator.load_config()
         generator.build_page_tree()
@@ -2302,8 +2302,8 @@ modules:
 
         generator = IntroligoGenerator(config_file, temp_dir / "output")
         # Both extensions available - no processing needed
-        generator.has_plantuml_extension = True
-        generator.has_mermaid_extension = True
+        generator.extensions.has_plantuml_extension = True
+        generator.extensions.has_mermaid_extension = True
 
         generator.load_config()
         generator.build_page_tree()
